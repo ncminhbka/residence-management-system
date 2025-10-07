@@ -1,0 +1,41 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Dashboard - My App</title>
+  <link rel="stylesheet" href="/assets/css/style.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>Dashboard</h1>
+    <div class="card" id="dash-card">
+      <div id="user-info">Đang tải...</div>
+      <button id="btn-logout">Logout</button>
+      <p class="error" id="dash-error"></p>
+    </div>
+  </div>
+
+  <script>
+    // Simple inline script to fetch user and logout (avoid repeating full app.js here)
+    async function loadUser() {
+      try {
+        const res = await fetch('/api/dashboard', { credentials: 'include' });
+        if (res.status === 401) {
+          window.location = '/';
+          return;
+        }
+        const data = await res.json();
+        const u = data.user;
+        document.getElementById('user-info').innerHTML = `<p>Chào, <b>${u.name || u.email}</b></p><p>Email: ${u.email}</p>`;
+      } catch (err) {
+        document.getElementById('dash-error').textContent = 'Lỗi khi tải thông tin.';
+      }
+    }
+    document.getElementById('btn-logout').addEventListener('click', async () => {
+      await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
+      window.location = '/';
+    });
+    loadUser();
+  </script>
+</body>
+</html>
