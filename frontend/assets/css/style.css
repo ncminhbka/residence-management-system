@@ -14,3 +14,70 @@ button:hover { opacity:0.95; }
 .tabs button { background:#eee; flex:1; padding:8px; border-radius:6px; border:0; cursor:pointer; }
 .tabs button.active { background:#1976d2; color:#fff; }
 #user-info { margin-bottom:12px; }
+
+
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f4f4f4;
+}
+
+.navbar {
+  background: #0055a5;
+  color: #fff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px;
+}
+
+.navbar .logo {
+  display: flex;
+  align-items: center;
+}
+
+.navbar .logo img {
+  height: 40px;
+  margin-right: 10px;
+}
+
+.sidebar {
+  width: 220px;
+  background: #fff;
+  border-right: 1px solid #ddd;
+  height: calc(100vh - 60px);
+  float: left;
+}
+
+.sidebar ul {
+  list-style: none;
+  padding: 0;
+}
+
+.sidebar ul li {
+  border-bottom: 1px solid #eee;
+}
+
+.sidebar ul li a {
+  display: block;
+  padding: 12px 16px;
+  color: #333;
+  text-decoration: none;
+}
+
+.sidebar ul li a:hover {
+  background: #0055a5;
+  color: #fff;
+}
+
+.content {
+  margin-left: 220px;
+  padding: 20px;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}

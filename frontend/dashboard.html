@@ -1,41 +1,41 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="vi">
 <head>
-  <meta charset="utf-8" />
-  <title>Dashboard - My App</title>
-  <link rel="stylesheet" href="/assets/css/style.css" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard - Quản lý dân cư TDP 7</title>
+  <link rel="stylesheet" href="assets/css/style.css" />
 </head>
 <body>
-  <div class="container">
-    <h1>Dashboard</h1>
-    <div class="card" id="dash-card">
-      <div id="user-info">Đang tải...</div>
-      <button id="btn-logout">Logout</button>
-      <p class="error" id="dash-error"></p>
+  <header class="navbar">
+    <div class="logo">
+      <img src="assets/images/logo.png" alt="Logo" />
+      <h1>Quản lý dân cư - TDP 7</h1>
     </div>
-  </div>
+    <div class="user-info">
+      <span id="username"></span> (<span id="role"></span>)
+      <button id="logoutBtn">Đăng xuất</button>
+    </div>
+  </header>
 
-  <script>
-    // Simple inline script to fetch user and logout (avoid repeating full app.js here)
-    async function loadUser() {
-      try {
-        const res = await fetch('/api/dashboard', { credentials: 'include' });
-        if (res.status === 401) {
-          window.location = '/';
-          return;
-        }
-        const data = await res.json();
-        const u = data.user;
-        document.getElementById('user-info').innerHTML = `<p>Chào, <b>${u.name || u.email}</b></p><p>Email: ${u.email}</p>`;
-      } catch (err) {
-        document.getElementById('dash-error').textContent = 'Lỗi khi tải thông tin.';
-      }
-    }
-    document.getElementById('btn-logout').addEventListener('click', async () => {
-      await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
-      window.location = '/';
-    });
-    loadUser();
-  </script>
+  <main class="dashboard">
+    <nav class="sidebar">
+      <ul id="menu">
+        <!-- Menu sẽ được sinh động dựa vào quyền -->
+      </ul>
+    </nav>
+
+    <section class="content">
+      <h2>Chào mừng bạn đến với hệ thống quản lý dân cư</h2>
+      <p>Vui lòng chọn chức năng ở menu bên trái.</p>
+
+      <div id="quick-stats" class="stats">
+        <!-- Gợi ý hiển thị nhanh vài thống kê -->
+      </div>
+    </section>
+  </main>
+
+  <script src="assets/js/app.js"></script>
+  <script src="assets/js/dashboard.js"></script>
 </body>
 </html>

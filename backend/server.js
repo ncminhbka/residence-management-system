@@ -4,12 +4,12 @@ const express = require('express');
 const cookieParser = require('cookie-parser');
 require('dotenv').config();
 
-//route authorization: xac thuc
-const authRoutes = require('./routes/auth');
-const auth = require('./middleware/auth');
-const authController = require('./controller/authController');
-//database
-const pool = require('./db');
+
+const authRoutes = require('./routes/authRoutes'); //route
+const auth = require('./middleware/auth'); //middleware
+const authController = require('./controller/authController');//controller
+
+
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -19,10 +19,13 @@ app.use(express.json());
 app.use(cookieParser());
 
 // API routes
-app.use('/api/auth', authRoutes);
+app.use('/api/v1/auth', authRoutes);
 
 // Protected API
-app.get('/api/dashboard', auth, authController.getDashboard );
+//app.get('/api/v1/dashboard', auth, authController.getDashboard );
+
+
+
 
 // đây chính là code hiển thị frontend
 // Serve frontend static files from ../frontend phục vụ file tĩnh
