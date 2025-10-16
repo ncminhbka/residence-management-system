@@ -104,11 +104,7 @@ CREATE TABLE TAI_KHOAN (
     MATKHAU VARCHAR(255) NOT NULL
 ) ENGINE=InnoDB;
 
--- Insert tài khoản quản lý
-INSERT INTO TAI_KHOAN (HOTEN, CHUCVU, TENDANGNHAP, MATKHAU) VALUES
-('Cục cức dễ thương', 'TO_TRUONG', 'cuccucdethuong', 'admin123'),
-('Lỗ đít hủy diệt', 'TO_PHO', 'lodithuydiet', 'admin123'),
-('Con mèo ướt át', 'CAN_BO_NGHIEP_VU', 'conmeouotat', 'admin123');
+
 
 
 

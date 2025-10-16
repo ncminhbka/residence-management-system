@@ -86,12 +86,12 @@ function renderMenu(role) {
 
   const menuItems = [
     { name: "Dashboard", href: "dashboard.html", roles: ["ALL"] },
-    { name: "Quản lý hộ khẩu", href: "households.html", roles: ["TO_TRUONG", "TO_PHO", "CAN_BO_NGHIEP_VU"] },
-    { name: "Quản lý nhân khẩu", href: "citizens.html", roles: ["TO_TRUONG", "TO_PHO", "CAN_BO_NGHIEP_VU"] },
-    { name: "Tạm trú / Tạm vắng", href: "temp.html", roles: ["TO_TRUONG", "TO_PHO", "CAN_BO_NGHIEP_VU"] },
-    { name: "Thống kê & Báo cáo", href: "reports.html", roles: ["TO_TRUONG", "TO_PHO", "CAN_BO_NGHIEP_VU"] },
-    { name: "Quản lý tài khoản", href: "accounts.html", roles: ["TO_TRUONG", "CAN_BO_NGHIEP_VU"] },
-    { name: "Quản lý nhà văn hóa", href: "nvh.html", roles: ["TO_TRUONG", "CAN_BO_NGHIEP_VU"] },
+    { name: "Quản lý hộ khẩu", href: "households.html", roles: ["TO_TRUONG", "TO_PHO"] },
+    { name: "Quản lý nhân khẩu", href: "citizens.html", roles: ["TO_TRUONG", "TO_PHO"] },
+    { name: "Tạm trú / Tạm vắng", href: "temp.html", roles: ["TO_TRUONG", "TO_PHO"] },
+    { name: "Thống kê & Báo cáo", href: "reports.html", roles: ["TO_TRUONG", "TO_PHO"] },
+    { name: "Quản lý tài khoản", href: "accounts.html", roles: ["TO_TRUONG","TO_PHO"] },
+    { name: "Quản lý nhà văn hóa", href: "nvh.html", roles: ["TO_TRUONG","TO_PHO", "CAN_BO_NGHIEP_VU"] },
   ];
 
   menu.innerHTML = "";

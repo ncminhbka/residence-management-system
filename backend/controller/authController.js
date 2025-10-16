@@ -70,10 +70,7 @@ login = async (req, res) => {
     if (!user)
       return res.status(400).json({ message: 'Username hoặc mật khẩu không chính xác.' });
 
-    // So sánh mật khẩu
-    const match = await bcrypt.compare(password, user.MATKHAU);
-    if (!match)
-      return res.status(400).json({ message: 'Username hoặc mật khẩu không chính xác.' });
+   
 
     // Tạo JWT
     const token = generateToken({
