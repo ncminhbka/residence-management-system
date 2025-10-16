@@ -61,7 +61,6 @@ getDashboard = async (req, res) => {
 
 
 login = async (req, res) => {
-  
   const { username, password } = req.body;
   if (!username || !password)
     return res.status(400).json({ message: 'Vui lòng nhập username và mật khẩu.' });
@@ -76,11 +75,11 @@ login = async (req, res) => {
     if (!match)
       return res.status(400).json({ message: 'Username hoặc mật khẩu không chính xác.' });
 
-    // Tạo JWT (rất quan trọng)
+    // Tạo JWT
     const token = generateToken({
       id: user.MATAIKHOAN,
       username: user.TENDANGNHAP,
-      role: user.CHUCVU,
+      role: user.CHUCVU
     }, JWT_EXPIRY);
 
     // Lưu token vào cookie
@@ -115,13 +114,15 @@ getMe = async (req, res) => {
       user_id: user.MATAIKHOAN,
       username: user.TENDANGNHAP,
       full_name: user.HOTEN,
-      role: user.CHUCVU,
+      role: user.CHUCVU
     });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Lỗi server' });
   }
 };
+
+
 module.exports = {
   //register,
   login,

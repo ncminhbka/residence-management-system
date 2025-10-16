@@ -9,17 +9,6 @@
   DB_HOST=localhost
   DB_USER=root
   DB_PASSWORD=your_password
-  DB_NAME=myapp
-4. Tạo một DB tên là myapp trong MySQL workbench của bạn và chạy
-  
-CREATE DATABASE IF NOT EXISTS myapp;
-USE myapp;
-
-CREATE TABLE IF NOT EXISTS users (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  name VARCHAR(255),
-  email VARCHAR(255) UNIQUE,
-  password VARCHAR(255),
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+  DB_NAME=ToDanPho7
+4. Mở folder database copy file QLDanCu.sql rồi vào Workbrench chạy query 
 5. Đảm bảo server MySQL đã chạy, vào terminal backend chạy nodemon server.js và vào localhost:4000 để xem kết quả
