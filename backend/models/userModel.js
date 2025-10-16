@@ -3,16 +3,16 @@ const pool = require('../db');
 
 
 findByUsername = async (username) => {
-    const [rows] = await pool.query('SELECT * FROM Users WHERE username = ?', [username]);
+    const [rows] = await pool.query('SELECT * FROM TAI_KHOAN WHERE TENDANGNHAP = ?', [username]);
     return rows[0];
 }
 getUserById = async (user_id) => {
-    const [rows] = await pool.query('SELECT * FROM Users WHERE user_id = ?', [user_id]);
+    const [rows] = await pool.query('SELECT * FROM TAI_KHOAN WHERE MATAIKHOAN = ?', [user_id]);
     return rows[0];
 }
 createUser = async (username, hash, full_name, role) => {
     const [result] = await pool.query(
-      'INSERT INTO Users (username, password_hash, full_name, role) VALUES (?, ?, ?, ?)',
+      'INSERT INTO TAI_KHOAN (TENDANGNHAP, MATKHAU, HOTEN, CHUCVU) VALUES (?, ?, ?, ?)',
       [username, hash, full_name || '', role || 'CAN_BO_NGHIEP_VU']
     );
     return result;

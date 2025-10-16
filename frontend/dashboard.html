@@ -3,39 +3,27 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Dashboard - Quản lý dân cư TDP 7</title>
+  <title>Hệ thống quản trị dân cư</title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="assets/css/layout.css" />
   <link rel="stylesheet" href="assets/css/style.css" />
 </head>
 <body>
-  <header class="navbar">
-    <div class="logo">
-      <img src="assets/images/logo.png" alt="Logo" />
-      <h1>Quản lý dân cư - TDP 7</h1>
-    </div>
-    <div class="user-info">
-      <span id="username"></span> (<span id="role"></span>)
-      <button id="logoutBtn">Đăng xuất</button>
-    </div>
-  </header>
-
   <main class="dashboard">
-    <nav class="sidebar">
-      <ul id="menu">
-        <!-- Menu sẽ được sinh động dựa vào quyền -->
-      </ul>
-    </nav>
-
+    <!-- Navbar và Sidebar sẽ được nạp động -->
     <section class="content">
       <h2>Chào mừng bạn đến với hệ thống quản lý dân cư</h2>
       <p>Vui lòng chọn chức năng ở menu bên trái.</p>
 
       <div id="quick-stats" class="stats">
-        <!-- Gợi ý hiển thị nhanh vài thống kê -->
+        <!-- Thống kê nhanh -->
       </div>
     </section>
   </main>
 
-  <script src="assets/js/app.js"></script>
+  <!-- JS -->
+  <script src="assets/js/layout.js"></script>
   <script src="assets/js/dashboard.js"></script>
 </body>
 </html>

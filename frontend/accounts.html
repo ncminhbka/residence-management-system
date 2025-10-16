@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quản lý tài khoản</title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="assets/css/layout.css" />
+  <link rel="stylesheet" href="assets/css/style.css" />
+</head>
+<body>
+  <main class="dashboard">
+    <!-- Navbar và Sidebar được nạp động -->
+    <section class="content">
+      <h2>Quản lý tài khoản</h2>
+
+      <!-- Form tạo tài khoản -->
+      <div class="card form-card">
+        <h3>Tạo tài khoản mới</h3>
+        <form id="createAccountForm">
+          <input type="text" id="hoten" placeholder="Họ tên" required />
+          <input type="text" id="tendangnhap" placeholder="Tên đăng nhập" required />
+          <input type="password" id="matkhau" placeholder="Mật khẩu" required />
+          <select id="chucvu" required>
+            <option value="">-- Chọn chức vụ --</option>
+            <option value="TO_TRUONG">Tổ trưởng</option>
+            <option value="TO_PHO">Tổ phó</option>
+            <option value="CAN_BO_NGHIEP_VU">Cán bộ nghiệp vụ</option>
+          </select>
+          <button type="submit">Tạo tài khoản</button>
+          <p id="accountMessage"></p>
+        </form>
+      </div>
+
+      <!-- Bảng danh sách tài khoản -->
+      <div class="card table-card">
+        <h3>Danh sách tài khoản</h3>
+        <table id="accountsTable">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Họ tên</th>
+              <th>Tên đăng nhập</th>
+              <th>Chức vụ</th>
+              <th>Trạng thái</th>
+              <th>Hành động</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <!-- JS -->
+  <script src="assets/js/layout.js"></script>
+  <script src="assets/js/accounts.js"></script>
+</body>
+</html>

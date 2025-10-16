@@ -9,7 +9,9 @@ module.exports = function (req, res, next) {
 
   try {
     const payload = jwt.verify(token, process.env.JWT_SECRET);
+    // gắn thông tin người dùng vào req để sử dụng trong các route sau
     req.user = payload;
+    // chuyển tiếp đến middleware hoặc route tiếp theo
     next();
   } catch (err) {
     return res.status(401).json({ message: 'Invalid token' });
