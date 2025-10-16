@@ -48,7 +48,7 @@ register = async (req, res) => {
 
 getDashboard = async (req, res) => {
   try {
-    const [rows] = await pool.query('SELECT user_id, full_name, username FROM users WHERE user_id = ?', [req.user.id]);
+    const [rows] = await pool.query('SELECT MATAIKHOAN, HOTEN, TENDANGNHAP FROM tai_khoan WHERE MATAIKHOAN = ?', [req.user.id]);
     if (!rows.length) return res.status(404).json({ message: 'User not found' });
     res.json({ user: rows[0] });
   } catch (err) {
@@ -73,15 +73,15 @@ login = async (req, res) => {
       return res.status(400).json({ message: 'Username hoặc mật khẩu không chính xác.' });
 
     // So sánh mật khẩu
-    const match = await bcrypt.compare(password, user.password_hash);
+    const match = await bcrypt.compare(password, user.MATKHAU);
     if (!match)
       return res.status(400).json({ message: 'Username hoặc mật khẩu không chính xác.' });
 
     // Tạo JWT
     const token = generateToken({
-      id: user.user_id,
-      username: user.username,
-      role: user.role,
+      id: user.MATAIKHOAN,
+      username: user.TENDANGNHAP,
+      role: user.CHUCVU,
     }, JWT_EXPIRY);
 
     // Lưu token vào cookie
@@ -91,7 +91,7 @@ login = async (req, res) => {
       maxAge: 1000 * 60 * 60 // 1 giờ
     });
 
-    res.json({ message: 'Đăng nhập thành công!', role: user.role });
+    res.json({ message: 'Đăng nhập thành công!', role: user.CHUCVU });
   } catch (err) {
     console.error('Lỗi đăng nhập:', err);
     res.status(500).json({ message: 'Lỗi máy chủ. Vui lòng thử lại sau.' });
@@ -113,10 +113,10 @@ getMe = async (req, res) => {
 
     // chỉ trả về thông tin cơ bản, không gửi password
     res.json({
-      user_id: user.user_id,
-      username: user.username,
-      full_name: user.full_name,
-      role: user.role,
+      user_id: user.MATAIKHOAN,
+      username: user.TENDANGNHAP,
+      full_name: user.HOTEN,
+      role: user.CHUCVU,
     });
   } catch (err) {
     console.error(err);
