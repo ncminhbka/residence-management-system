@@ -1,56 +1,57 @@
-// backend/server.js
 const path = require('path');
 const express = require('express');
 const cookieParser = require('cookie-parser');
 require('dotenv').config();
 
-
-const authRoutes = require('./routes/authRoutes'); //route
-const auth = require('./middleware/auth'); //middleware
-const authController = require('./controller/authController');//controller
-
-
-
 const app = express();
-const PORT = process.env.PORT || 4000;
+const PORT = process.env.PORT || 3000;
 
-//middleware: body parser + cookie parser
+// =============================
+// Middleware
+// =============================
 app.use(express.json());
 app.use(cookieParser());
 
-// API routes
+// =============================
+// Routes (API)
+// =============================
+
+const authRoutes = require('./routes/authRoutes');
+const accountRoutes = require('./routes/accountRoutes');
+
 app.use('/api/v1/auth', authRoutes);
+app.use('/api/v1/accounts', accountRoutes);
 
+// =============================
+// Serve Frontend (Static Files)
+// =============================
 
-
-
-
-
-// đây chính là code hiển thị frontend
-// Serve frontend static files from ../frontend phục vụ file tĩnh
 const frontendPath = path.join(__dirname, '..', 'frontend');
 app.use(express.static(frontendPath));
 
-// For any other route, serve index.html (SPA fallback not necessary here but safe) tức là nếu người dùng có sửa url thì nó vẫn sẽ trả về trang index.html
+// Nếu người dùng nhập URL khác, vẫn trả về index.html
 app.use((req, res) => {
   res.sendFile(path.join(frontendPath, 'index.html'));
 });
 
-app.listen(PORT, () => console.log(`App running at http://localhost:${PORT}`));
+// =============================
+// Khởi động Server
+// =============================
+app.listen(PORT, () => {
+  console.log(`✅ App running at http://localhost:${PORT}`);
+});
 
-// chú ý app.use được chạy theo thứ tự từ trên xuống dưới
-// nên các route API phải đặt trước phần static file
-// nếu không sẽ bị ghi đè bởi static file và không thể hoạt động được
+// =============================
+// Tạo tài khoản admin mặc định
+// =============================
 
-
-// tạo tài khoản admin mặc định nếu chưa có
 const bcrypt = require('bcrypt');
-const db = require('./db'); // hoặc đường dẫn đúng tới file kết nối DB của bạn
+const db = require('./db');
 
 (async () => {
   try {
     const [rows] = await db.query(
-      "SELECT * FROM TAI_KHOAN WHERE CHUCVU='TO_TRUONG'"
+      "SELECT * FROM TAI_KHOAN WHERE CHUCVU = 'TO_TRUONG'"
     );
 
     if (rows.length === 0) {
@@ -67,4 +68,3 @@ const db = require('./db'); // hoặc đường dẫn đúng tới file kết n�
     console.error('❌ Lỗi khởi tạo admin:', err);
   }
 })();
-

@@ -1,26 +1,66 @@
 const pool = require('../db');
 
-
-
-findByUsername = async (username) => {
-    const [rows] = await pool.query('SELECT * FROM TAI_KHOAN WHERE TENDANGNHAP = ?', [username]);
+const findByUsername = async (username) => {
+    const [rows] = await pool.query(
+        'SELECT * FROM TAI_KHOAN WHERE TENDANGNHAP = ?',
+        [username]
+    );
     return rows[0];
-}
-getUserById = async (user_id) => {
-    const [rows] = await pool.query('SELECT * FROM TAI_KHOAN WHERE MATAIKHOAN = ?', [user_id]);
+};
+
+const getUserById = async (user_id) => {
+    const [rows] = await pool.query(
+        'SELECT * FROM TAI_KHOAN WHERE MATAIKHOAN = ?',
+        [user_id]
+    );
     return rows[0];
-}
-createUser = async (username, hash, full_name, role) => {
+};
+
+const getAllUsers = async () => {
+    const [rows] = await pool.query(
+        'SELECT MATAIKHOAN, TENDANGNHAP, HOTEN, CHUCVU FROM TAI_KHOAN'
+    );
+    return rows;
+};
+
+const isUsernameTaken = async (username) => {
+    const [rows] = await pool.query(
+        'SELECT COUNT(*) AS count FROM TAI_KHOAN WHERE TENDANGNHAP = ?',
+        [username]
+    );
+    return rows[0].count > 0;
+};
+
+const createUser = async (username, hash, full_name, role) => {
     const [result] = await pool.query(
-      'INSERT INTO TAI_KHOAN (TENDANGNHAP, MATKHAU, HOTEN, CHUCVU) VALUES (?, ?, ?, ?)',
-      [username, hash, full_name || '', role || 'CAN_BO_NGHIEP_VU']
+        'INSERT INTO TAI_KHOAN (TENDANGNHAP, MATKHAU, HOTEN, CHUCVU) VALUES (?, ?, ?, ?)',
+        [username, hash, full_name || '', role || 'CAN_BO_NGHIEP_VU']
     );
     return result;
-}
+};
+
+const updateUser = async (user_id, full_name, role) => {
+    const [result] = await pool.query(
+        'UPDATE TAI_KHOAN SET HOTEN = ?, CHUCVU = ? WHERE MATAIKHOAN = ?',
+        [full_name, role, user_id]
+    );
+    return result;
+};
+
+const deleteUser = async (user_id) => {
+    const [result] = await pool.query(
+        'DELETE FROM TAI_KHOAN WHERE MATAIKHOAN = ?',
+        [user_id]
+    );
+    return result;
+};
 
 module.exports = {
     findByUsername,
+    getUserById,
+    getAllUsers,
+    isUsernameTaken,
     createUser,
-    getUserById
+    updateUser,
+    deleteUser,
 };
-    

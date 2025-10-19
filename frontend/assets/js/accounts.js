@@ -1,18 +1,35 @@
 document.addEventListener("DOMContentLoaded", async () => {
-  // Chờ layout load xong (navbar + sidebar)
+  // ✅ Chờ layout và user load xong hoàn toàn
   await initLayoutAndAuth();
 
-  const tableBody = document.querySelector("#accountsTable tbody");
+  // ✅ Đảm bảo layout render xong hẳn (đề phòng DOM chưa sẵn)
+  let tableBody = null;
+  for (let i = 0; i < 10; i++) {
+    tableBody = document.querySelector("#accountsTable tbody");
+    if (tableBody) break;
+    await new Promise(r => setTimeout(r, 100));
+  }
+
+  if (!tableBody) {
+    console.error("❌ Không tìm thấy bảng #accountsTable trong DOM!");
+    return;
+  }
+
   const form = document.getElementById("createAccountForm");
   const msg = document.getElementById("accountMessage");
 
   // ======= HÀM: Load danh sách tài khoản =======
   async function loadAccounts() {
+    console.log("🔍 Bắt đầu loadAccounts()");
     tableBody.innerHTML = "<tr><td colspan='6'>Đang tải...</td></tr>";
+
     try {
       const res = await fetch("/api/v1/accounts", { credentials: "include" });
       if (!res.ok) throw new Error("Không thể tải danh sách tài khoản");
-      const accounts = await res.json();
+
+      const result = await res.json();
+      console.log("👉 Dữ liệu từ API:", result);
+      const accounts = result.data || [];
 
       if (accounts.length === 0) {
         tableBody.innerHTML = "<tr><td colspan='6'>Chưa có tài khoản nào</td></tr>";
@@ -20,121 +37,71 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
 
       tableBody.innerHTML = "";
-      accounts.forEach((acc) => {
+      accounts.forEach(acc => {
         const tr = document.createElement("tr");
         tr.innerHTML = `
           <td>${acc.MATAIKHOAN}</td>
           <td>${acc.HOTEN}</td>
           <td>${acc.TENDANGNHAP}</td>
-          <td>
-            <select class="role-select" data-id="${acc.MATAIKHOAN}">
-              <option value="TO_TRUONG" ${acc.CHUCVU === "TO_TRUONG" ? "selected" : ""}>Tổ trưởng</option>
-              <option value="TO_PHO" ${acc.CHUCVU === "TO_PHO" ? "selected" : ""}>Tổ phó</option>
-              <option value="CAN_BO_NGHIEP_VU" ${acc.CHUCVU === "CAN_BO_NGHIEP_VU" ? "selected" : ""}>Cán bộ nghiệp vụ</option>
-            </select>
-          </td>
-          <td>
-            <button class="toggle-btn" data-id="${acc.MATAIKHOAN}" data-active="${acc.ACTIVE}">
-              ${acc.ACTIVE ? "🟢 Kích hoạt" : "🔴 Vô hiệu"}
-            </button>
-          </td>
-          <td>
-            <button class="reset-btn" data-id="${acc.MATAIKHOAN}">Đặt lại mật khẩu</button>
-            <button class="delete-btn" data-id="${acc.MATAIKHOAN}">Xóa</button>
-          </td>
+          <td>${acc.CHUCVU}</td>
+          <td>🟢 Kích hoạt</td>
+          <td>---</td>
         `;
         tableBody.appendChild(tr);
       });
     } catch (err) {
-      console.error(err);
+      console.error("Lỗi khi tải dữ liệu:", err);
       tableBody.innerHTML = "<tr><td colspan='6'>Lỗi khi tải dữ liệu.</td></tr>";
     }
   }
 
+  // ✅ Gọi khi DOM sẵn sàng
   await loadAccounts();
 
-  // ======= HÀM: Tạo tài khoản =======
+  // ======= HÀM: Gửi form tạo tài khoản mới =======
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     msg.textContent = "";
 
     const hoten = document.getElementById("hoten").value.trim();
     const tendangnhap = document.getElementById("tendangnhap").value.trim();
-    const matkhau = document.getElementById("matkhau").value;
+    const matkhau = document.getElementById("matkhau").value.trim();
     const chucvu = document.getElementById("chucvu").value;
+
+    // Kiểm tra đầu vào cơ bản
+    if (!hoten || !tendangnhap || !matkhau || !chucvu) {
+      msg.style.color = "red";
+      msg.textContent = "⚠️ Vui lòng nhập đầy đủ thông tin!";
+      return;
+    }
 
     try {
       const res = await fetch("/api/v1/accounts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ hoten, tendangnhap, matkhau, chucvu }),
+        body: JSON.stringify({
+          hoten,
+          tendangnhap,
+          matkhau,
+          chucvu
+        }),
       });
 
+
+
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message);
+      if (!res.ok) throw new Error(data.message || "Tạo tài khoản thất bại");
+
       msg.style.color = "green";
       msg.textContent = "✅ Tạo tài khoản thành công!";
       form.reset();
-      loadAccounts();
+
+      await loadAccounts(); // Cập nhật bảng ngay
     } catch (err) {
+      console.error("❌ Lỗi khi tạo tài khoản:", err);
       msg.style.color = "red";
       msg.textContent = "❌ " + err.message;
-    }
-  });
-
-  // ======= HÀM: Xử lý các nút trong bảng =======
-  tableBody.addEventListener("click", async (e) => {
-    const id = e.target.dataset.id;
-    if (!id) return;
-
-    // Xóa
-    if (e.target.classList.contains("delete-btn")) {
-      if (confirm("Bạn có chắc muốn xóa tài khoản này?")) {
-        await fetch(`/api/v1/accounts/${id}`, {
-          method: "DELETE",
-          credentials: "include",
-        });
-        loadAccounts();
-      }
-    }
-
-    // Đặt lại mật khẩu
-    if (e.target.classList.contains("reset-btn")) {
-      const newPass = prompt("Nhập mật khẩu mới:");
-      if (newPass) {
-        await fetch(`/api/v1/accounts/${id}/reset-password`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify({ new_password: newPass }),
-        });
-        alert("Đã đặt lại mật khẩu!");
-      }
-    }
-
-    // Kích hoạt / vô hiệu hóa
-    if (e.target.classList.contains("toggle-btn")) {
-      await fetch(`/api/v1/accounts/${id}/toggle`, {
-        method: "PUT",
-        credentials: "include",
-      });
-      loadAccounts();
-    }
-  });
-
-  // ======= HÀM: Cập nhật quyền =======
-  tableBody.addEventListener("change", async (e) => {
-    if (e.target.classList.contains("role-select")) {
-      const id = e.target.dataset.id;
-      const newRole = e.target.value;
-      await fetch(`/api/v1/accounts/${id}/role`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ chucvu: newRole }),
-      });
-      alert("Cập nhật quyền thành công!");
     }
   });
 });
