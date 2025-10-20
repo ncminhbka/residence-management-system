@@ -84,6 +84,8 @@ async function initUserAndMenu() {
         const user = await res.json();
         const { username, role } = user;
 
+        window.__currentUserRole = role;
+
         // Cập nhật thông tin user
         const usernameEl = document.getElementById("username");
         const roleEl = document.getElementById("role");

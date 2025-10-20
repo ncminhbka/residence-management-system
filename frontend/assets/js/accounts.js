@@ -2,6 +2,24 @@ document.addEventListener("DOMContentLoaded", async () => {
   // ✅ Chờ layout và user load xong hoàn toàn
   await initLayoutAndAuth();
 
+  // === BẮT ĐẦU KIỂM TRA PHÂN QUYỀN ===
+  const allowedRoles = ["TO_TRUONG", "TO_PHO"];
+  const userRole = window.__currentUserRole;
+
+  if (!allowedRoles.includes(userRole)) {
+    // Nếu không đủ quyền, hiển thị thông báo lỗi và dừng lại
+    const contentSection = document.querySelector(".content");
+    if (contentSection) {
+        contentSection.innerHTML = `
+            <h2 style="color: red;">❌ TRUY CẬP BỊ TỪ CHỐI</h2>
+            <p>Tài khoản của bạn (${userRole}) không có quyền quản lý tài khoản.</p>
+        `;
+    }
+    console.error("❌ Người dùng không đủ quyền truy cập trang quản lý tài khoản.");
+    return; // DỪNG VIỆC THỰC THI CODE TIẾP THEO
+  }
+  // === KẾT THÚC KIỂM TRA PHÂN QUYỀN ===
+
   // ✅ Đảm bảo layout render xong hẳn (đề phòng DOM chưa sẵn)
   let tableBody = null;
   for (let i = 0; i < 10; i++) {
