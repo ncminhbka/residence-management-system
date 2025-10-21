@@ -62,6 +62,8 @@ getDashboard = async (req, res) => {
 
 login = async (req, res) => {
   const { username, password } = req.body;
+
+  // Kiểm tra dữ liệu đầu vào
   if (!username || !password)
     return res.status(400).json({ message: 'Vui lòng nhập username và mật khẩu.' });
 
@@ -70,16 +72,23 @@ login = async (req, res) => {
     if (!user)
       return res.status(400).json({ message: 'Username hoặc mật khẩu không chính xác.' });
 
-   
+    // 🔒 Kiểm tra trạng thái tài khoản
+    if (user.TRANGTHAI === 0 || user.TRANGTHAI === false)
+      return res.status(403).json({ message: 'Tài khoản của bạn đã bị vô hiệu hóa. Vui lòng liên hệ quản trị viên.' });
 
-    // Tạo JWT
+    // ✅ Kiểm tra mật khẩu (nếu có mã hóa bằng bcrypt)
+    const isMatch = await bcrypt.compare(password, user.MATKHAU);
+    if (!isMatch)
+      return res.status(400).json({ message: 'Username hoặc mật khẩu không chính xác.' });
+
+    // ✅ Tạo JWT token
     const token = generateToken({
       id: user.MATAIKHOAN,
       username: user.TENDANGNHAP,
       role: user.CHUCVU
     }, JWT_EXPIRY);
 
-    // Lưu token vào cookie
+    // ✅ Lưu token vào cookie
     res.cookie('token', token, {
       httpOnly: true,
       sameSite: 'lax',
@@ -87,11 +96,13 @@ login = async (req, res) => {
     });
 
     res.json({ message: 'Đăng nhập thành công!', role: user.CHUCVU });
+
   } catch (err) {
     console.error('Lỗi đăng nhập:', err);
     res.status(500).json({ message: 'Lỗi máy chủ. Vui lòng thử lại sau.' });
   }
-}
+};
+
 
 logout = (req, res) => {
   res.clearCookie('token');
