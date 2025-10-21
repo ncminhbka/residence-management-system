@@ -1,3 +1,4 @@
+// === Khởi tạo trang Quản lý tài khoản ===
 async function initAccountsPage() {
   console.log("🚀 initAccountsPage() running...");
 
@@ -38,7 +39,8 @@ async function initAccountsPage() {
                     data-id="${acc.MATAIKHOAN}"
                     data-hoten="${acc.HOTEN}"
                     data-tendangnhap="${acc.TENDANGNHAP}"
-                    data-chucvu="${acc.CHUCVU}">
+                    data-chucvu="${acc.CHUCVU}"
+                    data-trangthai="${acc.TRANGTHAI}">
               ✏️
             </button>
             <button class="btn-delete" data-id="${acc.MATAIKHOAN}">🗑️</button>
@@ -75,6 +77,7 @@ async function initAccountsPage() {
           hoten: b.dataset.hoten,
           tendangnhap: b.dataset.tendangnhap,
           chucvu: b.dataset.chucvu,
+          trangthai: b.dataset.trangthai,
         });
       });
     });
@@ -139,104 +142,111 @@ async function initAccountsPage() {
 
   // === Popup sửa tài khoản (giữa màn hình) ===
   function openEditPopup(account) {
-  const oldPopup = document.querySelector(".popup-overlay");
-  if (oldPopup) oldPopup.remove();
+    const oldPopup = document.querySelector(".popup-overlay");
+    if (oldPopup) oldPopup.remove();
 
-  const overlay = document.createElement("div");
-  overlay.className = "popup-overlay";
-  overlay.innerHTML = `
-    <div class="popup-card">
-      <h3>📝 Cập nhật tài khoản</h3>
+    const overlay = document.createElement("div");
+    overlay.className = "popup-overlay";
+    overlay.innerHTML = `
+      <div class="popup-card">
+        <h3>📝 Cập nhật tài khoản</h3>
 
-      <label>Họ tên:</label>
-      <input id="edit-hoten" value="${account.hoten}" />
+        <label>Họ tên:</label>
+        <input id="edit-hoten" value="${account.hoten}" />
 
-      <label>Tên đăng nhập:</label>
-      <input id="edit-tendangnhap" value="${account.tendangnhap}" />
+        <label>Tên đăng nhập:</label>
+        <input id="edit-tendangnhap" value="${account.tendangnhap}" />
 
-      <label>Mật khẩu mới (nếu muốn đổi):</label>
-      <input id="edit-matkhau" type="password" placeholder="Để trống nếu không đổi" />
+        <label>Mật khẩu mới (nếu muốn đổi):</label>
+        <input id="edit-matkhau" type="password" placeholder="Để trống nếu không đổi" />
 
-      <label>Chức vụ:</label>
-      <select id="edit-chucvu">
-        <option value="TO_TRUONG" ${account.chucvu === "TO_TRUONG" ? "selected" : ""}>Tổ trưởng</option>
-        <option value="TO_PHO" ${account.chucvu === "TO_PHO" ? "selected" : ""}>Tổ phó</option>
-        <option value="CAN_BO_NGHIEP_VU" ${account.chucvu === "CAN_BO_NGHIEP_VU" ? "selected" : ""}>Cán bộ nghiệp vụ</option>
-      </select>
+        <label>Chức vụ:</label>
+        <select id="edit-chucvu">
+          <option value="TO_TRUONG" ${account.chucvu === "TO_TRUONG" ? "selected" : ""}>Tổ trưởng</option>
+          <option value="TO_PHO" ${account.chucvu === "TO_PHO" ? "selected" : ""}>Tổ phó</option>
+          <option value="CAN_BO_NGHIEP_VU" ${account.chucvu === "CAN_BO_NGHIEP_VU" ? "selected" : ""}>Cán bộ nghiệp vụ</option>
+        </select>
 
-      <div class="popup-btns">
-        <button id="saveEdit">💾 Lưu</button>
-        <button id="cancelEdit">❌ Hủy</button>
+        <label>Trạng thái:</label>
+        <select id="edit-trangthai">
+          <option value="1" ${account.trangthai == 1 ? "selected" : ""}>🟢 Kích hoạt</option>
+          <option value="0" ${account.trangthai == 0 ? "selected" : ""}>🔴 Vô hiệu</option>
+        </select>
+
+        <div class="popup-btns">
+          <button id="saveEdit">💾 Lưu</button>
+          <button id="cancelEdit">❌ Hủy</button>
+        </div>
       </div>
-    </div>
-  `;
-  document.body.appendChild(overlay);
+    `;
+    document.body.appendChild(overlay);
 
-  // Style popup giữa màn hình
-  const card = overlay.querySelector(".popup-card");
-  Object.assign(card.style, {
-    position: "fixed",
-    top: "50%",
-    left: "50%",
-    transform: "translate(-50%, -50%)",
-    zIndex: 1001,
-    background: "#fff",
-    padding: "20px",
-    borderRadius: "12px",
-    boxShadow: "0 4px 12px rgba(0,0,0,0.3)"
-  });
-  Object.assign(overlay.style, {
-    position: "fixed",
-    top: 0,
-    left: 0,
-    width: "100%",
-    height: "100%",
-    background: "rgba(0,0,0,0.5)",
-    zIndex: 1000,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center"
-  });
+    // Style popup giữa màn hình
+    const card = overlay.querySelector(".popup-card");
+    Object.assign(card.style, {
+      position: "fixed",
+      top: "50%",
+      left: "50%",
+      transform: "translate(-50%, -50%)",
+      zIndex: 1001,
+      background: "#fff",
+      padding: "20px",
+      borderRadius: "12px",
+      boxShadow: "0 4px 12px rgba(0,0,0,0.3)"
+    });
+    Object.assign(overlay.style, {
+      position: "fixed",
+      top: 0,
+      left: 0,
+      width: "100%",
+      height: "100%",
+      background: "rgba(0,0,0,0.5)",
+      zIndex: 1000,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center"
+    });
 
-  document.getElementById("cancelEdit").onclick = () => overlay.remove();
-  document.getElementById("saveEdit").onclick = async () => {
-    const hoten = document.getElementById("edit-hoten").value.trim();
-    const tendangnhap = document.getElementById("edit-tendangnhap").value.trim();
-    const matkhau = document.getElementById("edit-matkhau").value.trim();
-    const chucvu = document.getElementById("edit-chucvu").value;
+    document.getElementById("cancelEdit").onclick = () => overlay.remove();
+    document.getElementById("saveEdit").onclick = async () => {
+      const hoten = document.getElementById("edit-hoten").value.trim();
+      const tendangnhap = document.getElementById("edit-tendangnhap").value.trim();
+      const matkhau = document.getElementById("edit-matkhau").value.trim();
+      const chucvu = document.getElementById("edit-chucvu").value;
+      const trangthai = parseInt(document.getElementById("edit-trangthai").value);
 
-    if (!hoten || !tendangnhap || !chucvu) {
-      alert("⚠️ Vui lòng nhập đầy đủ thông tin bắt buộc!");
-      return;
-    }
-
-    NProgress.start();
-    try {
-      const res = await fetch(`/api/v1/accounts/${account.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ hoten, tendangnhap, matkhau, chucvu }),
-      });
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || data.message || "Cập nhật thất bại");
-
-      if (data.forceLogout) {
-        alert("✅ Cập nhật thành công. Vui lòng đăng nhập lại!");
-        window.location.href = "index.html";
-      } else {
-        alert("✅ Cập nhật thành công!");
-        overlay.remove();
-        await loadAccounts();
+      if (!hoten || !tendangnhap || !chucvu) {
+        alert("⚠️ Vui lòng nhập đầy đủ thông tin bắt buộc!");
+        return;
       }
-    } catch (err) {
-      alert("❌ " + err.message);
-    } finally {
-      NProgress.done();
-    }
-  };
-}
+
+      NProgress.start();
+      try {
+        const res = await fetch(`/api/v1/accounts/${account.id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ hoten, tendangnhap, matkhau, chucvu, trangthai }),
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || data.message || "Cập nhật thất bại");
+
+        if (data.forceLogout) {
+          alert("✅ Cập nhật thành công. Vui lòng đăng nhập lại!");
+          window.location.href = "index.html";
+        } else {
+          alert("✅ Cập nhật thành công!");
+          overlay.remove();
+          await loadAccounts();
+        }
+      } catch (err) {
+        alert("❌ " + err.message);
+      } finally {
+        NProgress.done();
+      }
+    };
+  }
 
   // === Gọi lần đầu ===
   await loadAccounts();
