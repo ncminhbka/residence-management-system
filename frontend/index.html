@@ -1,26 +1,29 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="vi">
 <head>
-  <meta charset="utf-8" />
-  <title>Hệ thống quản trị dân cư</title>
-  <link rel="stylesheet" href="/assets/css/style.css" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard - Hệ thống quản trị dân cư</title>
+  <link rel="stylesheet" href="assets/css/layout.css" />
+  <link rel="stylesheet" href="assets/css/style.css" />
 </head>
+
 <body>
-  <div class="container">
-    <h1>ĐĂNG NHẬP</h1>
+  <!-- Navbar -->
+  <div id="navbar"></div>
 
-    <div class="card" id="auth-card">
-      <form id="login-form" class="form">
-        <label>Username</label>
-        <input type="text" id="login-username" required />
-        <label>Password</label>
-        <input type="password" id="login-password" required />
-        <button type="submit">Login</button>
-        <p class="error" id="login-error"></p>
-      </form>
-    </div>
-  </div>
+  <main class="dashboard">
+    <!-- Sidebar -->
+    <aside id="sidebar"></aside>
 
-  <script src="/assets/js/index.js"></script>
+    <!-- Nội dung chính -->
+    <section class="content">
+      <h2>index</h2>
+
+    </section>
+  </main>
+
+  <script src="assets/js/layout.js"></script>
+
 </body>
 </html>
