@@ -39,10 +39,10 @@ const createUser = async (username, hash, full_name, role) => {
     return result;
 };
 
-const updateUser = async (user_id, full_name, role) => {
+const updateUser = async (user_id, full_name, username, password, role, status) => {
     const [result] = await pool.query(
-        'UPDATE TAI_KHOAN SET HOTEN = ?, CHUCVU = ? WHERE MATAIKHOAN = ?',
-        [full_name, role, user_id]
+        'UPDATE TAI_KHOAN SET HOTEN = ?, TENDANGNHAP = ?, MATKHAU = ?, CHUCVU = ?, TRANGTHAI = ? WHERE MATAIKHOAN = ?',
+        [full_name, username, password, role, status, user_id]
     );
     return result;
 };

@@ -80,7 +80,7 @@ exports.updateUser = async (req, res) => {
             return res.status(400).json({ success: false, error: 'ID không hợp lệ' });
         }
 
-        const { hoten, tendangnhap, matkhau, chucvu } = req.body;
+        const { hoten, tendangnhap, matkhau, chucvu, status } = req.body;
 
         // Lấy thông tin hiện tại của user từ DB
         const existing = await User.getUserById(userId);
@@ -92,6 +92,7 @@ exports.updateUser = async (req, res) => {
         const newHoten = hoten && hoten.trim() !== '' ? hoten : existing.HOTEN;
         const newUsername = tendangnhap && tendangnhap.trim() !== '' ? tendangnhap : existing.TENDANGNHAP;
         const newRole = chucvu && chucvu.trim() !== '' ? chucvu : existing.CHUCVU;
+        const newStatus = (typeof status === 'boolean') ? status : existing.TRANGTHAI;
 
         // Nếu có mật khẩu mới thì hash, còn không giữ mật khẩu cũ đã hash
         let newPasswordHash = existing.MATKHAU;
@@ -107,7 +108,7 @@ exports.updateUser = async (req, res) => {
             forceLogout = usernameChanged || passwordChanged;
         }
 
-        const result = await User.updateUser(userId, newHoten, newUsername, newPasswordHash, newRole);
+        const result = await User.updateUser(userId, newHoten, newUsername, newPasswordHash, newRole, newStatus);
         if (result.affectedRows === 0) {
             return res.status(404).json({ success: false, error: 'Tài khoản không tồn tại' });
         }
