@@ -33,7 +33,7 @@ async function initAccountsPage() {
           <td>${acc.HOTEN}</td>
           <td>${acc.TENDANGNHAP}</td>
           <td>${acc.CHUCVU}</td>
-          <td>${acc.TRANGTHAI === 1 ? "🟢 Kích hoạt" : "🔴 Vô hiệu"}</td>
+          <td>${acc.TRANGTHAI ? "🟢 Kích hoạt" : "🔴 Vô hiệu"}</td>
           <td>
             <button class="btn-edit" 
                     data-id="${acc.MATAIKHOAN}"
@@ -77,7 +77,7 @@ async function initAccountsPage() {
           hoten: b.dataset.hoten,
           tendangnhap: b.dataset.tendangnhap,
           chucvu: b.dataset.chucvu,
-          trangthai: b.dataset.trangthai,
+          trangthai: b.dataset.trangthai === "true", // chuyển về boolean
         });
       });
     });
@@ -169,8 +169,8 @@ async function initAccountsPage() {
 
         <label>Trạng thái:</label>
         <select id="edit-trangthai">
-          <option value="1" ${account.trangthai == 1 ? "selected" : ""}>🟢 Kích hoạt</option>
-          <option value="0" ${account.trangthai == 0 ? "selected" : ""}>🔴 Vô hiệu</option>
+          <option value="true" ${account.trangthai ? "selected" : ""}>🟢 Kích hoạt</option>
+          <option value="false" ${!account.trangthai ? "selected" : ""}>🔴 Vô hiệu</option>
         </select>
 
         <div class="popup-btns">
@@ -213,7 +213,7 @@ async function initAccountsPage() {
       const tendangnhap = document.getElementById("edit-tendangnhap").value.trim();
       const matkhau = document.getElementById("edit-matkhau").value.trim();
       const chucvu = document.getElementById("edit-chucvu").value;
-      const trangthai = parseInt(document.getElementById("edit-trangthai").value);
+      const trangthai = document.getElementById("edit-trangthai").value === "true";
 
       if (!hoten || !tendangnhap || !chucvu) {
         alert("⚠️ Vui lòng nhập đầy đủ thông tin bắt buộc!");
