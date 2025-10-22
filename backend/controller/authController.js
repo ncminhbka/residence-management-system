@@ -4,60 +4,7 @@ const userModel = require('../models/userModel');
 const { generateToken } = require('../utils/jwt');
 
 
-
 const JWT_EXPIRY = '1h';
-
-/*
-// 📌 Đăng ký tài khoản
-register = async (req, res) => {
-  const { full_name, username, password, role } = req.body;
-
-  // Kiểm tra đầu vào
-  if (!username || !password)
-    return res.status(400).json({ message: 'Vui lòng nhập đầy đủ username và mật khẩu.' });
-  if (username.length < 4)
-    return res.status(400).json({ message: 'Username phải có ít nhất 4 ký tự.' });
-  if (password.length < 6)
-    return res.status(400).json({ message: 'Mật khẩu phải có ít nhất 6 ký tự.' });
-
-  try {
-    // Kiểm tra trùng username
-    const existingUser = await userModel.findByUsername(username);
-    if (existingUser)
-      return res.status(400).json({ message: 'Username đã được sử dụng. Vui lòng chọn username khác.' });
-
-    // Mã hóa mật khẩu
-    const hash = await bcrypt.hash(password, 10);
-
-    // Thêm user mới
-    const result = await userModel.createUser(username, hash, full_name, role);
-
-    // Trả về phản hồi
-    res.json({
-      message: 'Đăng ký thành công, đang chuyển về trang đăng nhập...',
-      userId: result.insertId,
-      redirect: '/login'
-    });
-  } catch (err) {
-    console.error('Lỗi đăng ký:', err);
-    res.status(500).json({ message: 'Lỗi máy chủ. Vui lòng thử lại sau.' });
-  }
-}
-
-
-
-getDashboard = async (req, res) => {
-  try {
-    const [rows] = await pool.query('SELECT MATAIKHOAN, HOTEN, TENDANGNHAP FROM TAI_KHOAN WHERE MATAIKHOAN = ?', [req.user.id]);
-    if (!rows.length) return res.status(404).json({ message: 'User not found' });
-    res.json({ user: rows[0] });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Server error' });
-  }
-};
-
-*/
 
 
 login = async (req, res) => {
@@ -81,7 +28,7 @@ login = async (req, res) => {
     if (!isMatch)
       return res.status(400).json({ message: 'Username hoặc mật khẩu không chính xác.' });
 
-    // ✅ Tạo JWT token
+    // ✅ Tạo JWT token AE CHÚ Ý CÁI NÀY QUAN TRỌNG
     const token = generateToken({
       id: user.MATAIKHOAN,
       username: user.TENDANGNHAP,
@@ -132,7 +79,6 @@ getMe = async (req, res) => {
 
 
 module.exports = {
-  //register,
   login,
   logout,
   getMe
