@@ -1,29 +1,171 @@
 <!DOCTYPE html>
 <html lang="vi">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Dashboard - Hệ thống quản trị dân cư</title>
-  <link rel="stylesheet" href="assets/css/layout.css" />
-  <link rel="stylesheet" href="assets/css/style.css" />
-</head>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Quản lý Hộ khẩu - Hệ thống quản trị dân cư</title>
+    <link rel="stylesheet" href="assets/css/layout.css" />
+    <link rel="stylesheet" href="assets/css/style.css" />
+    <link rel="stylesheet" href="assets/css/households.css" />
+  </head>
 
-<body>
-  <!-- Navbar -->
-  <div id="navbar"></div>
+  <body>
+    <div id="navbar"></div>
 
-  <main class="dashboard">
-    <!-- Sidebar -->
-    <aside id="sidebar"></aside>
+    <main class="dashboard">
+      <aside id="sidebar"></aside>
 
-    <!-- Nội dung chính -->
-    <section class="content">
-      <h2>household</h2>
+      <section class="content">
+        <h2>Quản lý Hộ khẩu</h2>
 
-    </section>
-  </main>
+        <div class="content-header">
+          <div class="search-bar">
+            <input
+              type="text"
+              id="search-input"
+              placeholder="Tìm theo tên chủ hộ, địa chỉ..."
+            />
+            <button id="search-btn" class="btn">Tìm</button>
+          </div>
+          <button id="add-household-btn" class="btn btn-primary">
+            + Thêm hộ khẩu
+          </button>
+        </div>
 
-  <script src="assets/js/layout.js"></script>
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>STT</th>
+                <th>Số hộ khẩu</th>
+                <th>Tên chủ hộ</th>
+                <th>Địa chỉ</th>
+                <th>Số nhân khẩu</th>
+                <th>Hành động</th>
+              </tr>
+            </thead>
+            <tbody id="household-table-body">
+              </tbody>
+          </table>
+        </div>
 
-</body>
+        <div class="pagination" id="pagination-controls">
+          </div>
+      </section>
+    </main>
+
+    <div id="household-modal" class="modal-overlay hidden">
+      <div class="modal-content">
+        <span class="close-btn" data-modal="household-modal">&times;</span>
+        <h3 id="modal-title">Thêm hộ khẩu mới</h3>
+        <form id="household-form">
+          <input type="hidden" id="householdId" />
+          <div class="form-group">
+            <label for="soHoKhau">Số hộ khẩu</label>
+            <input type="text" id="soHoKhau" required />
+          </div>
+          <div class="form-group">
+            <label for="tenChuHo">Tên chủ hộ</label>
+            <input type="text" id="tenChuHo" required />
+          </div>
+          <div class="form-group">
+            <label for="diaChi">Địa chỉ</label>
+            <input type="text" id="diaChi" required />
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Lưu lại</button>
+            <button
+              type="button"
+              class="btn btn-secondary close-btn"
+              data-modal="household-modal"
+            >
+              Hủy
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div id="detail-modal" class="modal-overlay hidden">
+      <div class="modal-content large">
+        <span class="close-btn" data-modal="detail-modal">&times;</span>
+        <h3>Chi tiết Hộ khẩu</h3>
+        <div id="detail-content">
+          </div>
+      </div>
+    </div>
+
+    <div id="split-modal" class="modal-overlay hidden">
+      <div class="modal-content large">
+        <span class="close-btn" data-modal="split-modal">&times;</span>
+        <h3>Tách hộ khẩu</h3>
+        <form id="split-form">
+          <input type="hidden" id="split-original-id" />
+          <h4>Thông tin hộ khẩu mới</h4>
+          <div class="form-group">
+            <label for="split-soHoKhau">Số hộ khẩu mới</label>
+            <input type="text" id="split-soHoKhau" required />
+          </div>
+          <div class="form-group">
+            <label for="split-diaChi">Địa chỉ mới</label>
+            <input type="text" id="split-diaChi" required />
+          </div>
+
+          <h4>Chọn nhân khẩu chuyển đi</h4>
+          <div id="split-members-list" class="members-list">
+            </div>
+
+          <h4>Chọn chủ hộ mới</h4>
+          <div class="form-group">
+            <label for="split-new-owner">Chủ hộ mới</label>
+            <select id="split-new-owner" required>
+              <option value="">-- Chọn chủ hộ từ danh sách chuyển đi --</option>
+            </select>
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Xác nhận tách</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div id="owner-modal" class="modal-overlay hidden">
+      <div class="modal-content">
+        <span class="close-btn" data-modal="owner-modal">&times;</span>
+        <h3>Đổi chủ hộ</h3>
+        <form id="owner-form">
+          <input type="hidden" id="owner-household-id" />
+          <div class="form-group">
+            <label for="new-owner-select">Chọn chủ hộ mới</label>
+            <select id="new-owner-select" required>
+              </select>
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div id="delete-modal" class="modal-overlay hidden">
+      <div class="modal-content">
+        <span class="close-btn" data-modal="delete-modal">&times;</span>
+        <h3>Xác nhận xóa</h3>
+        <p>Bạn có chắc chắn muốn xóa hộ khẩu này? Hành động này không thể hoàn tác.</p>
+        <div class="form-actions">
+          <button id="confirm-delete-btn" class="btn btn-danger">Xác nhận xóa</button>
+          <button
+            type="button"
+            class="btn btn-secondary close-btn"
+            data-modal="delete-modal"
+          >
+            Hủy
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script src="assets/js/layout.js"></script>
+    <script src="assets/js/households.js"></script>
+  </body>
 </html>
