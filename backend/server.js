@@ -18,9 +18,11 @@ app.use(cookieParser());
 
 const authRoutes = require('./routes/authRoutes');
 const accountRoutes = require('./routes/accountRoutes');
+const householdRoutes = require('./routes/householdRoutes');
 
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/accounts', accountRoutes);
+app.use('/api/v1/households', householdRoutes);
 
 // =============================
 // Serve Frontend (Static Files)
