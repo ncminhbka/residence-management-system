@@ -3,8 +3,8 @@ const Household = require('../models/householdModel');
 // Tạo mới một hộ khẩu
 exports.createHousehold = async (req, res) => {
     try {
-        const { hotenchuho, manhankhauchuho , diachi, hososo, sodangkyso, toso } = req.body;
-        if(!hotenchuho || !manhankhauchuho || !diachi || !hososo || !sodangkyso || !toso) {
+        const { hotenchuho, manhankhauchuho, diachi, hososo, sodangkyso, toso } = req.body;
+        if (!hotenchuho || !manhankhauchuho || !diachi || !hososo || !sodangkyso || !toso) {
             return res.status(400).json({ success: false, error: 'Thiếu thông tin bắt buộc' });
         }
         const isTaken = await Household.isHoKhauTaken(hotenchuho, manhankhauchuho);
@@ -21,8 +21,10 @@ exports.createHousehold = async (req, res) => {
 exports.getAllHouseholds = async (req, res) => {
     try {
         const households = await Household.getAllHousehold();
-        res.status(200).json({ success: true, data: households, 
-            pagination: { totalItems: households.length, totalPages: Math.ceil(households.length / 10), currentPage: 1 } });
+        res.status(200).json({
+            success: true, data: households,
+            pagination: { totalItems: households.length, totalPages: Math.ceil(households.length / 10), currentPage: 1 }
+        });
     } catch (error) {
         res.status(500).json({ success: false, message: 'Lỗi máy chủ' });
     }
@@ -61,7 +63,7 @@ exports.updateHousehold = async (req, res) => {
 // Tìm kiếm hộ khẩu theo tên chủ hộ hoặc số hộ khẩu
 exports.searchHouseholds = async (req, res) => {
     try {
-        const { query } = req.query;    
+        const { query } = req.query;
         if (!query) {
             return res.status(400).json({ success: false, error: 'Thiếu thông tin tìm kiếm' });
         }
@@ -78,7 +80,7 @@ exports.getHouseholdDetails = async (req, res) => {
     try {
         const sohokhau = req.params.sohokhau;
         const household = await Household.searchHouseholds(sohokhau);
-        if (!houshold || household.length === 0) {
+        if (!household || household.length === 0) {
             return res.status(404).json({ success: false, error: 'Hộ khẩu không tồn tại' });
         }
         const members = await Household.getHouseholdDetails(sohokhau);
