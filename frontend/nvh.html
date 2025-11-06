@@ -6,24 +6,118 @@
   <title>Dashboard - Hệ thống quản trị dân cư</title>
   <link rel="stylesheet" href="assets/css/layout.css" />
   <link rel="stylesheet" href="assets/css/style.css" />
+  <link rel="stylesheet" href="assets/css/households.css" />
 </head>
 
 <body>
-  <!-- Navbar -->
-  <div id="navbar"></div>
+    <div id="navbar"></div>
 
-  <main class="dashboard">
-    <!-- Sidebar -->
-    <aside id="sidebar"></aside>
+    <main class="dashboard">
+        <aside id="sidebar"></aside>
 
-    <!-- Nội dung chính -->
-    <section class="content">
-      <h2>nvhoa</h2>
+        <section class="content">
+            <h1>🏛️ Quản lý Nhà Văn hóa</h1>
 
-    </section>
-  </main>
+            <div class="tabs">
+                <button class="tab-btn active" onclick="openTab(event, 'AssetManagement')">
+                    Quản lý Tài sản
+                </button>
+                <button class="tab-btn" onclick="openTab(event, 'ScheduleManagement')">
+                    Lịch Sử Dụng & Phê Duyệt
+                </button>
+            </div>
 
-  <script src="assets/js/layout.js"></script>
+            <div id="AssetManagement" class="tab-content active">
+                <h3>🛠️ Danh mục Tài sản & Hiện trạng</h3>
+                <div class="action-bar">
+                    <button class="btn btn-primary">Thêm Tài Sản Mới</button>
+                    <button class="btn btn-secondary">Thống kê Tài sản</button>
+                </div>
 
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Mã TS</th>
+                            <th>Tên Tài Sản</th>
+                            <th>Tổng Số Lượng</th>
+                            <th>Hiện Trạng Tốt</th>
+                            <th>Hiện Trạng Hỏng</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                        <tbody>
+                            <!-- Dữ liệu sẽ được tải động từ backend; demo rows đã được loại bỏ -->
+                        </tbody>
+                </table>
+            </div>
+
+            <div id="ScheduleManagement" class="tab-content" style="display: none;">
+                <h3>📅 Lịch Sử Dụng & Đăng Ký Sự Kiện</h3>
+
+                <div class="schedule-view">
+                    <h4>Tổng quan Lịch Đã Duyệt (Để tránh trùng lặp)</h4>
+                    <div class="calendar-placeholder" style="border: 1px dashed #ccc; padding: 20px; text-align: center;">
+                        [Hiển thị Lịch (Dạng Tuần/Tháng)]
+                    </div>
+                </div>
+
+                <hr>
+
+                <div class="management-section">
+                    <h4>Danh sách Yêu cầu Đăng ký (Chờ Phê duyệt)</h4>
+                    <div class="action-bar">
+                        <button class="btn btn-info">Ghi nhận Hoạt động chung </button>
+                    </div>
+
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Mã YC</th>
+                                <th>Người Đăng Ký</th>
+                                <th>Mục Đích</th>
+                                <th>Thời Gian Sử Dụng</th>
+                                <th>Trạng Thái</th>
+                                <th>Phí (dự kiến)</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Dữ liệu đăng ký sẽ được tải động từ backend; demo rows đã được loại bỏ -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </section>
+    </main>
+
+    <script src="assets/js/layout.js"></script>
+
+    <script>
+        function openTab(evt, tabName) {
+            var i, tabcontent, tablinks;
+            
+            // Ẩn tất cả nội dung tab
+            tabcontent = document.getElementsByClassName("tab-content");
+            for (i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].style.display = "none";
+            }
+
+            // Xóa class 'active' khỏi tất cả nút tab
+            tablinks = document.getElementsByClassName("tab-btn");
+            for (i = 0; i < tablinks.length; i++) {
+                tablinks[i].className = tablinks[i].className.replace(" active", "");
+            }
+
+            // Hiển thị tab hiện tại và thêm class 'active'
+            document.getElementById(tabName).style.display = "block";
+            evt.currentTarget.className += " active";
+        }
+
+        // Đảm bảo tab 'AssetManagement' được hiển thị mặc định khi tải trang
+        document.addEventListener("DOMContentLoaded", function() {
+            // (Đã được xử lý bằng class 'active' và style mặc định trong HTML)
+        });
+    </script>
 </body>
 </html>
