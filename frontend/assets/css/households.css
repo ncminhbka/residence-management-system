@@ -223,3 +223,11 @@
   display: block;
   margin-bottom: 8px;
 }
+.required { color: red; }
+.form-hint { font-size: 0.9em; color: #666; }
+.warning-text { color: #ff6b6b; font-size: 0.95em; }
+.members-checklist { max-height: 300px; overflow-y: auto; }
+.member-checkbox-item { padding: 8px; border-bottom: 1px solid #eee; }
+.member-checkbox-item label { display: flex; align-items: center; cursor: pointer; }
+.member-checkbox-item input[type="checkbox"] { margin-right: 10px; }
+.info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
