@@ -4,10 +4,11 @@ const pool = require('../db');
 const getAllHousehold = async () => {
   const [rows] = await pool.query(`
     SELECT hk.SOHOKHAU, hk.MACHUHO, nk.HOTEN AS HOTENCHUHO,
-           hk.DIACHI, hk.HOSOSO, hk.SODANGKYSO, hk.TOSO
-    FROM HO_KHAU hk
-    LEFT JOIN NHAN_KHAU nk ON hk.MACHUHO = nk.MANHANKHAU
-    ORDER BY hk.SOHOKHAU ASC
+       hk.DIACHI, hk.HOSOSO, hk.SODANGKYSO, hk.TOSO
+      FROM HO_KHAU hk
+      LEFT JOIN NHAN_KHAU nk ON hk.MACHUHO = nk.MANHANKHAU
+      WHERE hk.DELETE_FLAG = FALSE
+      ORDER BY hk.SOHOKHAU ASC;
   `);
   return rows;
 };
@@ -21,7 +22,8 @@ const searchHouseholds = async (query) => {
            hk.DIACHI, hk.HOSOSO, hk.SODANGKYSO, hk.TOSO
     FROM HO_KHAU hk
     LEFT JOIN NHAN_KHAU nk ON hk.MACHUHO = nk.MANHANKHAU
-    WHERE nk.HOTEN LIKE ? OR hk.SOHOKHAU = ?
+    WHERE hk.DELETE_FLAG = FALSE
+    AND (nk.HOTEN LIKE ? OR hk.SOHOKHAU = ?)
   `, [like, q]);
   return rows;
 };
@@ -29,7 +31,7 @@ const searchHouseholds = async (query) => {
 // === Kiểm tra nhân khẩu có tồn tại để làm chủ hộ không ===
 const isHoKhauTaken = async (maChuHo) => {
   const [rows] = await pool.query(
-    'SELECT * FROM HO_KHAU WHERE MACHUHO = ?',
+    'SELECT * FROM HO_KHAU WHERE MACHUHO = ? AND DELETE_FLAG = FALSE',
     [maChuHo]
   );
   return rows.length > 0; // true = người này đã đứng tên hộ khẩu khác
@@ -55,22 +57,38 @@ const addHouseholds = async (maChuHo, diachi, hososo, sodangkyso, toso) => {
 
 // === Xóa hộ khẩu ===
 const deleteHouseholds = async (sohokhau) => {
-  await pool.query(
-    'INSERT INTO THAY_DOI_HO_KHAU (SOHOKHAU, NOIDUNG, NGAYTHAYDOI) VALUES (?, ?, ?)',
-    [sohokhau, 'Xóa hộ khẩu', new Date()]
-  );
+    const connection = await pool.getConnection(); 
+  try {
+    await connection.beginTransaction();
 
-  const [result] = await pool.query(
-    'DELETE FROM HO_KHAU WHERE SOHOKHAU = ?',
-    [sohokhau]
-  );
+    // Ghi lịch sử thay đổi hộ khẩu
+    await connection.query(
+      `INSERT INTO THAY_DOI_HO_KHAU (SOHOKHAU, NOIDUNG, NGAYTHAYDOI)
+       VALUES (?, ?, ?)`,
+      [sohokhau, 'Xóa hộ khẩu', new Date()]
+    );
 
-  await pool.query(
-    'UPDATE NHAN_KHAU SET SOHOKHAU = NULL WHERE SOHOKHAU = ?',
-    [sohokhau]
-  );
+    // Bỏ liên kết nhân khẩu thuộc hộ này (tránh vi phạm khóa ngoại)
+    await connection.query(
+      `UPDATE NHAN_KHAU SET SOHOKHAU = NULL WHERE SOHOKHAU = ?`,
+      [sohokhau]
+    );
 
-  return result;
+    // Xóa hộ khẩu
+    const [result] = await connection.query(
+      `UPDATE HO_KHAU SET DELETE_FLAG = TRUE WHERE SOHOKHAU = ?`,
+      [sohokhau]
+    );
+
+    await connection.commit();
+    return result;
+  } catch (error) {
+    await connection.rollback();
+    console.error('Lỗi khi xóa hộ khẩu:', error);
+    throw error;
+  } finally {
+    connection.release();
+  }
 };
 
 // === Cập nhật hộ khẩu ===
@@ -112,7 +130,7 @@ const updateHouseholds = async (sohokhau, newMaChuHo, newDiaChi, newHosoSo, newS
 // === Lấy danh sách nhân khẩu trong hộ khẩu ===
 const getHouseholdDetails = async (sohokhau) => {
   const [rows] = await pool.query(
-    'SELECT * FROM NHAN_KHAU WHERE SOHOKHAU = ?',
+    'SELECT * FROM NHAN_KHAU WHERE SOHOKHAU = ? AND DELETE_FLAG = FALSE',
     [sohokhau]
   );
   return rows;

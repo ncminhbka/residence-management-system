@@ -155,6 +155,8 @@ exports.splitHousehold = async (req, res) => {
         if (isTaken) {
             return res.status(400).json({ success: false, error: 'Chủ hộ mới đã đứng tên hộ khẩu khác' });
         }
+
+        //const isExist = await Household.searchCitizen(sohokhaugoc);
         
         // Tạo hộ khẩu mới
         const newHousehold = await Household.addHouseholds(hotenchuhomoi, diachimoi, hososomoi, sodangkysomoi, tosomoi);
