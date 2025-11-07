@@ -130,7 +130,7 @@ const updateHouseholds = async (sohokhau, newMaChuHo, newDiaChi, newHosoSo, newS
 // === Lấy danh sách nhân khẩu trong hộ khẩu ===
 const getHouseholdDetails = async (sohokhau) => {
   const [rows] = await pool.query(
-    'SELECT * FROM NHAN_KHAU WHERE SOHOKHAU = ? AND DELETE_FLAG = FALSE',
+    'SELECT * FROM NHAN_KHAU WHERE SOHOKHAU = ?',
     [sohokhau]
   );
   return rows;
