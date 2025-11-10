@@ -28,8 +28,8 @@ async function checkAuth() {
     if (usernameEl) usernameEl.textContent = user.username;
     if (roleEl) roleEl.textContent =
       user.role === "TO_TRUONG" ? "Tổ trưởng" :
-      user.role === "TO_PHO" ? "Tổ phó" :
-      "Cán bộ nghiệp vụ";
+        user.role === "TO_PHO" ? "Tổ phó" :
+          "Cán bộ nghiệp vụ";
 
     renderMenu(user.role);
   } catch {
@@ -70,7 +70,7 @@ function renderMenu(role) {
   const items = [
     { name: "Dashboard", href: "dashboard.html", roles: ["ALL"] },
     { name: "Quản lý hộ khẩu", href: "households.html", roles: ["TO_TRUONG", "TO_PHO"] },
-    { name: "Quản lý nhân khẩu", href: "citizens.html", roles: ["TO_TRUONG", "TO_PHO"] },
+    { name: "Quản lý nhân khẩu", href: "residents.html", roles: ["TO_TRUONG", "TO_PHO"] },
     { name: "Tạm trú / Tạm vắng", href: "temp.html", roles: ["TO_TRUONG", "TO_PHO"] },
     { name: "Thống kê & Báo cáo", href: "reports.html", roles: ["TO_TRUONG", "TO_PHO"] },
     { name: "Quản lý tài khoản", href: "accounts.html", roles: ["TO_TRUONG", "TO_PHO"] },
