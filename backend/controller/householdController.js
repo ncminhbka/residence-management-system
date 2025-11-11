@@ -1,4 +1,5 @@
 const Household = require('../models/householdModel');
+const Resident = require('../models/residentModel');
 
 // Tạo mới một hộ khẩu
 exports.createHousehold = async (req, res) => {
@@ -137,8 +138,8 @@ exports.getHouseholdDetails = async (req, res) => {
 // Tách hộ mới nhưng vẫn giữ nguyên chủ hộ khẩu cũ
 exports.splitHousehold = async (req, res) => {
     try {
-        const sohokhaugoc = req.body.sohokhaugoc;
-        const { machuhomoi, diachimoi, hososomoi, sodangkysomoi, tosomoi } = req.body.thongtinhokhaumoi;
+        const sohokhaugoc = req.body;
+        const {machuhomoi, diachimoi, hososomoi, sodangkysomoi, tosomoi } = req.body.thongtinhokhaumoi;
         const membersToMove = req.body.thanhviensanghokhaumoi;
         
         // Kiểm tra thông tin đầu vào
@@ -156,12 +157,12 @@ exports.splitHousehold = async (req, res) => {
             return res.status(400).json({ success: false, error: 'Chủ hộ mới đã đứng tên hộ khẩu khác' });
         }
 
-        const isExist = await Household.searchCitizen(machuhomoi);
+        const isExist = await Household.isExistCitizen(machuhomoi);
         if (!isExist) {
             return res.status(400).json({ success: false, error: 'Mã nhân khẩu chủ hộ mới không tồn tại' });
         }
 
-        const isBelongToOtherHousehold = await Household.isBelongToOtherHousehold(machuhomoi);
+        const isBelongToOtherHousehold = await Household.isBelongToOtherHousehold(machuhomoi, membersToMove);
         if (isBelongToOtherHousehold){
             return res.status(400).json({ success: false, error: 'Chủ hộ mới đang thuộc hộ khẩu khác' });
         }
@@ -175,7 +176,7 @@ exports.splitHousehold = async (req, res) => {
         if (result.affectedRows === 0) {
             return res.status(500).json({ success: false, error: 'Lỗi khi chuyển thành viên sang hộ khẩu mới' });
         }
-        
+
         res.status(200).json({ 
             success: true, 
             message: 'Tách hộ khẩu thành công', 

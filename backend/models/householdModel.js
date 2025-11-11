@@ -156,12 +156,17 @@ const isExistCitizen = async (maChuHo) => {
 };
 
 //=== Kiểm tra chủ hộ có thuộc hộ khẩu khác không ===
-const isBelongToOtherHousehold = async (maChuHo) => {
+const isBelongToOtherHousehold = async (maChuHo, members) => {
   const [rows] = await pool.query(
-    'SELECT * FROM NHAN_KHAU WHERE MANHANKHAU = ? AND SOHOKHAU IS NOT NULL',
+    'SELECT SOHOKHAU FROM NHAN_KHAU WHERE MANHANKHAU = ? AND SOHOKHAU IS NOT NULL',
     [maChuHo]
   );
-  return rows.length > 0;
+  for (const memberId of members) {
+    if (memberId == rows[0] || rows.length > 0) {
+      return false;
+    }
+  }
+  return true;
 };
 
 module.exports = {
