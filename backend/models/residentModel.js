@@ -2,141 +2,169 @@ const pool = require('../db');
 
 // === Lấy danh sách nhân khẩu ===
 const getAllResidents = async () => {
-    const [rows] = await pool.query(`
-    SELECT nk.*, hk.DIACHI AS DIACHI_HK
+  const [rows] = await pool.query(`SELECT nk.*, hk.DIACHI AS DIACHI_HK
     FROM NHAN_KHAU nk
     LEFT JOIN HO_KHAU hk ON nk.SOHOKHAU = hk.SOHOKHAU
-    WHERE nk.DELETE_FLAG = FALSE
-    ORDER BY nk.MANHANKHAU ASC;
-  `);
-    return rows;
+    WHERE hk.DELETE_FLAG = FALSE
+    ORDER BY nk.MANHANKHAU ASC;`);
+  return rows;
 };
 
 // === Tìm kiếm nhân khẩu theo tên hoặc CCCD ===
 const searchResidents = async (query) => {
-    const like = `%${String(query).trim()}%`;
-    const [rows] = await pool.query(`
-    SELECT nk.*, hk.DIACHI AS DIACHI_HK
+  const like = `%${String(query).trim()}%`;
+  const [rows] = await pool.query(`SELECT nk.*, hk.DIACHI AS DIACHI_HK
     FROM NHAN_KHAU nk
     LEFT JOIN HO_KHAU hk ON nk.SOHOKHAU = hk.SOHOKHAU
-    WHERE nk.DELETE_FLAG = FALSE
+    WHERE hk.DELETE_FLAG = FALSE
     AND (nk.HOTEN LIKE ? OR nk.SOCCCD LIKE ?)
-  `, [like, like]);
-    return rows;
+    ORDER BY nk.MANHANKHAU ASC;`, [like, like]);
+  return rows;
 };
 
 // === Thêm nhân khẩu mới ===
 const addResident = async (data) => {
-    const {
-        hoten, ngaysinh, gioitinh, socccd, ngaycap, noicap,
-        sohokhau, quanhechuho, diachi, nghenghiep, trangthai, ghichu
-    } = data;
+  const {
+    hoten, bidanh, ngaysinh, gioitinh,
+    noisinh, nguyenquan, dantoc, quoctich,
+    nghenghiep, ngaycap, noicap,
+    quanhechuho, trangthai, sohokhau, noithuongtrucu
+  } = data;
 
-    const [result] = await pool.query(`
-    INSERT INTO NHAN_KHAU
-    (HOTEN, NGAYSINH, GIOITINH, SOCCCD, NGAYCAP, NOICAP,
-     SOHOKHAU, QUANHECHUHO, DIACHI, NGHENGHIEP, TRANGTHAI, GHICHU)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  // Thêm vào bảng NHAN_KHAU
+  const [result] = await pool.query(`
+    INSERT INTO NHAN_KHAU (
+      SOHOKHAU, HOTEN, BIDANH, NGAYSINH, GIOITINH,
+      NOISINH, NGUYENQUAN, DANTOC, QUOCTICH,
+      NGHENGHIEP, NGAYCAP, NOICAP, QUANHECHUHO, TRANGTHAI, NOITHUONGTRUCU
+    )
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `, [
-        hoten, ngaysinh, gioitinh, socccd, ngaycap, noicap,
-        sohokhau, quanhechuho, diachi, nghenghiep, trangthai, ghichu
-    ]);
+    sohokhau, hoten, bidanh, ngaysinh, gioitinh,
+    noisinh, nguyenquan, dantoc, quoctich,
+    nghenghiep, ngaycap, noicap, quanhechuho, trangthai, noithuongtrucu
+  ]);
 
-    // thêm lịch sử
-    await pool.query(`
-    INSERT INTO BIEN_DONG_NHAN_KHAU (MANHANKHAU, LOAI, THOIGIAN, NOIDUNG)
-    VALUES (?, 'tao_moi', ?, ?)
+  //  Ghi lại lịch sử thay đổi nhân khẩu
+  await pool.query(`
+    INSERT INTO THAY_DOI_NHAN_KHAU (MANHANKHAU, LOAITHAYDOI, NGAYTHAYDOI, NOICHUYEN)
+    VALUES (?, 'Tạo mới', ?, ?)
   `, [result.insertId, new Date(), 'Thêm nhân khẩu mới']);
 
-    return result;
+  return result;
 };
+
 
 // === Cập nhật nhân khẩu ===
 const updateResident = async (id, updatedData) => {
-    const fields = [];
-    const values = [];
+  const fields = [];
+  const values = [];
 
-    for (const key in updatedData) {
-        fields.push(`${key} = ?`);
-        values.push(updatedData[key]);
+  // Chỉ cập nhật các cột hợp lệ trong NHAN_KHAU
+  const validFields = [
+    'SOHOKHAU', 'HOTEN', 'BIDANH', 'NGAYSINH', 'GIOITINH',
+    'NOISINH', 'NGUYENQUAN', 'DANTOC', 'QUOCTICH',
+    'NGHENGHIEP', 'NGAYCAP', 'NOICAP', 'QUANHECHUHO',
+    'TRANGTHAI', 'NOITHUONGTRUCU'
+  ];
+
+  for (const key in updatedData) {
+    if (validFields.includes(key)) {
+      fields.push(`${key} = ?`);
+      values.push(updatedData[key]);
     }
+  }
 
-    values.push(id);
+  if (fields.length === 0) return { message: 'Không có trường hợp lệ để cập nhật' };
 
-    const [result] = await pool.query(`
-    UPDATE NHAN_KHAU SET ${fields.join(', ')} WHERE MANHANKHAU = ?
+  values.push(id);
+
+  const [result] = await pool.query(`
+    UPDATE NHAN_KHAU
+    SET ${fields.join(', ')}
+    WHERE MANHANKHAU = ?
   `, values);
 
-    if (result.changedRows > 0) {
-        await pool.query(`
-      INSERT INTO BIEN_DONG_NHAN_KHAU (MANHANKHAU, LOAI, THOIGIAN, NOIDUNG)
-      VALUES (?, 'cap_nhat', ?, ?)
-    `, [id, new Date(), 'Cập nhật thông tin nhân khẩu']);
-    }
+  // Ghi lịch sử nếu có thay đổi
+  if (result.changedRows > 0) {
+    await pool.query(`
+      INSERT INTO THAY_DOI_NHAN_KHAU (MANHANKHAU, LOAITHAYDOI, NGAYTHAYDOI, NOICHUYEN)
+      VALUES (?, 'Cập nhật', ?, 'Cập nhật thông tin nhân khẩu')
+    `, [id, new Date()]);
+  }
 
-    return result;
+  return result;
 };
 
-// === Xóa nhân khẩu (không xóa thật, chỉ đánh cờ DELETE_FLAG) ===
+
+// === Xóa nhân khẩu (hard delete) ===
 const deleteResident = async (id) => {
-    const [result] = await pool.query(`
-    UPDATE NHAN_KHAU 
-    SET DELETE_FLAG = TRUE 
+  const [result] = await pool.query(`
+    DELETE FROM NHAN_KHAU
     WHERE MANHANKHAU = ?
   `, [id]);
 
-    if (result.changedRows > 0) {
-        await pool.query(`
-      INSERT INTO BIEN_DONG_NHAN_KHAU (MANHANKHAU, LOAI, THOIGIAN, NOIDUNG)
-      VALUES (?, 'xoa', ?, ?)
-    `, [id, new Date(), 'Xóa nhân khẩu']);
-    }
+  if (result.affectedRows > 0) {
+    await pool.query(`
+      INSERT INTO THAY_DOI_NHAN_KHAU (MANHANKHAU, LOAITHAYDOI, NGAYTHAYDOI, NOICHUYEN)
+      VALUES (?, 'Xóa', ?, 'Xóa nhân khẩu khỏi hệ thống')
+    `, [id, new Date()]);
+  }
 
-    return result;
+  return result;
 };
+
 
 // === Ghi nhận chuyển đi ===
 const markMovedOut = async (id, noiChuyenDen, ngayChuyenDi) => {
-    await pool.query(`
-    UPDATE NHAN_KHAU SET TRANGTHAI = 'da_chuyen_di', NOICHUYENDEN = ?, NGAYCHUYENDI = ?
+  await pool.query(`
+    UPDATE NHAN_KHAU
+    SET TRANGTHAI = 'Đã chuyển đi'
     WHERE MANHANKHAU = ?
-  `, [noiChuyenDen, ngayChuyenDi, id]);
+  `, [id]);
 
-    await pool.query(`
-    INSERT INTO BIEN_DONG_NHAN_KHAU (MANHANKHAU, LOAI, THOIGIAN, NOIDUNG)
-    VALUES (?, 'chuyen_di', ?, ?)
-  `, [id, new Date(), `Chuyển đi: ${noiChuyenDen}`]);
+  await pool.query(`
+    INSERT INTO THAY_DOI_NHAN_KHAU (MANHANKHAU, LOAITHAYDOI, NGAYTHAYDOI, NOICHUYEN)
+    VALUES (?, 'Chuyển đi', ?, ?)
+  `, [id, ngayChuyenDi, noiChuyenDen]);
 };
+
 
 // === Ghi nhận qua đời ===
 const markDeceased = async (id, ngayMat) => {
-    await pool.query(`
-    UPDATE NHAN_KHAU SET TRANGTHAI = 'da_mat', NGAYMAT = ? WHERE MANHANKHAU = ?
-  `, [ngayMat, id]);
-
-    await pool.query(`
-    INSERT INTO BIEN_DONG_NHAN_KHAU (MANHANKHAU, LOAI, THOIGIAN, NOIDUNG)
-    VALUES (?, 'qua_doi', ?, ?)
-  `, [id, new Date(), 'Ghi nhận qua đời']);
-};
-
-// === Lấy lịch sử biến động ===
-const getResidentHistory = async (id) => {
-    const [rows] = await pool.query(`
-    SELECT * FROM BIEN_DONG_NHAN_KHAU
+  await pool.query(`
+    UPDATE NHAN_KHAU
+    SET TRANGTHAI = 'Đã mất'
     WHERE MANHANKHAU = ?
-    ORDER BY THOIGIAN DESC
   `, [id]);
-    return rows;
+
+  await pool.query(`
+    INSERT INTO THAY_DOI_NHAN_KHAU (MANHANKHAU, LOAITHAYDOI, NGAYTHAYDOI, NOICHUYEN)
+    VALUES (?, 'Qua đời', ?, 'Ghi nhận nhân khẩu qua đời')
+  `, [id, ngayMat]);
 };
 
+
+// === Lấy lịch sử thay đổi nhân khẩu ===
+const getResidentHistory = async (id) => {
+  const [rows] = await pool.query(`
+    SELECT *
+    FROM THAY_DOI_NHAN_KHAU
+    WHERE MANHANKHAU = ?
+    ORDER BY NGAYTHAYDOI DESC
+  `, [id]);
+  return rows;
+};
+
+
+// === Xuất module ===
 module.exports = {
-    getAllResidents,
-    searchResidents,
-    addResident,
-    updateResident,
-    deleteResident,
-    markMovedOut,
-    markDeceased,
-    getResidentHistory
+  getAllResidents,
+  searchResidents,
+  addResident,
+  updateResident,
+  deleteResident,
+  markMovedOut,
+  markDeceased,
+  getResidentHistory
 };

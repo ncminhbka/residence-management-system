@@ -8,6 +8,310 @@
     <link rel="stylesheet" href="assets/css/layout.css" />
     <link rel="stylesheet" href="assets/css/style.css" />
     <link rel="stylesheet" href="assets/css/residents.css" />
+
+    <style>
+        /* ==== Content Header ==== */
+        .content-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            gap: 15px;
+        }
+
+        .search-bar {
+            display: flex;
+            gap: 10px;
+        }
+
+        .search-bar input {
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 350px;
+            font-size: 14px;
+        }
+
+        .search-bar input:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #0056b3;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #545b62;
+        }
+
+        /* ==== Table Styles ==== */
+        .table-container {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .data-table thead {
+            background: #f8f9fa;
+            border-bottom: 2px solid #dee2e6;
+        }
+
+        .data-table th {
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            color: #495057;
+            font-size: 14px;
+        }
+
+        .data-table tbody tr {
+            border-bottom: 1px solid #dee2e6;
+            transition: background 0.2s;
+        }
+
+        .data-table tbody tr:hover {
+            background: #f8f9fa;
+        }
+
+        .data-table td {
+            padding: 15px;
+            color: #495057;
+            font-size: 14px;
+        }
+
+        /* ==== Action Buttons ==== */
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .btn-sm.btn-primary {
+            background: #007bff;
+            color: white;
+        }
+
+        .btn-sm.btn-primary:hover {
+            background: #0056b3;
+        }
+
+        .btn-sm.btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-sm.btn-success:hover {
+            background: #218838;
+        }
+
+        .btn-sm.btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-sm.btn-danger:hover {
+            background: #c82333;
+        }
+
+        /* ==== Modal Styles ==== */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 900px;
+            max-height: 90vh;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            animation: modalFadeIn 0.3s ease;
+        }
+
+        @keyframes modalFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            background: #007bff;
+            padding: 16px 24px;
+            border-bottom: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 600;
+            color: white;
+        }
+
+        .modal-header .close-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            font-size: 20px;
+            color: white;
+            cursor: pointer;
+            padding: 0;
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            transition: all 0.2s;
+            line-height: 1;
+        }
+
+        .modal-header .close-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .modal-body {
+            padding: 24px;
+            max-height: calc(90vh - 150px);
+            overflow-y: auto;
+            background: #f8f9fa;
+        }
+
+        /* ==== Info Section ==== */
+        .info-section {
+            background: white;
+            padding: 20px;
+            border-radius: 6px;
+            margin-bottom: 16px;
+            border: 1px solid #e9ecef;
+        }
+
+        .info-section h4 {
+            margin: 0 0 16px 0;
+            font-size: 15px;
+            font-weight: 600;
+            color: #212529;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #007bff;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px 24px;
+        }
+
+        .info-item {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .info-label {
+            font-size: 12px;
+            color: #6c757d;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .info-value {
+            font-size: 14px;
+            color: #212529;
+            font-weight: 600;
+            padding: 8px 12px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            border-left: 3px solid #007bff;
+        }
+
+        /* ==== Modal Footer ==== */
+        .modal-footer {
+            padding: 16px 24px;
+            background: white;
+            border-top: 1px solid #dee2e6;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .modal-footer .btn {
+            padding: 10px 24px;
+            font-size: 14px;
+        }
+
+        .modal-footer .close-btn {
+            background: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 14px;
+            padding: 10px 24px;
+            font-weight: 500;
+        }
+
+        .modal-footer .close-btn:hover {
+            background: #5a6268;
+        }
+    </style>
 </head>
 
 <body>
@@ -23,7 +327,7 @@
             <div class="content-header">
                 <div class="search-bar">
                     <input id="search-input" type="text" placeholder="Tìm theo họ tên hoặc CCCD..." />
-                    <button id="search-btn" class="btn">Tìm kiếm</button>
+                    <button id="search-btn" class="btn btn-primary">Tìm kiếm</button>
                     <button id="clear-search-btn" class="btn btn-secondary">Xóa</button>
                 </div>
 
@@ -39,18 +343,16 @@
                         <tr>
                             <th>Mã NK</th>
                             <th>Họ tên</th>
-                            <th>Ngày sinh</th>
-                            <th>Giới tính</th>
-                            <th>CCCD</th>
-                            <th>Số hộ khẩu</th>
-                            <th>Quan hệ chủ hộ</th>
-                            <th>Trạng thái</th>
+                            <th>Nơi sinh</th>
+                            <th>Nguyên quán</th>
                             <th>Hành động</th>
                         </tr>
                     </thead>
                     <tbody id="residents-table-body">
                         <tr>
-                            <td colspan="9">Đang tải dữ liệu...</td>
+                            <td colspan="5" style="text-align: center; padding: 40px; color: #6c757d;">
+                                Đang tải dữ liệu...
+                            </td>
                         </tr>
                     </tbody>
                 </table>
@@ -60,123 +362,225 @@
         </section>
     </main>
 
-    <!-- Modal thêm / sửa nhân khẩu -->
-    <div id="resident-modal" class="modal-overlay hidden">
-        <div class="modal-content large">
-            <span class="close-btn" data-modal="resident-modal">&times;</span>
-            <h3 id="modal-title">Thêm nhân khẩu mới</h3>
-
-            <form id="resident-form">
-                <input type="hidden" id="resident-id" />
-
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label>Họ tên <span class="required">*</span></label>
-                        <input type="text" id="hoten" required />
-                    </div>
-                    <div class="form-group">
-                        <label>Bí danh</label>
-                        <input type="text" id="bidanh" />
-                    </div>
-                    <div class="form-group">
-                        <label>Ngày sinh <span class="required">*</span></label>
-                        <input type="date" id="ngaysinh" required />
-                    </div>
-                    <div class="form-group">
-                        <label>Giới tính <span class="required">*</span></label>
-                        <select id="gioitinh" required>
-                            <option value="">Chọn giới tính</option>
-                            <option value="Nam">Nam</option>
-                            <option value="Nữ">Nữ</option>
-                            <option value="Khác">Khác</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Nơi sinh <span class="required">*</span></label>
-                        <input type="text" id="noisinh" required />
-                    </div>
-                    <div class="form-group">
-                        <label>Nguyên quán <span class="required">*</span></label>
-                        <input type="text" id="nguyenquan" required />
-                    </div>
-                    <div class="form-group">
-                        <label>Dân tộc <span class="required">*</span></label>
-                        <input type="text" id="dantoc" required />
-                    </div>
-                    <div class="form-group">
-                        <label>Quốc tịch <span class="required">*</span></label>
-                        <input type="text" id="quoctich" value="Việt Nam" required />
-                    </div>
-                    <div class="form-group">
-                        <label>CCCD</label>
-                        <input type="text" id="socccd" />
-                    </div>
-                    <div class="form-group">
-                        <label>Ngày cấp</label>
-                        <input type="date" id="ngaycap" />
-                    </div>
-                    <div class="form-group">
-                        <label>Nơi cấp</label>
-                        <input type="text" id="noicap" />
-                    </div>
-                    <div class="form-group">
-                        <label>Nghề nghiệp</label>
-                        <input type="text" id="nghenghiep" />
-                    </div>
-                    <div class="form-group">
-                        <label>Số hộ khẩu <span class="required">*</span></label>
-                        <input type="text" id="sohokhau" required />
-                    </div>
-                    <div class="form-group">
-                        <label>Quan hệ chủ hộ</label>
-                        <input type="text" id="quanhechuho" />
-                    </div>
-                    <div class="form-group">
-                        <label>Trạng thái <span class="required">*</span></label>
-                        <select id="trangthai" required>
-                            <option value="">Chọn trạng thái</option>
-                            <option value="thuong_tru">Thường trú</option>
-                            <option value="tam_tru">Tạm trú</option>
-                            <option value="da_chuyen_di">Đã chuyển đi</option>
-                            <option value="da_mat">Đã mất</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Nơi thường trú cũ</label>
-                        <input type="text" id="noithuongtrucu" />
-                    </div>
-                    <div class="form-group">
-                        <label>Địa chỉ</label>
-                        <textarea id="diachi"></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label>Ghi chú</label>
-                        <textarea id="ghichu"></textarea>
-                    </div>
-                </div>
-
-                <div class="form-actions">
-                    <button type="submit" class="btn btn-primary">Lưu</button>
-                    <button type="button" class="btn btn-secondary close-btn" data-modal="resident-modal">
-                        Hủy
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Modal xác nhận xóa -->
-    <div id="delete-modal" class="modal-overlay hidden">
+    <!-- Modal xem chi tiết nhân khẩu -->
+    <div id="resident-detail-modal" class="modal-overlay">
         <div class="modal-content">
-            <span class="close-btn" data-modal="delete-modal">&times;</span>
-            <h3>Xác nhận xóa</h3>
-            <p>Bạn có chắc chắn muốn xóa nhân khẩu này không?</p>
-            <div class="form-actions">
-                <button id="confirm-delete-btn" class="btn btn-danger">Xóa</button>
-                <button type="button" class="btn btn-secondary close-btn" data-modal="delete-modal">Hủy</button>
+            <div class="modal-header">
+                <h3>Chi tiết Nhân khẩu</h3>
+                <button class="close-btn" data-modal="resident-detail-modal">&times;</button>
+            </div>
+
+            <div class="modal-body">
+                <!-- Thông tin nhân khẩu -->
+                <div class="info-section">
+                    <h4>Thông tin nhân khẩu</h4>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <span class="info-label">Mã nhân khẩu:</span>
+                            <span class="info-value" id="detail-manhankhau">-</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Số hộ khẩu:</span>
+                            <span class="info-value" id="detail-sohokhau">-</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Họ tên:</span>
+                            <span class="info-value" id="detail-hoten">-</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Bí danh:</span>
+                            <span class="info-value" id="detail-bidanh">-</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Ngày sinh:</span>
+                            <span class="info-value" id="detail-ngaysinh">-</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Giới tính:</span>
+                            <span class="info-value" id="detail-gioitinh">-</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Nơi sinh & Nguyên quán -->
+                <div class="info-section">
+                    <h4>Nơi sinh & Nguyên quán</h4>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <span class="info-label">Nơi sinh:</span>
+                            <span class="info-value" id="detail-noisinh">-</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Nguyên quán:</span>
+                            <span class="info-value" id="detail-nguyenquan">-</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Dân tộc:</span>
+                            <span class="info-value" id="detail-dantoc">-</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Quốc tịch:</span>
+                            <span class="info-value" id="detail-quoctich">-</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Thông tin công việc & Giấy tờ -->
+                <div class="info-section">
+                    <h4>Thông tin công việc & Giấy tờ</h4>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <span class="info-label">Nghề nghiệp:</span>
+                            <span class="info-value" id="detail-nghenghiep">-</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Quan hệ chủ hộ:</span>
+                            <span class="info-value" id="detail-quanhechuho">-</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Ngày cấp:</span>
+                            <span class="info-value" id="detail-ngaycap">-</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Nơi cấp:</span>
+                            <span class="info-value" id="detail-noicap">-</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Trạng thái & Địa chỉ -->
+                <div class="info-section">
+                    <h4>Trạng thái & Địa chỉ</h4>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <span class="info-label">Trạng thái:</span>
+                            <span class="info-value" id="detail-trangthai">-</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Nơi thường trú cũ:</span>
+                            <span class="info-value" id="detail-noithuongtrucu">-</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button class="close-btn" data-modal="resident-detail-modal">Đóng</button>
             </div>
         </div>
     </div>
+
+    <script>
+        // Hàm hiển thị chi tiết nhân khẩu
+        function showResidentDetails(resident) {
+            document.getElementById('detail-manhankhau').textContent = resident.MANHANKHAU || '-';
+            document.getElementById('detail-sohokhau').textContent = resident.SOHOKHAU || '-';
+            document.getElementById('detail-hoten').textContent = resident.HOTEN || '-';
+            document.getElementById('detail-bidanh').textContent = resident.BIDANH || '-';
+            document.getElementById('detail-ngaysinh').textContent = resident.NGAYSINH || '-';
+            document.getElementById('detail-gioitinh').textContent = resident.GIOITINH || '-';
+            document.getElementById('detail-noisinh').textContent = resident.NOISINH || '-';
+            document.getElementById('detail-nguyenquan').textContent = resident.NGUYENQUAN || '-';
+            document.getElementById('detail-dantoc').textContent = resident.DANTOC || '-';
+            document.getElementById('detail-quoctich').textContent = resident.QUOCTICH || '-';
+            document.getElementById('detail-nghenghiep').textContent = resident.NGHENGHIEP || '-';
+            document.getElementById('detail-ngaycap').textContent = resident.NGAYCAP || '-';
+            document.getElementById('detail-noicap').textContent = resident.NOICAP || '-';
+            document.getElementById('detail-quanhechuho').textContent = resident.QUANHECHUHO || '-';
+            document.getElementById('detail-trangthai').textContent = resident.TRANGTHAI || '-';
+            document.getElementById('detail-noithuongtrucu').textContent = resident.NOITHUONGTRUCU || '-';
+
+            document.getElementById('resident-detail-modal').classList.add('show');
+        }
+
+        // Đóng modal
+        document.querySelectorAll('.close-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const modalId = btn.getAttribute('data-modal');
+                if (modalId) {
+                    document.getElementById(modalId).classList.remove('show');
+                }
+            });
+        });
+
+        // Đóng modal khi click vào overlay
+        document.querySelectorAll('.modal-overlay').forEach(overlay => {
+            overlay.addEventListener('click', (e) => {
+                if (e.target === overlay) {
+                    overlay.classList.remove('show');
+                }
+            });
+        });
+
+        // Hàm xem chi tiết (sẽ được gọi từ nút Xem)
+        function viewDetails(id) {
+            // Trong thực tế, bạn sẽ gọi API để lấy dữ liệu theo id
+            const resident = {
+                MANHANKHAU: id,
+                SOHOKHAU: "1",
+                HOTEN: "Nguyễn Văn A",
+                BIDANH: "A Văn",
+                NGAYSINH: "12/05/1980",
+                GIOITINH: "Nam",
+                NOISINH: "Hà Nội",
+                NGUYENQUAN: "Thái Bình",
+                DANTOC: "Kinh",
+                QUOCTICH: "Việt Nam",
+                NGHENGHIEP: "Giáo viên",
+                NGAYCAP: "01/01/2020",
+                NOICAP: "Cục Cảnh sát ĐKQL cư trú và DLQG về dân cư",
+                QUANHECHUHO: "Chủ hộ",
+                TRANGTHAI: "Thường trú",
+                NOITHUONGTRUCU: "Số 1, Phường La Khê, Quận Hà Đông, Hà Nội"
+            };
+            showResidentDetails(resident);
+        }
+
+        // Hàm tải dữ liệu mẫu vào bảng (để test giao diện)
+        function loadSampleData() {
+            const tbody = document.getElementById('residents-table-body');
+            const sampleData = [
+                { MANHANKHAU: 1, HOTEN: "Nguyễn Văn A", NOISINH: "Hà Nội", NGUYENQUAN: "Hà Nội" },
+                { MANHANKHAU: 2, HOTEN: "Trần Thị B", NOISINH: "Hà Nội", NGUYENQUAN: "Hà Nội" },
+                { MANHANKHAU: 3, HOTEN: "Nguyễn Văn C", NOISINH: "Hà Nội", NGUYENQUAN: "Hà Nội" },
+                { MANHANKHAU: 4, HOTEN: "Phạm Văn D", NOISINH: "Đà Nẵng", NGUYENQUAN: "Đà Nẵng" },
+                { MANHANKHAU: 5, HOTEN: "Lê Thị E", NOISINH: "Đà Nẵng", NGUYENQUAN: "Đà Nẵng" }
+            ];
+
+            tbody.innerHTML = sampleData.map(resident => `
+                <tr>
+                    <td>${resident.MANHANKHAU}</td>
+                    <td><strong>${resident.HOTEN}</strong></td>
+                    <td>${resident.NOISINH}</td>
+                    <td>${resident.NGUYENQUAN}</td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="btn-sm btn-primary" onclick="viewDetails(${resident.MANHANKHAU})">
+                                Xem
+                            </button>
+                            <button class="btn-sm btn-success" onclick="editResident(${resident.MANHANKHAU})">
+                                Sửa
+                            </button>
+                            <button class="btn-sm btn-danger" onclick="deleteResident(${resident.MANHANKHAU})">
+                                Xóa
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function editResident(id) {
+            console.log('Edit resident:', id);
+        }
+
+        function deleteResident(id) {
+            console.log('Delete resident:', id);
+        }
+
+        // Load dữ liệu mẫu khi trang được tải
+        window.addEventListener('DOMContentLoaded', loadSampleData);
+    </script>
 
     <script src="assets/js/layout.js"></script>
     <script src="assets/js/residents.js"></script>

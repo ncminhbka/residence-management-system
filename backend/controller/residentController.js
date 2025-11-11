@@ -1,6 +1,6 @@
 const Resident = require('../models/residentModel');
 
-// Lấy tất cả nhân khẩu
+// === LẤY TẤT CẢ NHÂN KHẨU ===
 exports.getAllResidents = async (req, res) => {
     try {
         const residents = await Resident.getAllResidents();
@@ -11,7 +11,7 @@ exports.getAllResidents = async (req, res) => {
     }
 };
 
-// Tìm kiếm nhân khẩu
+// === TÌM KIẾM NHÂN KHẨU ===
 exports.searchResidents = async (req, res) => {
     try {
         const query = req.query.q;
@@ -27,7 +27,7 @@ exports.searchResidents = async (req, res) => {
     }
 };
 
-// Lấy chi tiết nhân khẩu
+// === LẤY CHI TIẾT NHÂN KHẨU ===
 exports.getResidentDetails = async (req, res) => {
     try {
         const manhankhau = req.params.id;
@@ -45,25 +45,27 @@ exports.getResidentDetails = async (req, res) => {
     }
 };
 
-// Thêm nhân khẩu mới
+// === THÊM NHÂN KHẨU MỚI ===
 exports.createResident = async (req, res) => {
     try {
         const {
-            hoten, ngaysinh, gioitinh, socccd, ngaycap, noicap,
-            sohokhau, quanhechuho, diachi, nghenghiep, trangthai, ghichu
+            hoten, bidanh, ngaysinh, gioitinh, noisinh, nguyenquan,
+            dantoc, quoctich, nghenghiep, ngaycap, noicap,
+            sohokhau, quanhechuho, trangthai, noithuongtrucu
         } = req.body;
 
-        // Kiểm tra trường bắt buộc
-        if (!hoten || !ngaysinh || !gioitinh || !sohokhau || !trangthai) {
+        // Kiểm tra các trường bắt buộc
+        if (!hoten || !ngaysinh || !gioitinh || !noisinh || !nguyenquan || !dantoc || !quoctich || !trangthai) {
             return res.status(400).json({
                 success: false,
-                error: 'Thiếu thông tin bắt buộc (họ tên, ngày sinh, giới tính, số hộ khẩu, trạng thái)'
+                error: 'Thiếu thông tin bắt buộc (họ tên, ngày sinh, giới tính, nơi sinh, nguyên quán, dân tộc, quốc tịch, trạng thái)'
             });
         }
 
         const result = await Resident.addResident({
-            hoten, ngaysinh, gioitinh, socccd, ngaycap, noicap,
-            sohokhau, quanhechuho, diachi, nghenghiep, trangthai, ghichu
+            hoten, bidanh, ngaysinh, gioitinh, noisinh, nguyenquan,
+            dantoc, quoctich, nghenghiep, ngaycap, noicap,
+            sohokhau, quanhechuho, trangthai, noithuongtrucu
         });
 
         res.status(201).json({
@@ -78,38 +80,23 @@ exports.createResident = async (req, res) => {
     }
 };
 
-// Cập nhật nhân khẩu
+// === CẬP NHẬT NHÂN KHẨU ===
 exports.updateResident = async (req, res) => {
     try {
         const manhankhau = req.params.id;
-        const updatedData = {};
-
-        // Chỉ thêm các field có giá trị vào updatedData
         const allowedFields = [
-            'HOTEN', 'NGAYSINH', 'GIOITINH', 'SOCCCD', 'NGAYCAP', 'NOICAP',
-            'SOHOKHAU', 'QUANHECHUHO', 'DIACHI', 'NGHENGHIEP', 'TRANGTHAI', 'GHICHU'
+            'HOTEN', 'BIDANH', 'NGAYSINH', 'GIOITINH', 'NOISINH', 'NGUYENQUAN',
+            'DANTOC', 'QUOCTICH', 'NGHENGHIEP', 'NGAYCAP', 'NOICAP',
+            'SOHOKHAU', 'QUANHECHUHO', 'TRANGTHAI', 'NOITHUONGTRUCU'
         ];
 
-        // Map từ lowercase sang UPPERCASE
-        const fieldMap = {
-            'hoten': 'HOTEN',
-            'ngaysinh': 'NGAYSINH',
-            'gioitinh': 'GIOITINH',
-            'socccd': 'SOCCCD',
-            'ngaycap': 'NGAYCAP',
-            'noicap': 'NOICAP',
-            'sohokhau': 'SOHOKHAU',
-            'quanhechuho': 'QUANHECHUHO',
-            'diachi': 'DIACHI',
-            'nghenghiep': 'NGHENGHIEP',
-            'trangthai': 'TRANGTHAI',
-            'ghichu': 'GHICHU'
-        };
+        const fieldMap = Object.fromEntries(allowedFields.map(f => [f.toLowerCase(), f]));
+        const updatedData = {};
 
         for (const [key, value] of Object.entries(req.body)) {
-            const upperKey = fieldMap[key.toLowerCase()];
-            if (upperKey && value !== undefined && value !== '') {
-                updatedData[upperKey] = value;
+            const dbKey = fieldMap[key.toLowerCase()];
+            if (dbKey && value !== undefined && value !== '') {
+                updatedData[dbKey] = value;
             }
         }
 
@@ -131,7 +118,7 @@ exports.updateResident = async (req, res) => {
     }
 };
 
-// Xóa nhân khẩu (soft delete)
+// === XÓA NHÂN KHẨU ===
 exports.deleteResident = async (req, res) => {
     try {
         const manhankhau = req.params.id;
@@ -144,6 +131,19 @@ exports.deleteResident = async (req, res) => {
         res.status(200).json({ success: true, message: 'Xóa nhân khẩu thành công' });
     } catch (error) {
         console.error("Delete resident error:", error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+};
+
+// === LẤY LỊCH SỬ BIẾN ĐỘNG ===
+exports.getResidentHistory = async (req, res) => {
+    try {
+        const manhankhau = req.params.id;
+        const history = await Resident.getResidentHistory(manhankhau);
+
+        res.status(200).json({ success: true, data: history });
+    } catch (error) {
+        console.error("Get resident history error:", error);
         res.status(500).json({ success: false, error: error.message });
     }
 };
