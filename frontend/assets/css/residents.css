@@ -1,11 +1,12 @@
-/* assets/css/residents.css */
+/* === residents.css (đã tối ưu) === */
 
-/* Thanh công cụ (Header) */
+/* --- Header & Search --- */
 .content-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 20px;
+    gap: 15px;
 }
 
 .search-bar {
@@ -14,13 +15,19 @@
 }
 
 .search-bar input {
-    padding: 8px 12px;
-    border: 1px solid #ccc;
+    padding: 10px 15px;
+    border: 1px solid #ddd;
     border-radius: 4px;
-    width: 300px;
+    width: 350px;
+    font-size: 14px;
 }
 
-/* Nút chung */
+.search-bar input:focus {
+    outline: none;
+    border-color: #007bff;
+}
+
+/* --- Buttons --- */
 .btn {
     padding: 8px 16px;
     border: none;
@@ -28,46 +35,47 @@
     cursor: pointer;
     font-weight: 500;
     font-size: 14px;
+    transition: all 0.3s;
 }
 
 .btn-primary {
-    background-color: #007bff;
-    color: white;
+    background: #007bff;
+    color: #fff;
 }
 
 .btn-primary:hover {
-    background-color: #0056b3;
-}
-
-.btn-danger {
-    background-color: #dc3545;
-    color: white;
-}
-
-.btn-danger:hover {
-    background-color: #c82333;
+    background: #0056b3;
 }
 
 .btn-secondary {
-    background-color: #6c757d;
-    color: white;
+    background: #6c757d;
+    color: #fff;
 }
 
 .btn-secondary:hover {
-    background-color: #5a6268;
+    background: #5a6268;
+}
+
+.btn-danger {
+    background: #dc3545;
+    color: #fff;
+}
+
+.btn-danger:hover {
+    background: #c82333;
 }
 
 .btn-sm {
-    padding: 4px 8px;
-    font-size: 12px;
+    padding: 6px 12px;
+    font-size: 13px;
 }
 
-/* Bảng dữ liệu */
+/* --- Table --- */
 .table-container {
     width: 100%;
-    overflow-x: auto;
     background: #fff;
     border-radius: 8px;
+    overflow-x: auto;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
@@ -81,6 +89,8 @@
     padding: 12px 15px;
     text-align: left;
     border-bottom: 1px solid #eee;
+    font-size: 14px;
+    color: #495057;
 }
 
 .data-table th {
@@ -95,10 +105,10 @@
 .action-buttons {
     display: flex;
     flex-wrap: wrap;
-    gap: 5px;
+    gap: 6px;
 }
 
-/* Phân trang */
+/* --- Pagination --- */
 .pagination {
     margin-top: 20px;
     display: flex;
@@ -108,143 +118,183 @@
 
 .pagination button {
     padding: 5px 10px;
+    border-radius: 4px;
     cursor: pointer;
 }
 
 .pagination button.active {
     background-color: #007bff;
-    color: white;
-    border-color: #007bff;
+    color: #fff;
 }
 
-/* --- MODAL STYLES --- */
-.hidden {
-    display: none !important;
-}
-
+/* --- Modal --- */
 .modal-overlay {
+    display: none;
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.6);
-    display: flex;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
     align-items: center;
     justify-content: center;
-    z-index: 1000;
+}
+
+.modal-overlay.show {
+    display: flex;
 }
 
 .modal-content {
-    background: white;
-    padding: 25px;
+    background: #fff;
     border-radius: 8px;
     width: 90%;
-    max-width: 500px;
-    position: relative;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    max-width: 900px;
     max-height: 90vh;
-    overflow-y: auto;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    animation: modalFadeIn 0.3s ease;
 }
 
-.modal-content.large {
-    max-width: 800px;
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.modal-header {
+    background: #007bff;
+    padding: 16px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #fff;
+}
+
+.modal-header h3 {
+    margin: 0;
+    font-size: 18px;
 }
 
 .close-btn {
-    position: absolute;
-    top: 10px;
-    right: 15px;
-    font-size: 24px;
-    font-weight: bold;
+    border: none;
+    background: rgba(255, 255, 255, 0.2);
+    font-size: 20px;
+    color: #fff;
     cursor: pointer;
-    color: #aaa;
+    border-radius: 4px;
+    padding: 4px 8px;
 }
 
 .close-btn:hover {
-    color: #333;
+    background: rgba(255, 255, 255, 0.3);
 }
 
-/* Form trong Modal */
-#resident-form .form-group,
-#transfer-form .form-group,
-#detail-form .form-group {
-    margin-bottom: 15px;
+.modal-body {
+    padding: 24px;
+    max-height: calc(90vh - 150px);
+    overflow-y: auto;
+    background: #f8f9fa;
 }
 
-#resident-form label,
-#transfer-form label,
-#detail-form label {
-    display: block;
-    margin-bottom: 5px;
-    font-weight: 500;
-}
-
-#resident-form input,
-#transfer-form input,
-#resident-form select,
-#transfer-form select {
-    width: 100%;
-    padding: 8px;
-    box-sizing: border-box;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-}
-
-.form-actions {
+.modal-footer {
+    padding: 16px 24px;
+    background: #fff;
+    border-top: 1px solid #dee2e6;
     display: flex;
     justify-content: flex-end;
     gap: 10px;
-    margin-top: 20px;
 }
 
-/* Modal chi tiết cư dân */
-#resident-detail h4 {
-    margin-top: 15px;
-    border-bottom: 1px solid #eee;
-    padding-bottom: 5px;
+/* --- Info Section --- */
+.info-section {
+    background: #fff;
+    padding: 20px;
+    border-radius: 6px;
+    margin-bottom: 16px;
+    border: 1px solid #e9ecef;
 }
 
-#resident-detail p {
-    margin: 5px 0;
-}
-
-#resident-detail ul {
-    list-style-type: disc;
-    padding-left: 20px;
-}
-
-/* Danh sách cư dân (ví dụ trong modal chuyển hộ khẩu) */
-.residents-list {
-    max-height: 250px;
-    overflow-y: auto;
-    border: 1px solid #ccc;
-    padding: 10px;
-    border-radius: 4px;
-    margin-bottom: 15px;
-}
-
-.residents-list label {
-    display: block;
-    margin-bottom: 8px;
-}
-
-.required {
-    color: red;
-}
-
-.form-hint {
-    font-size: 0.9em;
-    color: #666;
-}
-
-.warning-text {
-    color: #ff6b6b;
-    font-size: 0.95em;
+.info-section h4 {
+    margin-bottom: 16px;
+    font-size: 15px;
+    font-weight: 600;
+    color: #212529;
+    border-bottom: 2px solid #007bff;
+    padding-bottom: 8px;
 }
 
 .info-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px 24px;
+}
+
+.info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.info-label {
+    font-size: 12px;
+    color: #6c757d;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.info-value {
+    font-size: 14px;
+    color: #212529;
+    font-weight: 600;
+    padding: 8px 12px;
+    background: #f8f9fa;
+    border-radius: 4px;
+    border-left: 3px solid #007bff;
+}
+
+/* --- Form --- */
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.form-group label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #495057;
+}
+
+.form-group input,
+.form-group select {
+    padding: 10px 12px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.form-group input[required],
+.form-group select[required] {
+    background-color: #fffbf0;
+}
+
+/* --- Utilities --- */
+.hidden {
+    display: none !important;
+}
+
+.required {
+    color: red;
 }

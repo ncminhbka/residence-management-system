@@ -1,5 +1,25 @@
 const Resident = require('../models/residentModel');
 
+
+const formatDatabaseDate = (dateString) => {
+    // Nếu không có chuỗi ngày, hoặc không phải là chuỗi, trả về null
+    if (!dateString || typeof dateString !== 'string') {
+        return null;
+    }
+
+    // Tách chuỗi bằng dấu '/'
+    const parts = dateString.split('/');
+
+    // Nếu có đủ 3 phần (ngày, tháng, năm) thì đảo ngược lại
+    if (parts.length === 3) {
+        // parts[0] = DD, parts[1] = MM, parts[2] = YYYY
+        return `${parts[2]}-${parts[1]}-${parts[0]}`; // Trả về YYYY-MM-DD
+    }
+
+    // Nếu định dạng không đúng, trả về null (hoặc dateString nếu bạn muốn CSDL báo lỗi)
+    return null;
+};
+
 // === LẤY TẤT CẢ NHÂN KHẨU ===
 exports.getAllResidents = async (req, res) => {
     try {
@@ -62,10 +82,26 @@ exports.createResident = async (req, res) => {
             });
         }
 
+        // ✅ CHUẨN HÓA ĐỊNH DẠNG NGÀY
+        const formattedNgaysinh = formatDatabaseDate(ngaysinh);
+        const formattedNgaycap = formatDatabaseDate(ngaycap);
+
         const result = await Resident.addResident({
-            hoten, bidanh, ngaysinh, gioitinh, noisinh, nguyenquan,
-            dantoc, quoctich, nghenghiep, ngaycap, noicap,
-            sohokhau, quanhechuho, trangthai, noithuongtrucu
+            hoten,
+            bidanh,
+            ngaysinh: formattedNgaysinh,
+            gioitinh,
+            noisinh,
+            nguyenquan,
+            dantoc,
+            quoctich,
+            nghenghiep,
+            ngaycap: formattedNgaycap,
+            noicap,
+            sohokhau,
+            quanhechuho,
+            trangthai,
+            noithuongtrucu
         });
 
         res.status(201).json({
@@ -79,6 +115,7 @@ exports.createResident = async (req, res) => {
         res.status(500).json({ success: false, error: error.message });
     }
 };
+
 
 // === CẬP NHẬT NHÂN KHẨU ===
 exports.updateResident = async (req, res) => {
@@ -96,7 +133,15 @@ exports.updateResident = async (req, res) => {
         for (const [key, value] of Object.entries(req.body)) {
             const dbKey = fieldMap[key.toLowerCase()];
             if (dbKey && value !== undefined && value !== '') {
-                updatedData[dbKey] = value;
+                // Nếu là trường ngày => chuyển định dạng
+                if (dbKey === 'NGAYSINH' || dbKey === 'NGAYCAP') {
+                    const formattedDate = formatDatabaseDate(value);
+                    if (formattedDate) {
+                        updatedData[dbKey] = formattedDate;
+                    }
+                } else {
+                    updatedData[dbKey] = value;
+                }
             }
         }
 
@@ -117,6 +162,7 @@ exports.updateResident = async (req, res) => {
         res.status(500).json({ success: false, error: error.message });
     }
 };
+
 
 // === XÓA NHÂN KHẨU ===
 exports.deleteResident = async (req, res) => {

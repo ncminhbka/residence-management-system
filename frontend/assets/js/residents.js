@@ -305,7 +305,8 @@ function showResidentDetails(resident) {
 async function editResident(id) {
     try {
         const token = getAuthToken();
-        const response = await fetch(`${API_URL}/${id}`, {
+        const response = await fetch(`${API_URL}/${id}/details`, {
+            method: 'GET',
             headers: {
                 Authorization: `Bearer ${token}`,
                 'Content-Type': 'application/json'
@@ -317,9 +318,16 @@ async function editResident(id) {
         }
 
         const data = await response.json();
+        console.log("Edit resident data:", data);
+
         if (data.success && data.data) {
             isEditMode = true;
             const resident = Array.isArray(data.data) ? data.data[0] : data.data;
+
+            if (!resident) {
+                return showNotification('Không tìm thấy thông tin nhân khẩu', 'error');
+            }
+
             fillFormWithResident(resident);
 
             const modalTitle = document.getElementById('modal-title');
@@ -338,6 +346,7 @@ async function editResident(id) {
         showNotification('Không thể tải thông tin nhân khẩu', 'error');
     }
 }
+
 
 // Điền dữ liệu vào form
 function fillFormWithResident(resident) {
@@ -373,52 +382,52 @@ function fillFormWithResident(resident) {
     });
 }
 
-// Lưu nhân khẩu (thêm mới hoặc cập nhật)
+// Thay thế toàn bộ hàm saveResident bằng đoạn này
 async function saveResident() {
     try {
-        // Lấy và validate dữ liệu form
-        const formData = {
-            HOTEN: document.getElementById('hoten')?.value?.trim(),
-            NGAYSINH: document.getElementById('ngaysinh')?.value,
-            GIOITINH: document.getElementById('gioitinh')?.value,
-            NOISINH: document.getElementById('noisinh')?.value?.trim(),
-            NGUYENQUAN: document.getElementById('nguyenquan')?.value?.trim(),
-            DANTOC: document.getElementById('dantoc')?.value?.trim(),
-            QUOCTICH: document.getElementById('quoctich')?.value?.trim(),
-            QUANHECHUHO: document.getElementById('quanhechuho')?.value,
-            TRANGTHAI: document.getElementById('trangthai')?.value,
-            SOHOKHAU: document.getElementById('sohokhau')?.value?.trim()
+        const getVal = (id) => {
+            const el = document.getElementById(id);
+            if (!el) return '';
+            // nếu là select hoặc input type=date/value: trả value
+            return (el.value ?? '').toString().trim();
         };
 
-        // Thêm các trường optional
-        const bidanh = document.getElementById('bidanh')?.value?.trim();
-        if (bidanh) formData.BIDANH = bidanh;
+        // Xây form data với key viết thường (phù hợp backend)
+        const formData = {
+            hoten: getVal('hoten'),
+            bidanh: getVal('bidanh'),
+            ngaysinh: getVal('ngaysinh'), // dạng yyyy-mm-dd từ <input type="date">
+            gioitinh: getVal('gioitinh'),
+            noisinh: getVal('noisinh'),
+            nguyenquan: getVal('nguyenquan'),
+            dantoc: getVal('dantoc'),
+            quoctich: getVal('quoctich'),
+            quanhechuho: getVal('quanhechuho'),
+            trangthai: getVal('trangthai'),
+            sohokhau: getVal('sohokhau'),
+            socccd: getVal('socccd'),
+            nghenghiep: getVal('nghenghiep')
+        };
 
-        const socccd = document.getElementById('socccd')?.value?.trim();
-        if (socccd) formData.SOCCCD = socccd;
+        // Validate required (key viết thường)
+        const requiredFields = ['hoten', 'ngaysinh', 'gioitinh', 'noisinh', 'nguyenquan',
+            'dantoc', 'quoctich', 'trangthai', 'sohokhau'];
 
-        const nghenghiep = document.getElementById('nghenghiep')?.value?.trim();
-        if (nghenghiep) formData.NGHENGHIEP = nghenghiep;
-
-        // Validate các trường bắt buộc
-        const requiredFields = ['HOTEN', 'NGAYSINH', 'GIOITINH', 'NOISINH', 'NGUYENQUAN',
-            'DANTOC', 'QUOCTICH', 'QUANHECHUHO', 'TRANGTHAI', 'SOHOKHAU'];
-
-        for (const field of requiredFields) {
-            if (!formData[field]) {
-                showNotification(`Vui lòng điền đầy đủ thông tin bắt buộc`, 'error');
-                return;
-            }
+        const missing = requiredFields.filter(f => !formData[f]);
+        if (missing.length) {
+            showNotification(`Vui lòng điền các trường bắt buộc: ${missing.join(', ')}`, 'error');
+            return;
         }
 
-        // Xử lý format ngày sinh
-        if (formData.NGAYSINH) {
-            // Chuyển từ yyyy-mm-dd sang dd/mm/yyyy nếu backend yêu cầu
-            const dateObj = new Date(formData.NGAYSINH);
-            const day = String(dateObj.getDate()).padStart(2, '0');
-            const month = String(dateObj.getMonth() + 1).padStart(2, '0');
-            const year = dateObj.getFullYear();
-            formData.NGAYSINH = `${day}/${month}/${year}`;
+        // Nếu backend muốn dd/mm/yyyy, chuyển ở đây (nếu backend chấp nhận ISO thì có thể bỏ)
+        if (formData.ngaysinh) {
+            const dateObj = new Date(formData.ngaysinh);
+            if (!isNaN(dateObj)) {
+                const day = String(dateObj.getDate()).padStart(2, '0');
+                const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+                const year = dateObj.getFullYear();
+                formData.ngaysinh = `${day}/${month}/${year}`; // dd/mm/yyyy
+            }
         }
 
         const residentId = document.getElementById('resident-id')?.value;
@@ -428,10 +437,11 @@ async function saveResident() {
         const url = isEdit ? `${API_URL}/${residentId}` : API_URL;
         const method = isEdit ? 'PUT' : 'POST';
 
-        console.log('Sending request:', { url, method, formData });
+        // Debug: in ra payload trước khi gửi
+        console.log('Sending request payload:', { url, method, formData });
 
         const response = await fetch(url, {
-            method: method,
+            method,
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
@@ -441,7 +451,6 @@ async function saveResident() {
 
         console.log('Response status:', response.status);
 
-        // Kiểm tra response
         if (!response.ok) {
             const errorText = await response.text();
             console.error('Error response:', errorText);
@@ -449,8 +458,8 @@ async function saveResident() {
             return;
         }
 
-        const contentType = response.headers.get('content-type');
-        if (!contentType || !contentType.includes('application/json')) {
+        const contentType = response.headers.get('content-type') || '';
+        if (!contentType.includes('application/json')) {
             const text = await response.text();
             console.error('Non-JSON response:', text);
             showNotification('Server trả về dữ liệu không hợp lệ', 'error');
