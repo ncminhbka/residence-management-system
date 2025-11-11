@@ -138,11 +138,11 @@ exports.getHouseholdDetails = async (req, res) => {
 exports.splitHousehold = async (req, res) => {
     try {
         const sohokhaugoc = req.body.sohokhaugoc;
-        const { hotenchuhomoi, diachimoi, hososomoi, sodangkysomoi, tosomoi } = req.body.thongtinhokhaumoi;
+        const { machuhomoi, diachimoi, hososomoi, sodangkysomoi, tosomoi } = req.body.thongtinhokhaumoi;
         const membersToMove = req.body.thanhviensanghokhaumoi;
         
         // Kiểm tra thông tin đầu vào
-        if (!sohokhaugoc || !hotenchuhomoi || !diachimoi || !hososomoi || !sodangkysomoi || !tosomoi) {
+        if (!sohokhaugoc || !machuhomoi || !diachimoi || !hososomoi || !sodangkysomoi || !tosomoi) {
             return res.status(400).json({ success: false, error: 'Thiếu thông tin hộ khẩu mới' });
         }
         
@@ -151,19 +151,23 @@ exports.splitHousehold = async (req, res) => {
         }
         
         // BUG FIX: Kiểm tra chủ hộ mới có bị trùng không
-        const isTaken = await Household.isHoKhauTaken(hotenchuhomoi);
+        const isTaken = await Household.isHoKhauTaken(machuhomoi);
         if (isTaken) {
             return res.status(400).json({ success: false, error: 'Chủ hộ mới đã đứng tên hộ khẩu khác' });
         }
 
-        /*
-        const isExistCitizen = await Household.searchCitizen(sohokhaugoc){
+        const isExist = await Household.searchCitizen(machuhomoi);
+        if (!isExist) {
+            return res.status(400).json({ success: false, error: 'Mã nhân khẩu chủ hộ mới không tồn tại' });
         }
 
-        */
+        const isBelongToOtherHousehold = await Household.isBelongToOtherHousehold(machuhomoi);
+        if (isBelongToOtherHousehold){
+            return res.status(400).json({ success: false, error: 'Chủ hộ mới đang thuộc hộ khẩu khác' });
+        }
         
         // Tạo hộ khẩu mới
-        const newHousehold = await Household.addHouseholds(hotenchuhomoi, diachimoi, hososomoi, sodangkysomoi, tosomoi);
+        const newHousehold = await Household.addHouseholds(machuhomoi, diachimoi, hososomoi, sodangkysomoi, tosomoi);
         
         // Chuyển thành viên sang hộ khẩu mới
         const result = await Household.moveMembersToNewHousehold(membersToMove, newHousehold.insertId);
@@ -181,4 +185,6 @@ exports.splitHousehold = async (req, res) => {
         console.error('Split household error:', error);
         res.status(500).json({ success: false, error: 'Lỗi máy chủ: ' + error.message });
     }
+
+    
 };

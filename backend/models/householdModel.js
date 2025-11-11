@@ -146,6 +146,23 @@ const moveMembersToNewHousehold = async (members, newSohokhau) => {
   return result;
 };
 
+//=== Kiểm tra mã nhân khẩu của chủ hộ có tồn tại không ===
+const isExistCitizen = async (maChuHo) => {
+  const [rows] = await pool.query(
+    'SELECT * FROM NHAN_KHAU WHERE MANHANKHAU = ?',
+    [maChuHo]
+  );
+  return rows.length > 0;
+};
+
+//=== Kiểm tra chủ hộ có thuộc hộ khẩu khác không ===
+const isBelongToOtherHousehold = async (maChuHo) => {
+  const [rows] = await pool.query(
+    'SELECT * FROM NHAN_KHAU WHERE MANHANKHAU = ? AND SOHOKHAU IS NOT NULL',
+    [maChuHo]
+  );
+  return rows.length > 0;
+};
 
 module.exports = {
   getAllHousehold,
@@ -155,5 +172,7 @@ module.exports = {
   deleteHouseholds,
   updateHouseholds,
   getHouseholdDetails,
-  moveMembersToNewHousehold
+  moveMembersToNewHousehold,
+  isExistCitizen,
+  isBelongToOtherHousehold
 };
