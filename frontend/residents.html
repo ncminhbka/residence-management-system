@@ -289,6 +289,7 @@
             border-top: 1px solid #dee2e6;
             display: flex;
             justify-content: flex-end;
+            gap: 10px;
         }
 
         .modal-footer .btn {
@@ -311,6 +312,55 @@
         .modal-footer .close-btn:hover {
             background: #5a6268;
         }
+
+        /* ==== Form Styles ==== */
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .form-group label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .form-group input,
+        .form-group select {
+            padding: 10px 12px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+
+        .form-group input[required],
+        .form-group select[required] {
+            background-color: #fffbf0;
+        }
+
+        #resident-form .modal-footer {
+            margin-top: 20px;
+            padding: 16px 0 0;
+            border-top: 1px solid #dee2e6;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
     </style>
 </head>
 
@@ -326,7 +376,7 @@
             <!-- Thanh tìm kiếm và nút thêm -->
             <div class="content-header">
                 <div class="search-bar">
-                    <input id="search-input" type="text" placeholder="Tìm theo họ tên hoặc CCCD..." />
+                    <input id="search-input" type="text" placeholder="Tìm theo họ tên" />
                     <button id="search-btn" class="btn btn-primary">Tìm kiếm</button>
                     <button id="clear-search-btn" class="btn btn-secondary">Xóa</button>
                 </div>
@@ -470,117 +520,142 @@
         </div>
     </div>
 
-    <script>
-        // Hàm hiển thị chi tiết nhân khẩu
-        function showResidentDetails(resident) {
-            document.getElementById('detail-manhankhau').textContent = resident.MANHANKHAU || '-';
-            document.getElementById('detail-sohokhau').textContent = resident.SOHOKHAU || '-';
-            document.getElementById('detail-hoten').textContent = resident.HOTEN || '-';
-            document.getElementById('detail-bidanh').textContent = resident.BIDANH || '-';
-            document.getElementById('detail-ngaysinh').textContent = resident.NGAYSINH || '-';
-            document.getElementById('detail-gioitinh').textContent = resident.GIOITINH || '-';
-            document.getElementById('detail-noisinh').textContent = resident.NOISINH || '-';
-            document.getElementById('detail-nguyenquan').textContent = resident.NGUYENQUAN || '-';
-            document.getElementById('detail-dantoc').textContent = resident.DANTOC || '-';
-            document.getElementById('detail-quoctich').textContent = resident.QUOCTICH || '-';
-            document.getElementById('detail-nghenghiep').textContent = resident.NGHENGHIEP || '-';
-            document.getElementById('detail-ngaycap').textContent = resident.NGAYCAP || '-';
-            document.getElementById('detail-noicap').textContent = resident.NOICAP || '-';
-            document.getElementById('detail-quanhechuho').textContent = resident.QUANHECHUHO || '-';
-            document.getElementById('detail-trangthai').textContent = resident.TRANGTHAI || '-';
-            document.getElementById('detail-noithuongtrucu').textContent = resident.NOITHUONGTRUCU || '-';
+    <!-- Modal Thêm/Sửa nhân khẩu -->
+    <div id="resident-modal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 1000px;">
+            <div class="modal-header">
+                <h3 id="modal-title">Thêm nhân khẩu mới</h3>
+                <button class="close-btn" data-modal="resident-modal">&times;</button>
+            </div>
 
-            document.getElementById('resident-detail-modal').classList.add('show');
-        }
+            <div class="modal-body">
+                <form id="resident-form">
+                    <input type="hidden" id="resident-id" />
 
-        // Đóng modal
-        document.querySelectorAll('.close-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const modalId = btn.getAttribute('data-modal');
-                if (modalId) {
-                    document.getElementById(modalId).classList.remove('show');
-                }
-            });
-        });
-
-        // Đóng modal khi click vào overlay
-        document.querySelectorAll('.modal-overlay').forEach(overlay => {
-            overlay.addEventListener('click', (e) => {
-                if (e.target === overlay) {
-                    overlay.classList.remove('show');
-                }
-            });
-        });
-
-        // Hàm xem chi tiết (sẽ được gọi từ nút Xem)
-        function viewDetails(id) {
-            // Trong thực tế, bạn sẽ gọi API để lấy dữ liệu theo id
-            const resident = {
-                MANHANKHAU: id,
-                SOHOKHAU: "1",
-                HOTEN: "Nguyễn Văn A",
-                BIDANH: "A Văn",
-                NGAYSINH: "12/05/1980",
-                GIOITINH: "Nam",
-                NOISINH: "Hà Nội",
-                NGUYENQUAN: "Thái Bình",
-                DANTOC: "Kinh",
-                QUOCTICH: "Việt Nam",
-                NGHENGHIEP: "Giáo viên",
-                NGAYCAP: "01/01/2020",
-                NOICAP: "Cục Cảnh sát ĐKQL cư trú và DLQG về dân cư",
-                QUANHECHUHO: "Chủ hộ",
-                TRANGTHAI: "Thường trú",
-                NOITHUONGTRUCU: "Số 1, Phường La Khê, Quận Hà Đông, Hà Nội"
-            };
-            showResidentDetails(resident);
-        }
-
-        // Hàm tải dữ liệu mẫu vào bảng (để test giao diện)
-        function loadSampleData() {
-            const tbody = document.getElementById('residents-table-body');
-            const sampleData = [
-                { MANHANKHAU: 1, HOTEN: "Nguyễn Văn A", NOISINH: "Hà Nội", NGUYENQUAN: "Hà Nội" },
-                { MANHANKHAU: 2, HOTEN: "Trần Thị B", NOISINH: "Hà Nội", NGUYENQUAN: "Hà Nội" },
-                { MANHANKHAU: 3, HOTEN: "Nguyễn Văn C", NOISINH: "Hà Nội", NGUYENQUAN: "Hà Nội" },
-                { MANHANKHAU: 4, HOTEN: "Phạm Văn D", NOISINH: "Đà Nẵng", NGUYENQUAN: "Đà Nẵng" },
-                { MANHANKHAU: 5, HOTEN: "Lê Thị E", NOISINH: "Đà Nẵng", NGUYENQUAN: "Đà Nẵng" }
-            ];
-
-            tbody.innerHTML = sampleData.map(resident => `
-                <tr>
-                    <td>${resident.MANHANKHAU}</td>
-                    <td><strong>${resident.HOTEN}</strong></td>
-                    <td>${resident.NOISINH}</td>
-                    <td>${resident.NGUYENQUAN}</td>
-                    <td>
-                        <div class="action-buttons">
-                            <button class="btn-sm btn-primary" onclick="viewDetails(${resident.MANHANKHAU})">
-                                Xem
-                            </button>
-                            <button class="btn-sm btn-success" onclick="editResident(${resident.MANHANKHAU})">
-                                Sửa
-                            </button>
-                            <button class="btn-sm btn-danger" onclick="deleteResident(${resident.MANHANKHAU})">
-                                Xóa
-                            </button>
+                    <!-- Thông tin cơ bản -->
+                    <div class="info-section">
+                        <h4>Thông tin cơ bản</h4>
+                        <div class="info-grid">
+                            <div class="form-group">
+                                <label for="hoten">Họ tên <span style="color: red">*</span></label>
+                                <input type="text" id="hoten" required />
+                            </div>
+                            <div class="form-group">
+                                <label for="bidanh">Bí danh</label>
+                                <input type="text" id="bidanh" />
+                            </div>
+                            <div class="form-group">
+                                <label for="ngaysinh">Ngày sinh <span style="color: red">*</span></label>
+                                <input type="date" id="ngaysinh" required />
+                            </div>
+                            <div class="form-group">
+                                <label for="gioitinh">Giới tính <span style="color: red">*</span></label>
+                                <select id="gioitinh" required>
+                                    <option value="">-- Chọn --</option>
+                                    <option value="Nam">Nam</option>
+                                    <option value="Nữ">Nữ</option>
+                                </select>
+                            </div>
                         </div>
-                    </td>
-                </tr>
-            `).join('');
-        }
+                    </div>
 
-        function editResident(id) {
-            console.log('Edit resident:', id);
-        }
+                    <!-- Nơi sinh & Nguyên quán -->
+                    <div class="info-section">
+                        <h4>Nơi sinh & Nguyên quán</h4>
+                        <div class="info-grid">
+                            <div class="form-group">
+                                <label for="noisinh">Nơi sinh <span style="color: red">*</span></label>
+                                <input type="text" id="noisinh" required />
+                            </div>
+                            <div class="form-group">
+                                <label for="nguyenquan">Nguyên quán <span style="color: red">*</span></label>
+                                <input type="text" id="nguyenquan" required />
+                            </div>
+                            <div class="form-group">
+                                <label for="dantoc">Dân tộc <span style="color: red">*</span></label>
+                                <input type="text" id="dantoc" value="Kinh" required />
+                            </div>
+                            <div class="form-group">
+                                <label for="quoctich">Quốc tịch <span style="color: red">*</span></label>
+                                <input type="text" id="quoctich" value="Việt Nam" required />
+                            </div>
+                        </div>
+                    </div>
 
-        function deleteResident(id) {
-            console.log('Delete resident:', id);
-        }
+                    <!-- Thông tin hộ khẩu -->
+                    <div class="info-section">
+                        <h4>Thông tin hộ khẩu</h4>
+                        <div class="info-grid">
+                            <div class="form-group">
+                                <label for="sohokhau">Số hộ khẩu <span style="color: red">*</span></label>
+                                <input type="text" id="sohokhau" required />
+                            </div>
+                            <div class="form-group">
+                                <label for="quanhechuho">Quan hệ chủ hộ <span style="color: red">*</span></label>
+                                <select id="quanhechuho" required>
+                                    <option value="">-- Chọn --</option>
+                                    <option value="Chủ hộ">Chủ hộ</option>
+                                    <option value="Vợ/Chồng">Vợ/Chồng</option>
+                                    <option value="Con">Con</option>
+                                    <option value="Cha/Mẹ">Cha/Mẹ</option>
+                                    <option value="Anh/Chị/Em">Anh/Chị/Em</option>
+                                    <option value="Khác">Khác</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="trangthai">Trạng thái <span style="color: red">*</span></label>
+                                <select id="trangthai" required>
+                                    <option value="">-- Chọn --</option>
+                                    <option value="Thường trú">Thường trú</option>
+                                    <option value="Tạm trú">Tạm trú</option>
+                                    <option value="Tạm vắng">Tạm vắng</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
 
-        // Load dữ liệu mẫu khi trang được tải
-        window.addEventListener('DOMContentLoaded', loadSampleData);
-    </script>
+                    <!-- Thông tin bổ sung -->
+                    <div class="info-section">
+                        <h4>Thông tin bổ sung</h4>
+                        <div class="info-grid">
+                            <div class="form-group">
+                                <label for="socccd">Số CCCD/CMND</label>
+                                <input type="text" id="socccd" />
+                            </div>
+                            <div class="form-group">
+                                <label for="nghenghiep">Nghề nghiệp</label>
+                                <input type="text" id="nghenghiep" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" onclick="closeModal()">Hủy</button>
+                        <button type="submit" class="btn btn-primary">Lưu</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Xác nhận xóa -->
+    <div id="delete-modal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 400px;">
+            <div class="modal-header">
+                <h3>Xác nhận xóa</h3>
+                <button class="close-btn" data-modal="delete-modal">&times;</button>
+            </div>
+            <div class="modal-body" style="background: white;">
+                <p style="margin: 0; font-size: 14px; color: #495057;">
+                    Bạn có chắc chắn muốn xóa nhân khẩu này không?
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeDeleteModal()">Hủy</button>
+                <button type="button" class="btn btn-danger" id="confirm-delete-btn">Xóa</button>
+            </div>
+        </div>
+    </div>
 
     <script src="assets/js/layout.js"></script>
     <script src="assets/js/residents.js"></script>

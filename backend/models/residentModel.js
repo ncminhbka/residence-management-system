@@ -10,15 +10,15 @@ const getAllResidents = async () => {
   return rows;
 };
 
-// === Tìm kiếm nhân khẩu theo tên hoặc CCCD ===
+// === Tìm kiếm nhân khẩu theo tên ===
 const searchResidents = async (query) => {
   const like = `%${String(query).trim()}%`;
   const [rows] = await pool.query(`SELECT nk.*, hk.DIACHI AS DIACHI_HK
     FROM NHAN_KHAU nk
     LEFT JOIN HO_KHAU hk ON nk.SOHOKHAU = hk.SOHOKHAU
     WHERE hk.DELETE_FLAG = FALSE
-    AND (nk.HOTEN LIKE ? OR nk.SOCCCD LIKE ?)
-    ORDER BY nk.MANHANKHAU ASC;`, [like, like]);
+    AND nk.HOTEN LIKE ?
+    ORDER BY nk.MANHANKHAU ASC;`, [like]);
   return rows;
 };
 
