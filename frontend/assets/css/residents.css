@@ -298,3 +298,35 @@
 .required {
     color: red;
 }
+
+/* Hiệu ứng làm mờ cho nhân khẩu đã chuyển đi/qua đời */
+.row-dimmed {
+    background-color: #f8f9fa;
+    /* Màu nền xám nhạt */
+    color: #adb5bd;
+    /* Chữ màu xám */
+    opacity: 0.7;
+}
+
+.row-dimmed strong {
+    color: #6c757d;
+    /* Tên người cũng xám đi */
+}
+
+/* Ẩn hiện form nhập liệu phụ */
+.hidden-section {
+    display: none;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

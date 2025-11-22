@@ -3,270 +3,118 @@ const API_URL = '/api/v1/residents';
 let currentResidents = [];
 let isEditMode = false;
 
-// Khởi tạo khi trang load
+// [CẤU HÌNH PHÂN TRANG]
+let currentPage = 1;
+const itemsPerPage = 10;
+
 document.addEventListener('DOMContentLoaded', () => {
     loadResidents();
     setupSearchListener();
     setupModalListeners();
     setupFormListener();
+    setupStatusChangeListener();
 });
 
-// Lắng nghe sự kiện tìm kiếm
-function setupSearchListener() {
-    const searchInput = document.getElementById('search-input');
-    const searchBtn = document.getElementById('search-btn');
-    const clearBtn = document.getElementById('clear-search-btn');
-
-    if (searchBtn) {
-        searchBtn.addEventListener('click', () => {
-            const query = searchInput?.value?.trim() || '';
-            if (query) {
-                searchResidents(query);
-            } else {
-                loadResidents();
-            }
-        });
-    }
-
-    if (clearBtn) {
-        clearBtn.addEventListener('click', () => {
-            if (searchInput) searchInput.value = '';
-            loadResidents();
-        });
-    }
-}
-
-// Gắn các trình nghe sự kiện cho modal và form
-function setupModalListeners() {
-    const addBtn = document.getElementById('add-resident-btn');
-    if (addBtn) {
-        addBtn.addEventListener('click', openAddModal);
-    }
-
-    document.querySelectorAll('.close-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const modalId = btn.dataset.modal;
-            if (modalId) {
-                const modal = document.getElementById(modalId);
-                if (modal) {
-                    modal.classList.add('hidden');
-                    modal.classList.remove('show');
-                }
-            }
-        });
-    });
-
-    const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
-    if (confirmDeleteBtn) {
-        confirmDeleteBtn.addEventListener('click', executeDelete);
-    }
-}
-
-// Gắn trình nghe sự kiện submit cho form
-function setupFormListener() {
-    const form = document.getElementById('resident-form');
-    if (form) {
-        form.addEventListener('submit', (e) => {
-            e.preventDefault();
-            saveResident();
-        });
-    }
-}
-
-// Lấy token từ localStorage
-function getAuthToken() {
-    return localStorage.getItem('token');
-}
-
-// Hiển thị trạng thái đang tải
-function showLoadingState() {
-    const tbody = document.getElementById('residents-table-body');
-    if (tbody) {
-        tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 40px;">Đang tải dữ liệu...</td></tr>';
-    }
-}
-
-// Hiển thị trạng thái rỗng
-function showEmptyDataState() {
-    const tbody = document.getElementById('residents-table-body');
-    if (tbody) {
-        tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 40px;">Không tìm thấy nhân khẩu nào.</td></tr>';
-    }
-}
-
-// Load danh sách nhân khẩu
-async function loadResidents() {
-    showLoadingState();
-    try {
-        const token = getAuthToken();
-        const response = await fetch(API_URL, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            }
-        });
-
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}`);
-        }
-
-        const data = await response.json();
-        if (data.success) {
-            currentResidents = data.data;
-            renderResidents(currentResidents);
-        } else {
-            showNotification('Lỗi khi tải dữ liệu', 'error');
-            showEmptyDataState();
-        }
-    } catch (error) {
-        console.error('Load residents error:', error);
-        showNotification('Không thể kết nối đến server', 'error');
-        showEmptyDataState();
-    }
-}
-
-// Tìm kiếm nhân khẩu
-async function searchResidents(query) {
-    showLoadingState();
-    try {
-        const token = getAuthToken();
-        const response = await fetch(`${API_URL}/search?q=${encodeURIComponent(query)}`, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            }
-        });
-        const data = await response.json();
-        if (data.success) {
-            currentResidents = data.data;
-            renderResidents(currentResidents);
-        } else {
-            showNotification('Lỗi khi tìm kiếm', 'error');
-            showEmptyDataState();
-        }
-    } catch (error) {
-        console.error('Search error:', error);
-        showNotification('Không thể tìm kiếm', 'error');
-        showEmptyDataState();
-    }
-}
-
-// Render danh sách nhân khẩu
+// === 1. LOGIC RENDER & PHÂN TRANG ===
 function renderResidents(residents) {
     const tbody = document.getElementById('residents-table-body');
+    const paginationContainer = document.getElementById('pagination-controls');
+
     if (!tbody) return;
 
     if (!residents || residents.length === 0) {
         showEmptyDataState();
+        if (paginationContainer) paginationContainer.innerHTML = '';
         return;
     }
 
-    tbody.innerHTML = residents
-        .map(resident => `
-        <tr>
-            <td>${resident.MANHANKHAU || '-'}</td>
-            <td><strong>${resident.HOTEN || '-'}</strong></td>
-            <td>${resident.NOISINH || '-'}</td>
-            <td>${resident.NGUYENQUAN || '-'}</td>
-            <td>
-                <div class="action-buttons">
-                    <button class="btn btn-sm btn-primary" onclick="viewDetails(${resident.MANHANKHAU})">
-                        Xem
-                    </button>
-                    <button class="btn btn-sm btn-success" onclick="editResident(${resident.MANHANKHAU})">
-                        Sửa
-                    </button>
-                    <button class="btn btn-sm btn-danger" onclick="deleteResident(${resident.MANHANKHAU})">
-                        Xóa
-                    </button>
-                </div>
-            </td>
-        </tr>`)
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const paginatedItems = residents.slice(startIndex, endIndex);
+
+    tbody.innerHTML = paginatedItems
+        .map(resident => {
+            const isInactive = resident.TRANGTHAI === 'ChuyenDi' || resident.TRANGTHAI === 'DaQuaDoi';
+            const rowClass = isInactive ? 'row-dimmed' : '';
+
+            let statusNote = '';
+            if (resident.TRANGTHAI === 'ChuyenDi') statusNote = '(Đã chuyển)';
+            if (resident.TRANGTHAI === 'DaQuaDoi') statusNote = '(Đã mất)';
+
+            return `
+            <tr class="${rowClass}">
+                <td>${resident.MANHANKHAU || '-'}</td>
+                <td>
+                    <strong>${resident.HOTEN || '-'}</strong>
+                    ${statusNote ? `<span style="font-size: 11px; color: #dc3545; margin-left: 5px;">${statusNote}</span>` : ''}
+                </td>
+                <td>${resident.NGAYSINH ? formatDate(resident.NGAYSINH) : '-'}</td>
+                <td>${resident.CCCD || '<span class="text-muted">Chưa có</span>'}</td> 
+                <td>${resident.DIACHI_HK || resident.NOITHUONGTRUCU || '-'}</td>
+                <td>
+                    <div class="action-buttons">
+                        <button class="btn btn-sm btn-primary" onclick="viewDetails(${resident.MANHANKHAU})">Xem</button>
+                        <button class="btn btn-sm btn-success" onclick="editResident(${resident.MANHANKHAU})">Sửa</button>
+                    </div>
+                </td>
+            </tr>`
+        })
         .join('');
+
+    renderPaginationControls(residents.length);
 }
 
-// Format ngày tháng
-function formatDate(dateString) {
-    if (!dateString) return '-';
-    const date = new Date(dateString);
-    return date.toLocaleDateString('vi-VN');
-}
+function renderPaginationControls(totalItems) {
+    const paginationContainer = document.getElementById('pagination-controls');
+    if (!paginationContainer) return;
 
-// Mở modal thêm mới
-function openAddModal() {
-    isEditMode = false;
-    const modalTitle = document.getElementById('modal-title');
-    const form = document.getElementById('resident-form');
-    const modal = document.getElementById('resident-modal');
-
-    if (modalTitle) modalTitle.textContent = 'Thêm nhân khẩu mới';
-    if (form) form.reset();
-
-    const residentId = document.getElementById('resident-id');
-    if (residentId) residentId.value = '';
-
-    const quoctich = document.getElementById('quoctich');
-    if (quoctich) quoctich.value = 'Việt Nam';
-
-    const dantoc = document.getElementById('dantoc');
-    if (dantoc) dantoc.value = 'Kinh';
-
-    if (modal) {
-        modal.classList.remove('hidden');
-        modal.classList.add('show');
+    const totalPages = Math.ceil(totalItems / itemsPerPage);
+    if (totalPages <= 1) {
+        paginationContainer.innerHTML = '';
+        return;
     }
-}
 
-// Đóng modal
-function closeModal() {
-    const modal = document.getElementById('resident-modal');
-    const form = document.getElementById('resident-form');
-
-    if (modal) {
-        modal.classList.add('hidden');
-        modal.classList.remove('show');
+    let html = '';
+    html += `<button ${currentPage === 1 ? 'disabled' : ''} onclick="changePage(${currentPage - 1})">Trước</button>`;
+    for (let i = 1; i <= totalPages; i++) {
+        html += `<button class="${i === currentPage ? 'active' : ''}" onclick="changePage(${i})">${i}</button>`;
     }
-    if (form) form.reset();
+    html += `<button ${currentPage === totalPages ? 'disabled' : ''} onclick="changePage(${currentPage + 1})">Sau</button>`;
+    paginationContainer.innerHTML = html;
 }
 
-// Đóng modal xóa
-function closeDeleteModal() {
-    const modal = document.getElementById('delete-modal');
-    if (modal) {
-        modal.classList.add('hidden');
-        modal.classList.remove('show');
-    }
-}
+window.changePage = function (page) {
+    if (page < 1) return;
+    currentPage = page;
+    renderResidents(currentResidents);
+};
 
-// Xem chi tiết nhân khẩu
-async function viewDetails(id) {
-    try {
-        const token = getAuthToken();
-        const response = await fetch(`${API_URL}/${id}/details`, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-                'Content-Type': 'application/json'
+// === 2. LOGIC FORM & MODAL ===
+function setupStatusChangeListener() {
+    const statusSelect = document.getElementById('trangthai');
+    const moveSection = document.getElementById('move-info-section');
+    const divNoiChuyen = document.getElementById('div-noichuyen');
+    const inputGhiChu = document.getElementById('ghichu');
+
+    if (statusSelect && moveSection) {
+        statusSelect.addEventListener('change', (e) => {
+            const status = e.target.value;
+            moveSection.style.display = 'none';
+            divNoiChuyen.style.display = 'flex';
+
+            if (status === 'ChuyenDi') {
+                moveSection.style.display = 'block';
+                if (inputGhiChu.value === 'Đã qua đời') inputGhiChu.value = '';
+            }
+            else if (status === 'DaQuaDoi') {
+                moveSection.style.display = 'block';
+                divNoiChuyen.style.display = 'none';
+                inputGhiChu.value = 'Đã qua đời';
             }
         });
-
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}`);
-        }
-
-        const data = await response.json();
-        if (data.success && data.data) {
-            const resident = Array.isArray(data.data) ? data.data[0] : data.data;
-            showResidentDetails(resident);
-        } else {
-            showNotification('Không tìm thấy thông tin nhân khẩu', 'error');
-        }
-    } catch (error) {
-        console.error('View details error:', error);
-        showNotification('Không thể xem chi tiết', 'error');
     }
 }
 
-// Hiển thị chi tiết nhân khẩu trong modal
 function showResidentDetails(resident) {
     const fields = {
         'detail-manhankhau': resident.MANHANKHAU,
@@ -279,269 +127,258 @@ function showResidentDetails(resident) {
         'detail-nguyenquan': resident.NGUYENQUAN,
         'detail-dantoc': resident.DANTOC,
         'detail-quoctich': resident.QUOCTICH,
+        'detail-cccd': resident.CCCD,
+        'detail-noilamviec': resident.NOILAMVIEC,
         'detail-nghenghiep': resident.NGHENGHIEP,
         'detail-ngaycap': formatDate(resident.NGAYCAP),
         'detail-noicap': resident.NOICAP,
         'detail-quanhechuho': resident.QUANHECHUHO,
         'detail-trangthai': resident.TRANGTHAI,
-        'detail-noithuongtrucu': resident.NOITHUONGTRUCU
+        'detail-noithuongtrucu': resident.NOITHUONGTRUCU,
+
+        'detail-ngaychuyendi': resident.NGAYCHUYENDI ? formatDate(resident.NGAYCHUYENDI) : '-',
+        'detail-noichuyen': resident.NOICHUYEN || '-',
+        'detail-ghichu': resident.GHICHU || '-'
     };
 
     Object.keys(fields).forEach(fieldId => {
         const element = document.getElementById(fieldId);
-        if (element) {
-            element.textContent = fields[fieldId] || '-';
-        }
+        if (element) element.textContent = fields[fieldId] || '-';
     });
 
-    const modal = document.getElementById('resident-detail-modal');
-    if (modal) {
-        modal.classList.add('show');
-        modal.classList.remove('hidden');
+    // [CẬP NHẬT] Logic hiển thị thông minh cho Modal Xem
+    const moveSection = document.getElementById('detail-move-section');
+    const divDetailNoiChuyen = document.getElementById('detail-noichuyen').parentElement; // Lấy thẻ cha div.info-item
+
+    if (moveSection) {
+        const isMoved = resident.TRANGTHAI === 'ChuyenDi';
+        const isDeceased = resident.TRANGTHAI === 'DaQuaDoi';
+
+        if (isMoved || isDeceased) {
+            moveSection.style.display = 'block';
+
+            // Nếu đã qua đời -> Ẩn dòng "Nơi chuyển đến" đi cho đỡ vô lý
+            if (isDeceased && divDetailNoiChuyen) {
+                divDetailNoiChuyen.style.display = 'none';
+            } else if (divDetailNoiChuyen) {
+                divDetailNoiChuyen.style.display = 'flex'; // Hiện lại nếu là Chuyển đi
+            }
+        } else {
+            moveSection.style.display = 'none';
+        }
+    }
+
+    document.getElementById('resident-detail-modal').classList.add('show');
+}
+
+// --- 3. HÀM HỖ TRỢ (Load, Search, Save...) ---
+function setupSearchListener() {
+    const searchInput = document.getElementById('search-input');
+    const searchBtn = document.getElementById('search-btn');
+    const clearBtn = document.getElementById('clear-search-btn');
+
+    if (searchBtn) {
+        searchBtn.addEventListener('click', () => {
+            const query = searchInput?.value?.trim() || '';
+            currentPage = 1;
+            if (query) searchResidents(query);
+            else loadResidents();
+        });
+    }
+    if (clearBtn) {
+        clearBtn.addEventListener('click', () => {
+            if (searchInput) searchInput.value = '';
+            currentPage = 1;
+            loadResidents();
+        });
     }
 }
 
-// Chỉnh sửa nhân khẩu
+function setupModalListeners() {
+    const addBtn = document.getElementById('add-resident-btn');
+    if (addBtn) addBtn.addEventListener('click', openAddModal);
+    document.querySelectorAll('.close-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const modalId = btn.dataset.modal;
+            if (modalId) document.getElementById(modalId)?.classList.remove('show');
+        });
+    });
+    const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
+    if (confirmDeleteBtn) confirmDeleteBtn.addEventListener('click', executeDelete);
+}
+
+function setupFormListener() {
+    const form = document.getElementById('resident-form');
+    if (form) {
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            saveResident();
+        });
+    }
+}
+
+function getAuthToken() { return localStorage.getItem('token'); }
+
+function showLoadingState() {
+    const tbody = document.getElementById('residents-table-body');
+    if (tbody) tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 40px;">Đang tải dữ liệu...</td></tr>';
+}
+
+function showEmptyDataState() {
+    const tbody = document.getElementById('residents-table-body');
+    if (tbody) tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 40px;">Không tìm thấy nhân khẩu nào.</td></tr>';
+}
+
+async function loadResidents() {
+    showLoadingState();
+    try {
+        const token = getAuthToken();
+        const response = await fetch(API_URL, { headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' } });
+        const data = await response.json();
+        if (data.success) {
+            currentResidents = data.data;
+            renderResidents(currentResidents);
+        } else {
+            showNotification('Lỗi khi tải dữ liệu', 'error');
+            showEmptyDataState();
+        }
+    } catch (error) { console.error('Load error:', error); showEmptyDataState(); }
+}
+
+async function searchResidents(query) {
+    showLoadingState();
+    try {
+        const token = getAuthToken();
+        const response = await fetch(`${API_URL}/search?q=${encodeURIComponent(query)}`, { headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' } });
+        const data = await response.json();
+        if (data.success) {
+            currentResidents = data.data;
+            renderResidents(currentResidents);
+        } else { showEmptyDataState(); }
+    } catch (error) { console.error('Search error:', error); showEmptyDataState(); }
+}
+
+function formatDate(dateString) {
+    if (!dateString) return '-';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('vi-VN');
+}
+
+function openAddModal() {
+    isEditMode = false;
+    document.getElementById('modal-title').textContent = 'Thêm nhân khẩu mới';
+    document.getElementById('resident-form').reset();
+    document.getElementById('resident-id').value = '';
+    document.getElementById('move-info-section').style.display = 'none';
+    document.getElementById('quoctich').value = 'Việt Nam';
+    document.getElementById('dantoc').value = 'Kinh';
+    document.getElementById('resident-modal').classList.add('show');
+}
+
+function closeModal() {
+    document.getElementById('resident-modal').classList.remove('show');
+    document.getElementById('resident-form').reset();
+}
+
+function closeDeleteModal() {
+    document.getElementById('delete-modal').classList.remove('show');
+}
+
+async function viewDetails(id) {
+    try {
+        const token = getAuthToken();
+        const response = await fetch(`${API_URL}/${id}/details`, { headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' } });
+        const data = await response.json();
+        if (data.success && data.data) {
+            const resident = Array.isArray(data.data) ? data.data[0] : data.data;
+            showResidentDetails(resident);
+        } else { showNotification('Không tìm thấy thông tin', 'error'); }
+    } catch (error) { console.error('View details error:', error); }
+}
+
 async function editResident(id) {
     try {
         const token = getAuthToken();
-        const response = await fetch(`${API_URL}/${id}/details`, {
-            method: 'GET',
-            headers: {
-                Authorization: `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            }
-        });
-
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}`);
-        }
-
+        const response = await fetch(`${API_URL}/${id}/details`, { headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' } });
         const data = await response.json();
-        console.log("Edit resident data:", data);
-
         if (data.success && data.data) {
             isEditMode = true;
             const resident = Array.isArray(data.data) ? data.data[0] : data.data;
-
-            if (!resident) {
-                return showNotification('Không tìm thấy thông tin nhân khẩu', 'error');
-            }
-
             fillFormWithResident(resident);
-
-            const modalTitle = document.getElementById('modal-title');
-            if (modalTitle) modalTitle.textContent = 'Chỉnh sửa nhân khẩu';
-
-            const modal = document.getElementById('resident-modal');
-            if (modal) {
-                modal.classList.remove('hidden');
-                modal.classList.add('show');
-            }
-        } else {
-            showNotification('Không tìm thấy thông tin nhân khẩu', 'error');
+            document.getElementById('modal-title').textContent = 'Chỉnh sửa nhân khẩu';
+            document.getElementById('resident-modal').classList.add('show');
+            const statusSelect = document.getElementById('trangthai');
+            if (statusSelect) { const event = new Event('change'); statusSelect.dispatchEvent(event); }
         }
-    } catch (error) {
-        console.error('Edit resident error:', error);
-        showNotification('Không thể tải thông tin nhân khẩu', 'error');
-    }
+    } catch (error) { console.error('Edit error:', error); }
 }
 
-
-// Điền dữ liệu vào form
 function fillFormWithResident(resident) {
     const fieldMappings = {
-        'resident-id': 'MANHANKHAU',
-        'hoten': 'HOTEN',
-        'bidanh': 'BIDANH',
-        'ngaysinh': 'NGAYSINH',
-        'gioitinh': 'GIOITINH',
-        'noisinh': 'NOISINH',
-        'nguyenquan': 'NGUYENQUAN',
-        'dantoc': 'DANTOC',
-        'quoctich': 'QUOCTICH',
-        'socccd': 'SOCCCD',
-        'nghenghiep': 'NGHENGHIEP',
-        'quanhechuho': 'QUANHECHUHO',
-        'trangthai': 'TRANGTHAI',
-        'sohokhau': 'SOHOKHAU'
+        'resident-id': 'MANHANKHAU', 'hoten': 'HOTEN', 'bidanh': 'BIDANH', 'ngaysinh': 'NGAYSINH',
+        'gioitinh': 'GIOITINH', 'noisinh': 'NOISINH', 'nguyenquan': 'NGUYENQUAN', 'dantoc': 'DANTOC',
+        'quoctich': 'QUOCTICH', 'cccd': 'CCCD', 'noilamviec': 'NOILAMVIEC', 'nghenghiep': 'NGHENGHIEP',
+        'ngaycap': 'NGAYCAP', 'noicap': 'NOICAP', 'quanhechuho': 'QUANHECHUHO', 'trangthai': 'TRANGTHAI',
+        'sohokhau': 'SOHOKHAU', 'noithuongtrucu': 'NOITHUONGTRUCU', 'ngaychuyendi': 'NGAYCHUYENDI',
+        'noichuyen': 'NOICHUYEN', 'ghichu': 'GHICHU'
     };
-
     Object.keys(fieldMappings).forEach(fieldId => {
         const element = document.getElementById(fieldId);
         const dataKey = fieldMappings[fieldId];
-        if (element && resident[dataKey]) {
-            // Xử lý format ngày nếu cần
-            if (fieldId === 'ngaysinh' && resident[dataKey]) {
+        if (element && resident[dataKey] !== undefined && resident[dataKey] !== null) {
+            if ((fieldId === 'ngaysinh' || fieldId === 'ngaycap' || fieldId === 'ngaychuyendi') && resident[dataKey]) {
                 const date = new Date(resident[dataKey]);
-                element.value = date.toISOString().split('T')[0];
-            } else {
-                element.value = resident[dataKey];
-            }
+                const yyyy = date.getFullYear();
+                const mm = String(date.getMonth() + 1).padStart(2, '0');
+                const dd = String(date.getDate()).padStart(2, '0');
+                element.value = `${yyyy}-${mm}-${dd}`;
+            } else { element.value = resident[dataKey]; }
         }
     });
 }
 
-// Thay thế toàn bộ hàm saveResident bằng đoạn này
 async function saveResident() {
     try {
-        const getVal = (id) => {
-            const el = document.getElementById(id);
-            if (!el) return '';
-            // nếu là select hoặc input type=date/value: trả value
-            return (el.value ?? '').toString().trim();
-        };
-
-        // Xây form data với key viết thường (phù hợp backend)
+        const getVal = (id) => { const el = document.getElementById(id); return el ? (el.value ?? '').toString().trim() : ''; };
         const formData = {
-            hoten: getVal('hoten'),
-            bidanh: getVal('bidanh'),
-            ngaysinh: getVal('ngaysinh'), // dạng yyyy-mm-dd từ <input type="date">
-            gioitinh: getVal('gioitinh'),
-            noisinh: getVal('noisinh'),
-            nguyenquan: getVal('nguyenquan'),
-            dantoc: getVal('dantoc'),
-            quoctich: getVal('quoctich'),
-            quanhechuho: getVal('quanhechuho'),
-            trangthai: getVal('trangthai'),
-            sohokhau: getVal('sohokhau'),
-            socccd: getVal('socccd'),
-            nghenghiep: getVal('nghenghiep')
+            hoten: getVal('hoten'), bidanh: getVal('bidanh'), ngaysinh: getVal('ngaysinh'),
+            gioitinh: getVal('gioitinh'), noisinh: getVal('noisinh'), nguyenquan: getVal('nguyenquan'),
+            dantoc: getVal('dantoc'), quoctich: getVal('quoctich'), cccd: getVal('cccd'),
+            noilamviec: getVal('noilamviec'), nghenghiep: getVal('nghenghiep'), ngaycap: getVal('ngaycap'),
+            noicap: getVal('noicap'), quanhechuho: getVal('quanhechuho'), trangthai: getVal('trangthai'),
+            sohokhau: getVal('sohokhau'), noithuongtrucu: getVal('noithuongtrucu'),
+            ngaychuyendi: getVal('ngaychuyendi'), noichuyen: getVal('noichuyen'), ghichu: getVal('ghichu')
         };
-
-        // Validate required (key viết thường)
-        const requiredFields = ['hoten', 'ngaysinh', 'gioitinh', 'noisinh', 'nguyenquan',
-            'dantoc', 'quoctich', 'trangthai', 'sohokhau'];
-
-        const missing = requiredFields.filter(f => !formData[f]);
-        if (missing.length) {
-            showNotification(`Vui lòng điền các trường bắt buộc: ${missing.join(', ')}`, 'error');
-            return;
-        }
-
-        // Nếu backend muốn dd/mm/yyyy, chuyển ở đây (nếu backend chấp nhận ISO thì có thể bỏ)
-        if (formData.ngaysinh) {
-            const dateObj = new Date(formData.ngaysinh);
-            if (!isNaN(dateObj)) {
-                const day = String(dateObj.getDate()).padStart(2, '0');
-                const month = String(dateObj.getMonth() + 1).padStart(2, '0');
-                const year = dateObj.getFullYear();
-                formData.ngaysinh = `${day}/${month}/${year}`; // dd/mm/yyyy
-            }
-        }
+        const requiredFields = ['hoten', 'ngaysinh', 'gioitinh', 'trangthai'];
+        if (requiredFields.some(f => !formData[f])) { showNotification('Vui lòng điền các trường bắt buộc', 'error'); return; }
 
         const residentId = document.getElementById('resident-id')?.value;
         const isEdit = isEditMode && residentId;
-
         const token = getAuthToken();
         const url = isEdit ? `${API_URL}/${residentId}` : API_URL;
         const method = isEdit ? 'PUT' : 'POST';
 
-        // Debug: in ra payload trước khi gửi
-        console.log('Sending request payload:', { url, method, formData });
-
-        const response = await fetch(url, {
-            method,
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(formData)
-        });
-
-        console.log('Response status:', response.status);
-
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error('Error response:', errorText);
-            showNotification(`Lỗi ${response.status}: ${response.statusText}`, 'error');
-            return;
-        }
-
-        const contentType = response.headers.get('content-type') || '';
-        if (!contentType.includes('application/json')) {
-            const text = await response.text();
-            console.error('Non-JSON response:', text);
-            showNotification('Server trả về dữ liệu không hợp lệ', 'error');
-            return;
-        }
-
+        const response = await fetch(url, { method, headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify(formData) });
         const data = await response.json();
-        console.log('Response data:', data);
 
-        if (data.success) {
+        if (response.ok && data.success) {
             showNotification(isEdit ? 'Cập nhật thành công' : 'Thêm mới thành công', 'success');
             closeModal();
             await loadResidents();
-        } else {
-            showNotification(data.message || 'Có lỗi xảy ra', 'error');
-        }
-    } catch (error) {
-        console.error('Save resident error:', error);
-        showNotification('Không thể lưu thông tin: ' + error.message, 'error');
-    }
+        } else { showNotification(data.error || data.message || 'Có lỗi xảy ra', 'error'); }
+    } catch (error) { console.error('Save error:', error); showNotification('Lỗi: ' + error.message, 'error'); }
 }
 
-// Xóa nhân khẩu
 let deleteId = null;
-function deleteResident(id) {
-    deleteId = id;
-    const modal = document.getElementById('delete-modal');
-    if (modal) {
-        modal.classList.remove('hidden');
-        modal.classList.add('show');
-    }
-}
+function executeDelete() { /* code xóa */ }
 
-async function executeDelete() {
-    if (!deleteId) return;
-
-    try {
-        const token = getAuthToken();
-        const response = await fetch(`${API_URL}/${deleteId}`, {
-            method: 'DELETE',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            }
-        });
-
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}`);
-        }
-
-        const data = await response.json();
-        if (data.success) {
-            showNotification('Xóa thành công', 'success');
-            closeDeleteModal();
-            await loadResidents();
-        } else {
-            showNotification(data.message || 'Không thể xóa', 'error');
-        }
-    } catch (error) {
-        console.error('Delete error:', error);
-        showNotification('Không thể xóa nhân khẩu: ' + error.message, 'error');
-    } finally {
-        deleteId = null;
-    }
-}
-
-// Hiển thị thông báo
 function showNotification(message, type = 'info') {
-    if (typeof toast !== 'undefined') {
-        toast(message, type);
-    } else {
-        alert(message);
-    }
+    if (typeof Toastify === 'function') Toastify({ text: message, duration: 3000, backgroundColor: type === 'error' ? "#ff5f6d" : "#00b09b" }).showToast();
+    else alert(message);
 }
 
-// Đóng modal khi click bên ngoài
 window.onclick = function (event) {
-    const modals = document.querySelectorAll('.modal-overlay');
-    modals.forEach(modal => {
-        if (event.target === modal) {
-            modal.classList.add('hidden');
-            modal.classList.remove('show');
-        }
+    document.querySelectorAll('.modal-overlay').forEach(modal => {
+        if (event.target === modal) modal.classList.remove('show');
     });
 };

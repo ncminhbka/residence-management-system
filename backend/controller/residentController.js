@@ -1,22 +1,38 @@
 const Resident = require('../models/residentModel');
 
-
+// === HÀM CHUẨN HÓA NGÀY THÁNG THÔNG MINH ===
 const formatDatabaseDate = (dateString) => {
-    // Nếu không có chuỗi ngày, hoặc không phải là chuỗi, trả về null
-    if (!dateString || typeof dateString !== 'string') {
-        return null;
+    if (!dateString) return null;
+
+    // 1. Chuyển về chuỗi và xóa khoảng trắng thừa
+    const cleanStr = dateString.toString().trim();
+
+    // 2. Nếu đã chuẩn YYYY-MM-DD (Ví dụ: 2000-01-30) => Giữ nguyên
+    if (cleanStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
+        return cleanStr;
     }
 
-    // Tách chuỗi bằng dấu '/'
-    const parts = dateString.split('/');
-
-    // Nếu có đủ 3 phần (ngày, tháng, năm) thì đảo ngược lại
-    if (parts.length === 3) {
-        // parts[0] = DD, parts[1] = MM, parts[2] = YYYY
-        return `${parts[2]}-${parts[1]}-${parts[0]}`; // Trả về YYYY-MM-DD
+    // 3. Xử lý trường hợp DD/MM/YYYY (Ví dụ: 30/01/2000)
+    if (cleanStr.includes('/')) {
+        const parts = cleanStr.split('/');
+        if (parts.length === 3) {
+            if (parts[0].length === 4) {
+                return `${parts[0]}-${parts[1]}-${parts[2]}`;
+            }
+            return `${parts[2]}-${parts[1]}-${parts[0]}`;
+        }
     }
 
-    // Nếu định dạng không đúng, trả về null (hoặc dateString nếu bạn muốn CSDL báo lỗi)
+    // 4. Xử lý trường hợp DD-MM-YYYY (Ví dụ: 30-01-2000)
+    if (cleanStr.includes('-')) {
+        const parts = cleanStr.split('-');
+        if (parts.length === 3) {
+            if (parts[2].length === 4) {
+                return `${parts[2]}-${parts[1]}-${parts[0]}`;
+            }
+        }
+    }
+
     return null;
 };
 
@@ -38,7 +54,6 @@ exports.searchResidents = async (req, res) => {
         if (!query) {
             return res.status(400).json({ success: false, error: 'Thiếu từ khóa tìm kiếm' });
         }
-
         const residents = await Resident.searchResidents(query);
         res.status(200).json({ success: true, data: residents });
     } catch (error) {
@@ -70,21 +85,26 @@ exports.createResident = async (req, res) => {
     try {
         const {
             hoten, bidanh, ngaysinh, gioitinh, noisinh, nguyenquan,
-            dantoc, quoctich, nghenghiep, ngaycap, noicap,
+            dantoc, quoctich, cccd, noilamviec, nghenghiep, ngaycap, noicap,
             sohokhau, quanhechuho, trangthai, noithuongtrucu
         } = req.body;
 
-        // Kiểm tra các trường bắt buộc
         if (!hoten || !ngaysinh || !gioitinh || !noisinh || !nguyenquan || !dantoc || !quoctich || !trangthai) {
             return res.status(400).json({
                 success: false,
-                error: 'Thiếu thông tin bắt buộc (họ tên, ngày sinh, giới tính, nơi sinh, nguyên quán, dân tộc, quốc tịch, trạng thái)'
+                error: 'Thiếu thông tin bắt buộc (họ tên, ngày sinh, giới tính...)'
             });
         }
 
-        // ✅ CHUẨN HÓA ĐỊNH DẠNG NGÀY
         const formattedNgaysinh = formatDatabaseDate(ngaysinh);
         const formattedNgaycap = formatDatabaseDate(ngaycap);
+
+        if (ngaysinh && !formattedNgaysinh) {
+            return res.status(400).json({
+                success: false,
+                error: 'Ngày sinh không đúng định dạng (Vui lòng nhập DD/MM/YYYY hoặc YYYY-MM-DD)'
+            });
+        }
 
         const result = await Resident.addResident({
             hoten,
@@ -95,6 +115,8 @@ exports.createResident = async (req, res) => {
             nguyenquan,
             dantoc,
             quoctich,
+            cccd,
+            noilamviec,
             nghenghiep,
             ngaycap: formattedNgaycap,
             noicap,
@@ -112,19 +134,25 @@ exports.createResident = async (req, res) => {
 
     } catch (error) {
         console.error("Create resident error:", error);
-        res.status(500).json({ success: false, error: error.message });
+        if (error.code === 'ER_DUP_ENTRY') {
+            return res.status(400).json({ success: false, error: 'Số CCCD/CMND đã tồn tại trong hệ thống' });
+        }
+        res.status(500).json({ success: false, error: 'Lỗi hệ thống: ' + error.message });
     }
 };
 
-
-// === CẬP NHẬT NHÂN KHẨU ===
+// === CẬP NHẬT NHÂN KHẨU (Đã cập nhật logic biến động) ===
 exports.updateResident = async (req, res) => {
     try {
         const manhankhau = req.params.id;
+
+        // [QUAN TRỌNG] Thêm các trường biến động vào danh sách cho phép
         const allowedFields = [
             'HOTEN', 'BIDANH', 'NGAYSINH', 'GIOITINH', 'NOISINH', 'NGUYENQUAN',
-            'DANTOC', 'QUOCTICH', 'NGHENGHIEP', 'NGAYCAP', 'NOICAP',
-            'SOHOKHAU', 'QUANHECHUHO', 'TRANGTHAI', 'NOITHUONGTRUCU'
+            'DANTOC', 'QUOCTICH', 'CCCD', 'NOILAMVIEC', 'NGHENGHIEP', 'NGAYCAP', 'NOICAP',
+            'SOHOKHAU', 'QUANHECHUHO', 'TRANGTHAI', 'NOITHUONGTRUCU',
+            // Các trường phụ phục vụ ghi log biến động
+            'NOICHUYEN', 'GHICHU', 'NGAYCHUYENDI'
         ];
 
         const fieldMap = Object.fromEntries(allowedFields.map(f => [f.toLowerCase(), f]));
@@ -132,9 +160,9 @@ exports.updateResident = async (req, res) => {
 
         for (const [key, value] of Object.entries(req.body)) {
             const dbKey = fieldMap[key.toLowerCase()];
-            if (dbKey && value !== undefined && value !== '') {
-                // Nếu là trường ngày => chuyển định dạng
-                if (dbKey === 'NGAYSINH' || dbKey === 'NGAYCAP') {
+            if (dbKey && value !== undefined) {
+                // Xử lý định dạng ngày cho cả NGAYCHUYENDI
+                if (['NGAYSINH', 'NGAYCAP', 'NGAYCHUYENDI'].includes(dbKey)) {
                     const formattedDate = formatDatabaseDate(value);
                     if (formattedDate) {
                         updatedData[dbKey] = formattedDate;
@@ -146,7 +174,7 @@ exports.updateResident = async (req, res) => {
         }
 
         if (Object.keys(updatedData).length === 0) {
-            return res.status(400).json({ success: false, error: 'Không có dữ liệu để cập nhật' });
+            return res.status(400).json({ success: false, error: 'Không có dữ liệu hợp lệ để cập nhật' });
         }
 
         const result = await Resident.updateResident(manhankhau, updatedData);
@@ -159,10 +187,12 @@ exports.updateResident = async (req, res) => {
 
     } catch (error) {
         console.error("Update resident error:", error);
+        if (error.code === 'ER_DUP_ENTRY') {
+            return res.status(400).json({ success: false, error: 'Số CCCD/CMND bị trùng lặp' });
+        }
         res.status(500).json({ success: false, error: error.message });
     }
 };
-
 
 // === XÓA NHÂN KHẨU ===
 exports.deleteResident = async (req, res) => {
@@ -177,19 +207,21 @@ exports.deleteResident = async (req, res) => {
         res.status(200).json({ success: true, message: 'Xóa nhân khẩu thành công' });
     } catch (error) {
         console.error("Delete resident error:", error);
+        if (error.code === 'ER_ROW_IS_REFERENCED_2') {
+            return res.status(400).json({ success: false, error: 'Không thể xóa nhân khẩu này vì đang liên kết với dữ liệu khác (Hộ khẩu, Tạm trú...)' });
+        }
         res.status(500).json({ success: false, error: error.message });
     }
 };
 
-// === LẤY LỊCH SỬ BIẾN ĐỘNG ===
+// === LẤY LỊCH SỬ ===
 exports.getResidentHistory = async (req, res) => {
     try {
         const manhankhau = req.params.id;
         const history = await Resident.getResidentHistory(manhankhau);
-
         res.status(200).json({ success: true, data: history });
     } catch (error) {
-        console.error("Get resident history error:", error);
+        console.error("Get history error:", error);
         res.status(500).json({ success: false, error: error.message });
     }
 };
