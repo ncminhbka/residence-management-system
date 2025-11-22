@@ -7,6 +7,7 @@ let isEditMode = false;
 let currentPage = 1;
 const itemsPerPage = 10;
 
+// Khởi tạo khi trang load
 document.addEventListener('DOMContentLoaded', () => {
     loadResidents();
     setupSearchListener();
@@ -148,7 +149,7 @@ function showResidentDetails(resident) {
 
     // [CẬP NHẬT] Logic hiển thị thông minh cho Modal Xem
     const moveSection = document.getElementById('detail-move-section');
-    const divDetailNoiChuyen = document.getElementById('detail-noichuyen').parentElement; // Lấy thẻ cha div.info-item
+    const divDetailNoiChuyen = document.getElementById('detail-noichuyen') ? document.getElementById('detail-noichuyen').parentElement : null;
 
     if (moveSection) {
         const isMoved = resident.TRANGTHAI === 'ChuyenDi';
@@ -157,7 +158,7 @@ function showResidentDetails(resident) {
         if (isMoved || isDeceased) {
             moveSection.style.display = 'block';
 
-            // Nếu đã qua đời -> Ẩn dòng "Nơi chuyển đến" đi cho đỡ vô lý
+            // Nếu đã qua đời -> Ẩn dòng "Nơi chuyển đến"
             if (isDeceased && divDetailNoiChuyen) {
                 divDetailNoiChuyen.style.display = 'none';
             } else if (divDetailNoiChuyen) {
