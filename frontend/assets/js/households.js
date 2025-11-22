@@ -395,7 +395,7 @@ async function handleSplitSubmit(e) {
     const requestBody = {
         sohokhaugoc: parseInt(sohokhaugoc),
         thongtinhokhaumoi: {
-            hotenchuhomoi: parseInt(document.getElementById('split-maChuHoMoi').value),
+            machuhomoi: parseInt(document.getElementById('split-maChuHoMoi').value),
             diachimoi: document.getElementById('split-diaChi').value.trim(),
             hososomoi: parseInt(document.getElementById('split-hoSoSo').value),
             sodangkysomoi: parseInt(document.getElementById('split-soDangKySo').value),
