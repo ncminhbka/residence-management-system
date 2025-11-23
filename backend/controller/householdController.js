@@ -342,3 +342,38 @@ exports.splitHousehold = async (req, res) => {
         });
     }
 };
+
+// ============================================
+// 10. THÊM THÀNH VIÊN VÀO HỘ KHẨU (MỚI)
+// ============================================
+exports.addMemberToHousehold = async (req, res) => {
+    try {
+        const sohokhau = req.params.id;
+        const { manhankhau, quanhechuho } = req.body;
+        const userId = req.user?.id;
+
+        if (!manhankhau || !quanhechuho) {
+            return res.status(400).json({
+                success: false,
+                error: 'Thiếu thông tin thành viên'
+            });
+        }
+
+        await Household.addMemberToHousehold(sohokhau, manhankhau, quanhechuho, userId);
+
+        res.status(200).json({
+            success: true,
+            message: 'Thêm thành viên vào hộ khẩu thành công'
+        });
+    } catch (error) {
+        console.error('Add member error:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message || 'Lỗi máy chủ'
+        });
+    }
+};
+
+// ============================================
+// 10. TÁCH HỘ KHẨU (CẢI TIẾN)
+// ============================================

@@ -24,6 +24,9 @@ router.post('/', auth, checkRole('TO_TRUONG', 'TO_PHO'), householdController.cre
 // Lấy chi tiết hộ khẩu
 router.get('/:id/details', auth, checkRole('TO_TRUONG', 'TO_PHO'), householdController.getHouseholdDetails);
 
+// Thêm thành viên vào hộ (MỚI)
+router.post('/:id/add-member', auth, checkRole('TO_TRUONG', 'TO_PHO'), householdController.addMemberToHousehold);
+
 // Đổi chủ hộ (MỚI)
 router.put('/:id/change-owner', auth, checkRole('TO_TRUONG', 'TO_PHO'), householdController.changeOwner);
 

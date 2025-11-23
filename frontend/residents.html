@@ -704,15 +704,16 @@
 
                     <!-- Thông tin hộ khẩu -->
                     <div class="info-section">
-                        <h4>Thông tin hộ khẩu</h4>
+                        <h4>Thông tin hộ khẩu (Tùy chọn)</h4>
                         <div class="info-grid">
                             <div class="form-group">
-                                <label for="sohokhau">Số hộ khẩu (ID Hộ) <span style="color: red">*</span></label>
-                                <input type="text" id="sohokhau" required />
+                                <label for="sohokhau">Số hộ khẩu (ID Hộ)</label>
+                                <input type="text" id="sohokhau" placeholder="Để trống nếu chưa có hộ khẩu" />
+                                <small style="color: #6c757d; font-size: 12px;">💡 Có thể thêm vào hộ khẩu sau</small>
                             </div>
                             <div class="form-group">
-                                <label for="quanhechuho">Quan hệ chủ hộ <span style="color: red">*</span></label>
-                                <select id="quanhechuho" required>
+                                <label for="quanhechuho">Quan hệ chủ hộ</label>
+                                <select id="quanhechuho">
                                     <option value="">-- Chọn --</option>
                                     <option value="Chủ hộ">Chủ hộ</option>
                                     <option value="Vợ">Vợ</option>

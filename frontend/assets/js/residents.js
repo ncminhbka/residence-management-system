@@ -347,11 +347,17 @@ async function saveResident() {
             dantoc: getVal('dantoc'), quoctich: getVal('quoctich'), cccd: getVal('cccd'),
             noilamviec: getVal('noilamviec'), nghenghiep: getVal('nghenghiep'), ngaycap: getVal('ngaycap'),
             noicap: getVal('noicap'), quanhechuho: getVal('quanhechuho'), trangthai: getVal('trangthai'),
-            sohokhau: getVal('sohokhau'), noithuongtrucu: getVal('noithuongtrucu'),
+            sohokhau: getVal('sohokhau') || null, noithuongtrucu: getVal('noithuongtrucu'),
             ngaychuyendi: getVal('ngaychuyendi'), noichuyen: getVal('noichuyen'), ghichu: getVal('ghichu')
         };
         const requiredFields = ['hoten', 'ngaysinh', 'gioitinh', 'trangthai'];
         if (requiredFields.some(f => !formData[f])) { showNotification('Vui lòng điền các trường bắt buộc', 'error'); return; }
+
+        // Nếu có số hộ khẩu thì phải có quan hệ chủ hộ
+        if (formData.sohokhau && !formData.quanhechuho) {
+            showNotification('Vui lòng chọn quan hệ với chủ hộ khi thuộc hộ khẩu', 'error');
+            return;
+        }
 
         const residentId = document.getElementById('resident-id')?.value;
         const isEdit = isEditMode && residentId;

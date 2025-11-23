@@ -340,7 +340,7 @@ const changeHouseholdOwner = async (sohokhau, newOwnerId, updatedBy = null) => {
     await connection.query(`
       UPDATE HO_KHAU_NHAN_KHAU
       SET LA_CHU_HO = FALSE,
-          QUANHECHUHO = NULL
+          QUANHECHUHO = 'NULL'
       WHERE SOHOKHAU = ? AND MANHANKHAU = ?
     `, [sohokhau, oldOwnerId]);
     
@@ -547,6 +547,97 @@ const splitHousehold = async (sohokhauGoc, thongTinHoMoi, thanhVienChuyenDi, upd
   }
 };
 
+// ============================================
+// 11. THÊM THÀNH VIÊN VÀO HỘ KHẨU (MỚI)
+// ============================================
+const addMemberToHousehold = async (sohokhau, manhankhau, quanhechuho, updatedBy = null) => {
+  const connection = await pool.getConnection();
+  
+  try {
+    await connection.beginTransaction();
+    
+    // 1. Kiểm tra hộ khẩu tồn tại
+    const [checkHK] = await connection.query(
+      'SELECT SOHOKHAU FROM HO_KHAU WHERE SOHOKHAU = ? AND TRANGTHAI = "HoatDong"',
+      [sohokhau]
+    );
+    
+    if (checkHK.length === 0) {
+      throw new Error('Hộ khẩu không tồn tại');
+    }
+    
+    // 2. Kiểm tra nhân khẩu tồn tại
+    const [checkNK] = await connection.query(
+      'SELECT MANHANKHAU FROM NHAN_KHAU WHERE MANHANKHAU = ?',
+      [manhankhau]
+    );
+    
+    if (checkNK.length === 0) {
+      throw new Error('Nhân khẩu không tồn tại');
+    }
+    
+    // 3. Kiểm tra nhân khẩu đã thuộc hộ nào chưa
+    const [checkThuocHo] = await connection.query(`
+      SELECT SOHOKHAU FROM HO_KHAU_NHAN_KHAU
+      WHERE MANHANKHAU = ? AND TRANGTHAI = 'DangO'
+    `, [manhankhau]);
+    
+    if (checkThuocHo.length > 0) {
+      throw new Error('Nhân khẩu đã thuộc hộ khẩu khác');
+    }
+    
+    // 4. Xác định có phải chủ hộ không
+    const laChuHo = (quanhechuho === 'Chủ hộ');
+    
+    // 5. Nếu là chủ hộ, kiểm tra hộ đã có chủ hộ chưa
+    if (laChuHo) {
+      const [checkChuHo] = await connection.query(`
+        SELECT COUNT(*) as count
+        FROM HO_KHAU_NHAN_KHAU
+        WHERE SOHOKHAU = ? AND LA_CHU_HO = TRUE AND TRANGTHAI = 'DangO'
+      `, [sohokhau]);
+      
+      if (checkChuHo[0].count > 0) {
+        throw new Error('Hộ khẩu đã có chủ hộ');
+      }
+    }
+    
+    // 6. Thêm vào hộ
+    await connection.query(`
+      INSERT INTO HO_KHAU_NHAN_KHAU (
+        SOHOKHAU, MANHANKHAU, QUANHECHUHO, LA_CHU_HO,
+        NGAY_VAO_HO, TRANGTHAI
+      ) VALUES (?, ?, ?, ?, CURDATE(), 'DangO')
+    `, [sohokhau, manhankhau, quanhechuho, laChuHo]);
+    
+    // 7. Ghi log cho hộ khẩu
+    await connection.query(`
+      INSERT INTO LICH_SU_HO_KHAU (
+        SOHOKHAU, LOAI_BIEN_DONG, NGAY_BIEN_DONG,
+        MO_TA, NGUOI_THUC_HIEN
+      ) VALUES (?, 'ThemThanhVien', CURDATE(), ?, ?)
+    `, [sohokhau, `Thêm nhân khẩu ${manhankhau} với vai trò ${quanhechuho}`, updatedBy]);
+    
+    // 8. Ghi log cho nhân khẩu
+    await connection.query(`
+      INSERT INTO LICH_SU_NHAN_KHAU (
+        MANHANKHAU, LOAI_BIEN_DONG, NGAY_BIEN_DONG,
+        LYDO, NGUOI_THUC_HIEN
+      ) VALUES (?, 'VaoHo', CURDATE(), ?, ?)
+    `, [manhankhau, `Gia nhập hộ khẩu số ${sohokhau} với vai trò ${quanhechuho}`, updatedBy]);
+    
+    await connection.commit();
+    return { success: true };
+    
+  } catch (error) {
+    await connection.rollback();
+    throw error;
+  } finally {
+    connection.release();
+  }
+};
+
+
 module.exports = {
   getAllHousehold,
   searchHouseholds,
@@ -557,5 +648,6 @@ module.exports = {
   changeHouseholdOwner,      // MỚI
   updateMemberRelation,       // MỚI
   getHouseholdDetails,
-  splitHousehold
+  splitHousehold,
+  addMemberToHousehold        // MỚI
 };
