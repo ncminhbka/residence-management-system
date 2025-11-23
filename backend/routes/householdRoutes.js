@@ -5,28 +5,35 @@ const auth = require('../middleware/auth');
 
 const router = express.Router();
 
-// QUAN TRỌNG: Các route cụ thể phải đặt TRƯỚC các route động (:id)
-// Nếu không, '/search' và '/split' sẽ bị hiểu là '/:id'
+// Tìm kiếm hộ khẩu
+router.get('/search', auth, checkRole('TO_TRUONG', 'TO_PHO'), householdController.searchHouseholds);
+
+// Tách hộ khẩu
+router.post('/split', auth, checkRole('TO_TRUONG', 'TO_PHO'), householdController.splitHousehold);
 
 // Lấy tất cả hộ khẩu
 router.get('/', auth, checkRole('TO_TRUONG', 'TO_PHO'), householdController.getAllHouseholds);
 
-// Tạo mới hộ khẩu
+// Tạo hộ khẩu mới
 router.post('/', auth, checkRole('TO_TRUONG', 'TO_PHO'), householdController.createHousehold);
 
-// Tìm kiếm hộ khẩu (phải đặt trước /:id)
-router.get('/search', auth, checkRole('TO_TRUONG', 'TO_PHO'), householdController.searchHouseholds);
+// ============================================
+// DYNAMIC ROUTES (Có :id)
+// ============================================
 
-// Tách hộ (phải đặt trước /:id)
-router.post('/split', auth, checkRole('TO_TRUONG', 'TO_PHO'), householdController.splitHousehold);
-
-// Lấy thông tin chi tiết hộ khẩu (route động, đặt sau)
+// Lấy chi tiết hộ khẩu
 router.get('/:id/details', auth, checkRole('TO_TRUONG', 'TO_PHO'), householdController.getHouseholdDetails);
+
+// Đổi chủ hộ (MỚI)
+router.put('/:id/change-owner', auth, checkRole('TO_TRUONG', 'TO_PHO'), householdController.changeOwner);
+
+// Cập nhật quan hệ thành viên (MỚI)
+router.put('/:id/update-relation', auth, checkRole('TO_TRUONG', 'TO_PHO'), householdController.updateMemberRelation);
+
+// Cập nhật thông tin hộ khẩu
+router.put('/:id', auth, checkRole('TO_TRUONG', 'TO_PHO'), householdController.updateHousehold);
 
 // Xóa hộ khẩu
 router.delete('/:id', auth, checkRole('TO_TRUONG', 'TO_PHO'), householdController.deleteHousehold);
-
-// Cập nhật hộ khẩu
-router.put('/:id', auth, checkRole('TO_TRUONG', 'TO_PHO'), householdController.updateHousehold);
 
 module.exports = router;
