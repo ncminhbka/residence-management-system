@@ -425,7 +425,7 @@ async function handleViewDetails(id) {
 }
 
 // ============================================
-// ĐỔI CHỦ HỘ - HIỂN THỊ TẤT CẢ THÀNH VIÊN (CẢI TIẾN)
+// ĐỔI CHỦ HỘ - HIỂN THỊ TẤT CẢ THÀNH VIÊN 
 // ============================================
 async function handleChangeOwner(sohokhau) {
     const members = await getHouseholdMembers(sohokhau);
@@ -749,11 +749,32 @@ function renderHouseholdTable(households, startIndex) {
     });
 }
 
+// ============================================
+// RENDER MODAL CHI TIẾT HỘ KHẨU
+// ============================================
 function renderDetailModal(household, members) {
     const content = document.getElementById('detail-content');
+    
     const membersHtml = members && members.length 
-        ? members.map(m => `<tr><td>${m.MANHANKHAU}</td><td>${m.HOTEN} ${m.LA_CHU_HO ? '(Chủ hộ)' : ''}</td><td>${m.GIOITINH}</td><td>${formatDate(m.NGAYSINH)}</td><td>${m.QUANHECHUHO || ''}</td></tr>`).join('') 
-        : '<tr><td colspan="5">Trống</td></tr>';
+        ? members.map(m => `
+            <tr>
+                <td>${m.MANHANKHAU}</td>
+                <td>
+                    ${m.HOTEN} 
+                    ${m.LA_CHU_HO ? '<span style="background: #ffc107; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; margin-left: 5px;">CHỦ HỘ</span>' : ''}
+                </td>
+                <td>${m.GIOITINH}</td>
+                <td>${formatDate(m.NGAYSINH)}</td>
+                <td>${m.QUANHECHUHO || ''}</td>
+                <td>
+                    ${!m.LA_CHU_HO 
+                        ? `<button class="btn btn-sm btn-danger" onclick="openRemoveMemberModal(${household.SOHOKHAU}, ${m.MANHANKHAU}, '${m.HOTEN}')">🗑️ Xóa</button>` 
+                        : '<span style="color: #6c757d; font-size: 12px;">Không thể xóa</span>'
+                    }
+                </td>
+            </tr>
+        `).join('') 
+        : '<tr><td colspan="6">Trống</td></tr>';
 
     content.innerHTML = `
         <div class="info-grid">
@@ -761,13 +782,25 @@ function renderDetailModal(household, members) {
             <p><strong>Chủ hộ:</strong> ${household.HOTENCHUHO || 'N/A'}</p>
             <p><strong>Địa chỉ:</strong> ${household.DIACHI}</p>
         </div>
-        <h4>Thành viên</h4>
-        <table class="data-table small"><thead><tr><th>Mã</th><th>Tên</th><th>Giới tính</th><th>Ngày sinh</th><th>Quan hệ</th></tr></thead><tbody>${membersHtml}</tbody></table>
+        <h4>Danh sách thành viên</h4>
+        <table class="data-table small">
+            <thead>
+                <tr>
+                    <th>Mã</th>
+                    <th>Tên</th>
+                    <th>Giới tính</th>
+                    <th>Ngày sinh</th>
+                    <th>Quan hệ</th>
+                    <th>Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>${membersHtml}</tbody>
+        </table>
         <div class="form-actions" style="margin-top:20px;">
-            <button class="btn btn-success" onclick="openAddMemberModal(${household.SOHOKHAU})">Thêm thành viên</button>
-            <button class="btn btn-info" onclick="handleChangeOwner(${household.SOHOKHAU})">Đổi chủ hộ</button>
-            <button class="btn btn-primary" onclick="handleSplitRequest(${household.SOHOKHAU})">Tách hộ</button>
-            <button class="btn btn-secondary close-btn" data-modal="detail-modal">Đóng</button>
+            <button class="btn btn-success" onclick="openAddMemberModal(${household.SOHOKHAU})">➕ Thêm thành viên</button>
+            <button class="btn btn-info" onclick="handleChangeOwner(${household.SOHOKHAU})">🔄 Đổi chủ hộ</button>
+            <button class="btn btn-primary" onclick="handleSplitRequest(${household.SOHOKHAU})">✂️ Tách hộ</button>
+            <button class="btn btn-secondary close-btn" data-modal="detail-modal">❌ Đóng</button>
         </div>
     `;
 }
