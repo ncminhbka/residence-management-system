@@ -12,7 +12,6 @@ const getAllResidents = async () => {
       hknk.QUANHECHUHO,
       hknk.LA_CHU_HO,
       
-      -- Lấy thông tin biến động gần nhất (nếu có)
       (SELECT ls.NOI_CHUYEN_DEN
        FROM LICH_SU_NHAN_KHAU ls
        WHERE ls.MANHANKHAU = nk.MANHANKHAU
@@ -51,7 +50,7 @@ const getAllResidents = async () => {
 // ============================================
 const searchResidents = async (query) => {
   const like = `%${String(query).trim()}%`;
-  
+
   const [rows] = await pool.query(`
     SELECT 
       nk.*,
@@ -87,7 +86,7 @@ const searchResidents = async (query) => {
     WHERE (nk.HOTEN LIKE ? OR nk.CCCD LIKE ?)
     ORDER BY nk.MANHANKHAU ASC
   `, [like, like]);
-  
+
   return rows;
 };
 
@@ -100,12 +99,12 @@ const addResident = async (data, createdBy = null) => {
     cccd, noilamviec, nghenghiep, ngaycap, noicap, trangthai, noithuongtrucu,
     sohokhau, quanhechuho
   } = data;
-  
+
   const connection = await pool.getConnection();
-  
+
   try {
     await connection.beginTransaction();
-    
+
     // 1. Thêm nhân khẩu
     const [result] = await connection.query(`
       INSERT INTO NHAN_KHAU (
@@ -118,45 +117,41 @@ const addResident = async (data, createdBy = null) => {
       dantoc, quoctich, cccd, noilamviec, nghenghiep, ngaycap, noicap,
       trangthai, noithuongtrucu, createdBy
     ]);
-    
+
     const manhankhau = result.insertId;
-    
+
     // 2. Nếu có hộ khẩu, thêm vào bảng quan hệ
     if (sohokhau) {
-      // Kiểm tra hộ khẩu tồn tại
       const [checkHK] = await connection.query(
         'SELECT SOHOKHAU FROM HO_KHAU WHERE SOHOKHAU = ? AND TRANGTHAI = "HoatDong"',
         [sohokhau]
       );
-      
+
       if (checkHK.length === 0) {
         throw new Error('Hộ khẩu không tồn tại');
       }
-      
-      // Kiểm tra nếu là chủ hộ thì hộ chưa có chủ hộ
+
       const laChuHo = (quanhechuho === 'Chủ hộ');
-      
+
       if (laChuHo) {
         const [checkChuHo] = await connection.query(`
           SELECT COUNT(*) as count
           FROM HO_KHAU_NHAN_KHAU
           WHERE SOHOKHAU = ? AND LA_CHU_HO = TRUE AND TRANGTHAI = 'DangO'
         `, [sohokhau]);
-        
+
         if (checkChuHo[0].count > 0) {
           throw new Error('Hộ khẩu đã có chủ hộ');
         }
       }
-      
-      // Thêm vào bảng quan hệ
+
       await connection.query(`
         INSERT INTO HO_KHAU_NHAN_KHAU (
           SOHOKHAU, MANHANKHAU, QUANHECHUHO, LA_CHU_HO,
           NGAY_VAO_HO, TRANGTHAI
         ) VALUES (?, ?, ?, ?, CURDATE(), 'DangO')
       `, [sohokhau, manhankhau, quanhechuho, laChuHo]);
-      
-      // Ghi log
+
       await connection.query(`
         INSERT INTO LICH_SU_NHAN_KHAU (
           MANHANKHAU, LOAI_BIEN_DONG, NGAY_BIEN_DONG,
@@ -164,7 +159,6 @@ const addResident = async (data, createdBy = null) => {
         ) VALUES (?, 'VaoHo', CURDATE(), ?, ?)
       `, [manhankhau, `Gia nhập hộ khẩu số ${sohokhau} với vai trò ${quanhechuho}`, createdBy]);
     } else {
-      // Không thuộc hộ nào, chỉ ghi log tạo mới
       await connection.query(`
         INSERT INTO LICH_SU_NHAN_KHAU (
           MANHANKHAU, LOAI_BIEN_DONG, NGAY_BIEN_DONG,
@@ -172,10 +166,10 @@ const addResident = async (data, createdBy = null) => {
         ) VALUES (?, 'TaoMoi', CURDATE(), 'Thêm nhân khẩu mới vào hệ thống', ?)
       `, [manhankhau, createdBy]);
     }
-    
+
     await connection.commit();
     return { insertId: manhankhau };
-    
+
   } catch (error) {
     await connection.rollback();
     throw error;
@@ -185,103 +179,151 @@ const addResident = async (data, createdBy = null) => {
 };
 
 // ============================================
-// 4. CẬP NHẬT NHÂN KHẨU
+// 4. CẬP NHẬT NHÂN KHẨU (✅ ĐÃ SỬA)
 // ============================================
 const updateResident = async (id, updatedData, updatedBy = null) => {
   const fields = [];
   const values = [];
-  
+
   const validFields = [
-    'HOTEN', 'BIDANH', 'NGAYSINH', 'GIOITINH', 'NOISINH', 
-    'NGUYENQUAN', 'DANTOC', 'QUOCTICH', 'CCCD', 'NOILAMVIEC', 
+    'HOTEN', 'BIDANH', 'NGAYSINH', 'GIOITINH', 'NOISINH',
+    'NGUYENQUAN', 'DANTOC', 'QUOCTICH', 'CCCD', 'NOILAMVIEC',
     'NGHENGHIEP', 'NGAYCAP_CCCD', 'NOICAP_CCCD', 'TRANGTHAI', 'NOITHUONGTRUCU'
   ];
-  
+
   for (const key in updatedData) {
     if (validFields.includes(key.toUpperCase())) {
       fields.push(`${key.toUpperCase()} = ?`);
       values.push(updatedData[key]);
     }
   }
-  
+
   if (fields.length === 0) {
     return { message: 'Không có trường hợp lệ để cập nhật' };
   }
-  
+
   fields.push('UPDATED_BY = ?');
   fields.push('UPDATED_AT = NOW()');
   values.push(updatedBy);
   values.push(id);
-  
+
   const connection = await pool.getConnection();
-  
+
   try {
     await connection.beginTransaction();
-    
+
     // Lấy thông tin cũ
     const [oldData] = await connection.query(
       'SELECT * FROM NHAN_KHAU WHERE MANHANKHAU = ?',
       [id]
     );
-    
+
     if (oldData.length === 0) {
       throw new Error('Nhân khẩu không tồn tại');
     }
-    
+
     const old = oldData[0];
-    
-    // Cập nhật
+
+    // Cập nhật bảng NHAN_KHAU
     const [result] = await connection.query(`
       UPDATE NHAN_KHAU
       SET ${fields.join(', ')}
       WHERE MANHANKHAU = ?
     `, values);
-    
-    // Xử lý biến động đặc biệt
+
+    // ✅ XỬ LÝ CẬP NHẬT THÔNG TIN BIẾN ĐỘNG
     if (result.affectedRows > 0) {
       const { TRANGTHAI, NOICHUYEN, GHICHU, NGAYCHUYENDI } = updatedData;
-      
-      // Ghi log cho trạng thái đặc biệt
-      if (TRANGTHAI && TRANGTHAI !== old.TRANGTHAI) {
-        let loaiBienDong = 'CapNhatThongTin';
-        let noiChuyen = null;
-        let lydo = `Thay đổi trạng thái từ ${old.TRANGTHAI} sang ${TRANGTHAI}`;
-        
-        if (TRANGTHAI === 'ChuyenDi') {
-          loaiBienDong = 'ChuyenDi';
-          noiChuyen = NOICHUYEN || 'Chưa xác định';
-          lydo = `Chuyển đi: ${noiChuyen}`;
-        } else if (TRANGTHAI === 'DaQuaDoi') {
-          loaiBienDong = 'QuaDoi';
-          lydo = GHICHU || 'Đã qua đời';
-        } else if (TRANGTHAI === 'TamVang') {
-          loaiBienDong = 'TamVang';
-          noiChuyen = NOICHUYEN;
-          lydo = `Tạm vắng: ${GHICHU || 'Chưa rõ lý do'}`;
-        } else if (TRANGTHAI === 'VeThuongTru') {
-          loaiBienDong = 'VeThuongTru';
-          lydo = 'Trở về thường trú';
+
+      // Nếu trạng thái thay đổi HOẶC có dữ liệu biến động được gửi lên
+      if (TRANGTHAI || NOICHUYEN || GHICHU || NGAYCHUYENDI) {
+
+        // Xác định loại biến động
+        let loaiBienDong = null;
+        if (TRANGTHAI === 'ChuyenDi') loaiBienDong = 'ChuyenDi';
+        else if (TRANGTHAI === 'DaQuaDoi') loaiBienDong = 'QuaDoi';
+        else if (TRANGTHAI === 'TamVang') loaiBienDong = 'TamVang';
+
+        // Nếu không có trạng thái đặc biệt, xem trạng thái hiện tại
+        if (!loaiBienDong && old.TRANGTHAI === 'ChuyenDi') loaiBienDong = 'ChuyenDi';
+        else if (!loaiBienDong && old.TRANGTHAI === 'DaQuaDoi') loaiBienDong = 'QuaDoi';
+        else if (!loaiBienDong && old.TRANGTHAI === 'TamVang') loaiBienDong = 'TamVang';
+
+        // Nếu có loại biến động đặc biệt
+        if (loaiBienDong) {
+          // ✅ KIỂM TRA XEM ĐÃ CÓ LOG CHO LOẠI NÀY CHƯA
+          const [existingLog] = await connection.query(`
+            SELECT ID FROM LICH_SU_NHAN_KHAU
+            WHERE MANHANKHAU = ?
+            AND LOAI_BIEN_DONG = ?
+            ORDER BY NGAY_BIEN_DONG DESC, ID DESC
+            LIMIT 1
+          `, [id, loaiBienDong]);
+
+          if (existingLog.length > 0) {
+            // ✅ CẬP NHẬT LOG CŨ (QUAN TRỌNG!)
+            const updateLogFields = [];
+            const updateLogValues = [];
+
+            if (NGAYCHUYENDI) {
+              updateLogFields.push('NGAY_BIEN_DONG = ?');
+              updateLogValues.push(NGAYCHUYENDI);
+            }
+            if (NOICHUYEN && loaiBienDong !== 'QuaDoi') {
+              updateLogFields.push('NOI_CHUYEN_DEN = ?');
+              updateLogValues.push(NOICHUYEN);
+            }
+            if (GHICHU) {
+              updateLogFields.push('LYDO = ?');
+              updateLogValues.push(GHICHU);
+            }
+
+            if (updateLogFields.length > 0) {
+              updateLogFields.push('UPDATED_AT = NOW()');
+              updateLogValues.push(existingLog[0].ID);
+
+              await connection.query(`
+                UPDATE LICH_SU_NHAN_KHAU
+                SET ${updateLogFields.join(', ')}
+                WHERE ID = ?
+              `, updateLogValues);
+            }
+          } else {
+            // ✅ TẠO LOG MỚI NẾU CHƯA CÓ
+            let lydo = GHICHU || '';
+            let noiChuyen = null;
+
+            if (loaiBienDong === 'ChuyenDi') {
+              noiChuyen = NOICHUYEN || 'Chưa xác định';
+              lydo = lydo || `Chuyển đi: ${noiChuyen}`;
+            } else if (loaiBienDong === 'QuaDoi') {
+              lydo = lydo || 'Đã qua đời';
+            } else if (loaiBienDong === 'TamVang') {
+              noiChuyen = NOICHUYEN;
+              lydo = lydo || `Tạm vắng: ${GHICHU || 'Chưa rõ lý do'}`;
+            }
+
+            await connection.query(`
+              INSERT INTO LICH_SU_NHAN_KHAU (
+                MANHANKHAU, LOAI_BIEN_DONG, NGAY_BIEN_DONG,
+                NOI_CHUYEN_DEN, LYDO, NGUOI_THUC_HIEN
+              ) VALUES (?, ?, ?, ?, ?, ?)
+            `, [
+              id,
+              loaiBienDong,
+              NGAYCHUYENDI || new Date(),
+              noiChuyen,
+              lydo,
+              updatedBy
+            ]);
+          }
         }
-        
-        await connection.query(`
-          INSERT INTO LICH_SU_NHAN_KHAU (
-            MANHANKHAU, LOAI_BIEN_DONG, NGAY_BIEN_DONG,
-            NOI_CHUYEN_DEN, LYDO, NGUOI_THUC_HIEN
-          ) VALUES (?, ?, ?, ?, ?, ?)
-        `, [
-          id,
-          loaiBienDong,
-          NGAYCHUYENDI || new Date(),
-          noiChuyen,
-          lydo,
-          updatedBy
-        ]);
       }
     }
-    
+
     await connection.commit();
     return result;
-    
+
   } catch (error) {
     await connection.rollback();
     throw error;
@@ -295,11 +337,10 @@ const updateResident = async (id, updatedData, updatedBy = null) => {
 // ============================================
 const deleteResident = async (id, deletedBy = null) => {
   const connection = await pool.getConnection();
-  
+
   try {
     await connection.beginTransaction();
-    
-    // Kiểm tra nhân khẩu có phải chủ hộ không
+
     const [checkChuHo] = await connection.query(`
       SELECT hknk.SOHOKHAU
       FROM HO_KHAU_NHAN_KHAU hknk
@@ -307,34 +348,31 @@ const deleteResident = async (id, deletedBy = null) => {
       AND hknk.LA_CHU_HO = TRUE 
       AND hknk.TRANGTHAI = 'DangO'
     `, [id]);
-    
+
     if (checkChuHo.length > 0) {
       throw new Error('Không thể xóa chủ hộ. Vui lòng đổi chủ hộ trước');
     }
-    
-    // Ghi log trước khi xóa
+
     await connection.query(`
       INSERT INTO LICH_SU_NHAN_KHAU (
         MANHANKHAU, LOAI_BIEN_DONG, NGAY_BIEN_DONG,
         LYDO, NGUOI_THUC_HIEN
       ) VALUES (?, 'Xoa', CURDATE(), 'Xóa nhân khẩu khỏi hệ thống', ?)
     `, [id, deletedBy]);
-    
-    // Xóa quan hệ hộ khẩu (nếu có)
+
     await connection.query(
       'DELETE FROM HO_KHAU_NHAN_KHAU WHERE MANHANKHAU = ?',
       [id]
     );
-    
-    // Xóa nhân khẩu
+
     const [result] = await connection.query(
       'DELETE FROM NHAN_KHAU WHERE MANHANKHAU = ?',
       [id]
     );
-    
+
     await connection.commit();
     return result;
-    
+
   } catch (error) {
     await connection.rollback();
     throw error;
@@ -363,7 +401,7 @@ const getResidentHistory = async (id) => {
     WHERE MANHANKHAU = ?
     ORDER BY NGAY_BIEN_DONG DESC, ID DESC
   `, [id]);
-  
+
   return rows;
 };
 
@@ -372,44 +410,40 @@ const getResidentHistory = async (id) => {
 // ============================================
 const addResidentToHousehold = async (manhankhau, sohokhau, quanhechuho, updatedBy = null) => {
   const connection = await pool.getConnection();
-  
+
   try {
     await connection.beginTransaction();
-    
-    // Kiểm tra nhân khẩu đã thuộc hộ nào chưa
+
     const [check] = await connection.query(`
       SELECT SOHOKHAU FROM HO_KHAU_NHAN_KHAU
       WHERE MANHANKHAU = ? AND TRANGTHAI = 'DangO'
     `, [manhankhau]);
-    
+
     if (check.length > 0) {
       throw new Error('Nhân khẩu đã thuộc hộ khẩu khác');
     }
-    
+
     const laChuHo = (quanhechuho === 'Chủ hộ');
-    
-    // Nếu là chủ hộ, kiểm tra hộ đã có chủ hộ chưa
+
     if (laChuHo) {
       const [checkChuHo] = await connection.query(`
         SELECT COUNT(*) as count
         FROM HO_KHAU_NHAN_KHAU
         WHERE SOHOKHAU = ? AND LA_CHU_HO = TRUE AND TRANGTHAI = 'DangO'
       `, [sohokhau]);
-      
+
       if (checkChuHo[0].count > 0) {
         throw new Error('Hộ khẩu đã có chủ hộ');
       }
     }
-    
-    // Thêm vào hộ
+
     await connection.query(`
       INSERT INTO HO_KHAU_NHAN_KHAU (
         SOHOKHAU, MANHANKHAU, QUANHECHUHO, LA_CHU_HO,
         NGAY_VAO_HO, TRANGTHAI
       ) VALUES (?, ?, ?, ?, CURDATE(), 'DangO')
     `, [sohokhau, manhankhau, quanhechuho, laChuHo]);
-    
-    // Ghi log
+
     await connection.query(`
       INSERT INTO LICH_SU_NHAN_KHAU (
         MANHANKHAU, LOAI_BIEN_DONG, NGAY_BIEN_DONG,
@@ -420,10 +454,10 @@ const addResidentToHousehold = async (manhankhau, sohokhau, quanhechuho, updated
       `Gia nhập hộ khẩu số ${sohokhau} với vai trò ${quanhechuho}`,
       updatedBy
     ]);
-    
+
     await connection.commit();
     return { success: true };
-    
+
   } catch (error) {
     await connection.rollback();
     throw error;
@@ -437,25 +471,23 @@ const addResidentToHousehold = async (manhankhau, sohokhau, quanhechuho, updated
 // ============================================
 const removeResidentFromHousehold = async (manhankhau, sohokhau, lydo, updatedBy = null) => {
   const connection = await pool.getConnection();
-  
+
   try {
     await connection.beginTransaction();
-    
-    // Kiểm tra có phải chủ hộ không
+
     const [checkChuHo] = await connection.query(`
       SELECT LA_CHU_HO FROM HO_KHAU_NHAN_KHAU
       WHERE MANHANKHAU = ? AND SOHOKHAU = ? AND TRANGTHAI = 'DangO'
     `, [manhankhau, sohokhau]);
-    
+
     if (checkChuHo.length === 0) {
       throw new Error('Nhân khẩu không thuộc hộ khẩu này');
     }
-    
+
     if (checkChuHo[0].LA_CHU_HO) {
       throw new Error('Không thể rời hộ khi còn là chủ hộ');
     }
-    
-    // Đánh dấu rời hộ
+
     await connection.query(`
       UPDATE HO_KHAU_NHAN_KHAU
       SET TRANGTHAI = 'DaRoi',
@@ -463,18 +495,17 @@ const removeResidentFromHousehold = async (manhankhau, sohokhau, lydo, updatedBy
           LYDO_ROI_HO = ?
       WHERE MANHANKHAU = ? AND SOHOKHAU = ?
     `, [lydo, manhankhau, sohokhau]);
-    
-    // Ghi log
+
     await connection.query(`
       INSERT INTO LICH_SU_NHAN_KHAU (
         MANHANKHAU, LOAI_BIEN_DONG, NGAY_BIEN_DONG,
         LYDO, NGUOI_THUC_HIEN
       ) VALUES (?, 'RoiHo', CURDATE(), ?, ?)
     `, [manhankhau, `Rời hộ khẩu số ${sohokhau}: ${lydo}`, updatedBy]);
-    
+
     await connection.commit();
     return { success: true };
-    
+
   } catch (error) {
     await connection.rollback();
     throw error;

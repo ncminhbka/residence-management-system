@@ -116,7 +116,29 @@ function setupStatusChangeListener() {
     }
 }
 
-function showResidentDetails(resident) {
+// Hàm mới để lấy thông tin biến động từ bảng lịch sử
+async function getResidentHistory(id) {
+    try {
+        const token = getAuthToken();
+        const response = await fetch(
+            `${API_URL}/${id}/history`,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            }
+        );
+        const data = await response.json();
+        return data.success ? data.data : null;
+    } catch (error) {
+        console.error('Get history error:', error);
+        return null;
+    }
+}
+
+// Cập nhật hàm showResidentDetails
+async function showResidentDetails(resident) {
     const fields = {
         'detail-manhankhau': resident.MANHANKHAU,
         'detail-sohokhau': resident.SOHOKHAU,
@@ -135,11 +157,7 @@ function showResidentDetails(resident) {
         'detail-noicap': resident.NOICAP_CCCD,
         'detail-quanhechuho': resident.QUANHECHUHO,
         'detail-trangthai': resident.TRANGTHAI,
-        'detail-noithuongtrucu': resident.NOITHUONGTRUCU,
-
-        'detail-ngaychuyendi': resident.NGAYCHUYENDI ? formatDate(resident.NGAYCHUYENDI) : '-',
-        'detail-noichuyen': resident.NOICHUYEN || '-',
-        'detail-ghichu': resident.GHICHU || '-'
+        'detail-noithuongtrucu': resident.NOITHUONGTRUCU
     };
 
     Object.keys(fields).forEach(fieldId => {
@@ -147,9 +165,32 @@ function showResidentDetails(resident) {
         if (element) element.textContent = fields[fieldId] || '-';
     });
 
-    // [CẬP NHẬT] Logic hiển thị thông minh cho Modal Xem
+    // Lấy thông tin biến động từ bảng lịch sử
+    const history = await getResidentHistory(resident.MANHANKHAU);
+
+    // Cập nhật thông tin biến động
+    if (history && history.length > 0) {
+        const latestChange = history[0];
+
+        document.getElementById('detail-ngaychuyendi').textContent =
+            latestChange.NGAY_BIEN_DONG ? formatDate(latestChange.NGAY_BIEN_DONG) : '-';
+
+        document.getElementById('detail-noichuyen').textContent =
+            latestChange.NOI_CHUYEN_DEN || '-';
+
+        document.getElementById('detail-ghichu').textContent =
+            latestChange.LYDO || '-';
+    } else {
+        document.getElementById('detail-ngaychuyendi').textContent = '-';
+        document.getElementById('detail-noichuyen').textContent = '-';
+        document.getElementById('detail-ghichu').textContent = '-';
+    }
+
+    // Logic hiển thị phần thông tin biến động
     const moveSection = document.getElementById('detail-move-section');
-    const divDetailNoiChuyen = document.getElementById('detail-noichuyen') ? document.getElementById('detail-noichuyen').parentElement : null;
+    const divDetailNoiChuyen = document.getElementById('detail-noichuyen')
+        ? document.getElementById('detail-noichuyen').parentElement
+        : null;
 
     if (moveSection) {
         const isMoved = resident.TRANGTHAI === 'ChuyenDi';
@@ -158,11 +199,10 @@ function showResidentDetails(resident) {
         if (isMoved || isDeceased) {
             moveSection.style.display = 'block';
 
-            // Nếu đã qua đời -> Ẩn dòng "Nơi chuyển đến"
             if (isDeceased && divDetailNoiChuyen) {
                 divDetailNoiChuyen.style.display = 'none';
             } else if (divDetailNoiChuyen) {
-                divDetailNoiChuyen.style.display = 'flex'; // Hiện lại nếu là Chuyển đi
+                divDetailNoiChuyen.style.display = 'flex';
             }
         } else {
             moveSection.style.display = 'none';
@@ -297,21 +337,45 @@ async function viewDetails(id) {
     } catch (error) { console.error('View details error:', error); }
 }
 
+// ✅ HÀM EDIT ĐÃ SỬA - Load dữ liệu biến động từ lịch sử
 async function editResident(id) {
     try {
         const token = getAuthToken();
-        const response = await fetch(`${API_URL}/${id}/details`, { headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' } });
+        const response = await fetch(`${API_URL}/${id}/details`, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
         const data = await response.json();
+
         if (data.success && data.data) {
             isEditMode = true;
             const resident = Array.isArray(data.data) ? data.data[0] : data.data;
+
+            // ✅ LẤY THÔNG TIN BIẾN ĐỘNG TỪ LỊCH SỬ
+            const history = await getResidentHistory(id);
+            if (history && history.length > 0) {
+                const latestChange = history[0];
+                resident.NGAYCHUYENDI = latestChange.NGAY_BIEN_DONG;
+                resident.NOICHUYEN = latestChange.NOI_CHUYEN_DEN;
+                resident.GHICHU = latestChange.LYDO;
+            }
+
             fillFormWithResident(resident);
             document.getElementById('modal-title').textContent = 'Chỉnh sửa nhân khẩu';
             document.getElementById('resident-modal').classList.add('show');
+
             const statusSelect = document.getElementById('trangthai');
-            if (statusSelect) { const event = new Event('change'); statusSelect.dispatchEvent(event); }
+            if (statusSelect) {
+                const event = new Event('change');
+                statusSelect.dispatchEvent(event);
+            }
         }
-    } catch (error) { console.error('Edit error:', error); }
+    } catch (error) {
+        console.error('Edit error:', error);
+        showNotification('Lỗi khi tải dữ liệu: ' + error.message, 'error');
+    }
 }
 
 function fillFormWithResident(resident) {
@@ -319,10 +383,13 @@ function fillFormWithResident(resident) {
         'resident-id': 'MANHANKHAU', 'hoten': 'HOTEN', 'bidanh': 'BIDANH', 'ngaysinh': 'NGAYSINH',
         'gioitinh': 'GIOITINH', 'noisinh': 'NOISINH', 'nguyenquan': 'NGUYENQUAN', 'dantoc': 'DANTOC',
         'quoctich': 'QUOCTICH', 'cccd': 'CCCD', 'noilamviec': 'NOILAMVIEC', 'nghenghiep': 'NGHENGHIEP',
-        'ngaycap': 'NGAYCAP', 'noicap': 'NOICAP', 'quanhechuho': 'QUANHECHUHO', 'trangthai': 'TRANGTHAI',
-        'sohokhau': 'SOHOKHAU', 'noithuongtrucu': 'NOITHUONGTRUCU', 'ngaychuyendi': 'NGAYCHUYENDI',
-        'noichuyen': 'NOICHUYEN', 'ghichu': 'GHICHU'
+        'ngaycap': 'NGAYCAP_CCCD', 'noicap': 'NOICAP_CCCD', 'quanhechuho': 'QUANHECHUHO', 'trangthai': 'TRANGTHAI',
+        'sohokhau': 'SOHOKHAU', 'noithuongtrucu': 'NOITHUONGTRUCU',
+        'ngaychuyendi': 'NGAYCHUYENDI',
+        'noichuyen': 'NOICHUYEN',
+        'ghichu': 'GHICHU'
     };
+
     Object.keys(fieldMappings).forEach(fieldId => {
         const element = document.getElementById(fieldId);
         const dataKey = fieldMappings[fieldId];
@@ -333,7 +400,9 @@ function fillFormWithResident(resident) {
                 const mm = String(date.getMonth() + 1).padStart(2, '0');
                 const dd = String(date.getDate()).padStart(2, '0');
                 element.value = `${yyyy}-${mm}-${dd}`;
-            } else { element.value = resident[dataKey]; }
+            } else {
+                element.value = resident[dataKey];
+            }
         }
     });
 }
@@ -350,10 +419,13 @@ async function saveResident() {
             sohokhau: getVal('sohokhau') || null, noithuongtrucu: getVal('noithuongtrucu'),
             ngaychuyendi: getVal('ngaychuyendi'), noichuyen: getVal('noichuyen'), ghichu: getVal('ghichu')
         };
-        const requiredFields = ['hoten', 'ngaysinh', 'gioitinh', 'trangthai'];
-        if (requiredFields.some(f => !formData[f])) { showNotification('Vui lòng điền các trường bắt buộc', 'error'); return; }
 
-        // Nếu có số hộ khẩu thì phải có quan hệ chủ hộ
+        const requiredFields = ['hoten', 'ngaysinh', 'gioitinh', 'trangthai'];
+        if (requiredFields.some(f => !formData[f])) {
+            showNotification('Vui lòng điền các trường bắt buộc', 'error');
+            return;
+        }
+
         if (formData.sohokhau && !formData.quanhechuho) {
             showNotification('Vui lòng chọn quan hệ với chủ hộ khi thuộc hộ khẩu', 'error');
             return;
@@ -365,22 +437,39 @@ async function saveResident() {
         const url = isEdit ? `${API_URL}/${residentId}` : API_URL;
         const method = isEdit ? 'PUT' : 'POST';
 
-        const response = await fetch(url, { method, headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify(formData) });
+        const response = await fetch(url, {
+            method,
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(formData)
+        });
         const data = await response.json();
 
         if (response.ok && data.success) {
             showNotification(isEdit ? 'Cập nhật thành công' : 'Thêm mới thành công', 'success');
             closeModal();
             await loadResidents();
-        } else { showNotification(data.error || data.message || 'Có lỗi xảy ra', 'error'); }
-    } catch (error) { console.error('Save error:', error); showNotification('Lỗi: ' + error.message, 'error'); }
+        } else {
+            showNotification(data.error || data.message || 'Có lỗi xảy ra', 'error');
+        }
+    } catch (error) {
+        console.error('Save error:', error);
+        showNotification('Lỗi: ' + error.message, 'error');
+    }
 }
 
 let deleteId = null;
 function executeDelete() { /* code xóa */ }
 
 function showNotification(message, type = 'info') {
-    if (typeof Toastify === 'function') Toastify({ text: message, duration: 3000, backgroundColor: type === 'error' ? "#ff5f6d" : "#00b09b" }).showToast();
+    if (typeof Toastify === 'function')
+        Toastify({
+            text: message,
+            duration: 3000,
+            backgroundColor: type === 'error' ? "#ff5f6d" : "#00b09b"
+        }).showToast();
     else alert(message);
 }
 
