@@ -431,6 +431,9 @@ async function handleChangeOwner(sohokhau) {
     const members = await getHouseholdMembers(sohokhau);
     if (!members || members.length === 0) return showAlert('Hộ không có thành viên', 'error');
 
+    // [QUAN TRỌNG] Lưu danh sách thành viên vào biến toàn cục để dùng ở hàm khác
+    window.currentHouseholdMembers = members; 
+
     const currentOwner = members.find(m => m.LA_CHU_HO);
     const otherMembers = members.filter(m => !m.LA_CHU_HO);
 
@@ -467,7 +470,6 @@ async function handleChangeOwner(sohokhau) {
                         <div style="background: #fff3cd; padding: 10px; border-radius: 4px; margin-bottom: 15px; border-left: 4px solid #ffc107;">
                             <small style="color: #856404;">
                                 💡 <strong>Lưu ý:</strong> Vui lòng cập nhật quan hệ của các thành viên với chủ hộ mới. 
-                                Để trống nếu muốn giữ nguyên quan hệ hiện tại.
                             </small>
                         </div>
                         
@@ -477,7 +479,7 @@ async function handleChangeOwner(sohokhau) {
                                 <span style="background: #ffc107; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;">CHỦ HỘ CŨ</span>
                             </label>
                             <select id="old-owner-relation" class="form-control" style="padding: 8px;">
-                                <option value="">-- Giữ nguyên --</option>
+                                <option value="">-- Chọn quan hệ --</option>
                                 <option value="Bố">Bố</option>
                                 <option value="Mẹ">Mẹ</option>
                                 <option value="Ông">Ông</option>
@@ -519,8 +521,10 @@ function showRelationUpdateSection() {
     }
     
     const newOwnerId = parseInt(newOwnerIdStr);
+    // Lấy dữ liệu từ biến toàn cục đã gán ở bước 1
     const allMembers = window.currentHouseholdMembers || [];
     
+    // Lọc ra danh sách thành viên cần cập nhật (trừ chủ hộ mới và trừ chủ hộ cũ vì đã có input riêng)
     const membersToUpdate = allMembers.filter(m => 
         m.MANHANKHAU !== newOwnerId && !m.LA_CHU_HO
     );
@@ -534,7 +538,7 @@ function showRelationUpdateSection() {
                 </span>
             </label>
             <select id="member-relation-${member.MANHANKHAU}" class="form-control" style="padding: 8px;">
-                <option value="">-- Giữ nguyên --</option>
+                <option value="">-- Chọn quan hệ --</option>
                 <option value="Bố">Bố</option>
                 <option value="Mẹ">Mẹ</option>
                 <option value="Ông">Ông</option>
@@ -561,10 +565,15 @@ async function confirmChangeOwnerWithRelations(sohokhau, oldOwnerId) {
     const newOwnerId = parseInt(newOwnerIdStr);
     const oldOwnerNewRelation = document.getElementById('old-owner-relation').value;
     
+    // Kiểm tra xem đã chọn quan hệ cho chủ hộ cũ chưa
+    if (oldOwnerId && !oldOwnerNewRelation) {
+        return showAlert('Vui lòng chọn quan hệ mới cho Chủ hộ cũ', 'warning');
+    }
+
     try {
         const members = window.currentHouseholdMembers || [];
         
-        // 1. Đổi chủ hộ
+        // --- BƯỚC 1: Đổi chủ hộ ---
         const changeOwnerResponse = await fetch(`${API_BASE_URL}/${sohokhau}/change-owner`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
@@ -575,7 +584,7 @@ async function confirmChangeOwnerWithRelations(sohokhau, oldOwnerId) {
         const changeOwnerResult = await changeOwnerResponse.json();
         if (!changeOwnerResult.success) throw new Error(changeOwnerResult.error);
         
-        // 2. Cập nhật quan hệ chủ hộ cũ
+        // --- BƯỚC 2: Cập nhật quan hệ chủ hộ cũ ---
         if (oldOwnerNewRelation && oldOwnerId) {
             await fetch(`${API_BASE_URL}/${sohokhau}/update-relation`, {
                 method: 'PUT',
@@ -588,11 +597,14 @@ async function confirmChangeOwnerWithRelations(sohokhau, oldOwnerId) {
             });
         }
         
-        // 3. Cập nhật quan hệ các thành viên khác
+        // --- BƯỚC 3: Cập nhật quan hệ các thành viên khác ---
+        // Lấy danh sách những người cần cập nhật (trừ chủ hộ mới và cũ)
         const otherMembers = members.filter(m => m.MANHANKHAU !== newOwnerId && !m.LA_CHU_HO);
         
+        // Duyệt qua từng thành viên và gửi API update
         for (const member of otherMembers) {
             const selectElement = document.getElementById(`member-relation-${member.MANHANKHAU}`);
+            // Chỉ cập nhật nếu người dùng đã chọn giá trị
             if (selectElement && selectElement.value) {
                 await fetch(`${API_BASE_URL}/${sohokhau}/update-relation`, {
                     method: 'PUT',
