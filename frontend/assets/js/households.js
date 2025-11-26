@@ -82,7 +82,9 @@ async function openAddMemberModal(sohokhau) {
         if (!result.success) throw new Error('Không thể tải danh sách nhân khẩu');
         
         // Lọc những nhân khẩu chưa có hộ (SOHOKHAU = null hoặc undefined)
-        const availableResidents = result.data.filter(r => !r.SOHOKHAU);
+        const availableResidents = result.data.filter(r => 
+            !r.SOHOKHAU && r.TRANGTHAI !== 'DaQuaDoi' && r.TRANGTHAI !== 'ChuyenDi'
+        );
         
         if (availableResidents.length === 0) {
             showAlert('Không có nhân khẩu nào chưa thuộc hộ khẩu', 'info');
@@ -169,6 +171,83 @@ async function confirmAddMember(sohokhau) {
         }
     } catch (error) {
         showAlert(error.message, 'error');
+    }
+}
+
+// ============================================
+// XÓA THÀNH VIÊN KHỎI HỘ (MỚI)
+// ============================================
+function openRemoveMemberModal(sohokhau, manhankhau, memberName) {
+    const oldModal = document.getElementById('remove-member-modal');
+    if (oldModal) oldModal.remove();
+    
+    const html = `
+        <div class="modal-overlay" id="remove-member-modal" style="display: flex;">
+            <div class="modal-content" style="max-width: 500px;">
+                <div class="modal-header" style="background: #dc3545;">
+                    <h3>⚠️ Xác nhận xóa thành viên</h3>
+                    <button class="close-btn" onclick="document.getElementById('remove-member-modal').remove()">&times;</button>
+                </div>
+                <div class="modal-body" style="background: white; padding: 20px;">
+                    <div style="background: #fff3cd; padding: 15px; border-radius: 6px; border-left: 4px solid #ffc107; margin-bottom: 15px;">
+                        <p style="margin: 0; color: #856404;">
+                            <strong>⚠️ Cảnh báo:</strong><br>
+                            Bạn đang thực hiện thao tác <strong>xóa thành viên</strong> khỏi hộ khẩu.
+                        </p>
+                    </div>
+                    
+                    <p style="margin: 15px 0;">
+                        <strong>Thành viên:</strong> <span style="color: #dc3545;">${memberName}</span><br>
+                        <strong>Mã nhân khẩu:</strong> ${manhankhau}
+                    </p>
+                    
+                    <div class="form-group">
+                        <label><strong>Lý do xóa:</strong></label>
+                        <textarea id="remove-reason" rows="3" class="form-control" 
+                            placeholder="Nhập lý do xóa thành viên (không bắt buộc)..."
+                            style="width: 100%; padding: 10px; border: 1px solid #ced4da; border-radius: 4px;"></textarea>
+                    </div>
+                    
+                    <p style="color: #6c757d; font-size: 13px; margin-top: 10px;">
+                        💡 <em>Lưu ý: Thành viên sẽ được đánh dấu "Đã rời hộ" và có thể thêm vào hộ khác sau này.</em>
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" onclick="document.getElementById('remove-member-modal').remove()">❌ Hủy</button>
+                    <button class="btn btn-danger" onclick="confirmRemoveMember(${sohokhau}, ${manhankhau})">
+                        🗑️ Xác nhận xóa
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', html);
+}
+
+async function confirmRemoveMember(sohokhau, manhankhau) {
+    const reason = document.getElementById('remove-reason').value.trim() || 'Không rõ lý do';
+    
+    try {
+        const response = await fetch(`${API_BASE_URL}/${sohokhau}/remove-member`, {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ manhankhau, lydo: reason })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showAlert('✅ ' + result.message, 'success');
+            document.getElementById('remove-member-modal').remove();
+            closeModal('detail-modal');
+            fetchHouseholds();
+        } else {
+            showAlert('❌ ' + result.error, 'error');
+        }
+    } catch (error) {
+        console.error('Remove member error:', error);
+        showAlert('❌ Lỗi: ' + error.message, 'error');
     }
 }
 
@@ -345,7 +424,9 @@ async function handleViewDetails(id) {
     }
 }
 
-// --- FIX LỖI MODAL ĐỔI CHỦ HỘ + THÊM CẬP NHẬT QUAN HỆ ---
+// ============================================
+// ĐỔI CHỦ HỘ - HIỂN THỊ TẤT CẢ THÀNH VIÊN (CẢI TIẾN)
+// ============================================
 async function handleChangeOwner(sohokhau) {
     const members = await getHouseholdMembers(sohokhau);
     if (!members || members.length === 0) return showAlert('Hộ không có thành viên', 'error');
@@ -355,36 +436,47 @@ async function handleChangeOwner(sohokhau) {
 
     if (otherMembers.length === 0) return showAlert('Không có thành viên khác để đổi', 'warning');
 
-    // Xóa modal cũ nếu còn tồn tại để tránh trùng ID
     const oldModal = document.getElementById('change-owner-modal');
     if (oldModal) oldModal.remove();
 
     const html = `
         <div class="modal-overlay" id="change-owner-modal" style="display: flex;">
-            <div class="modal-content" style="max-width: 700px;">
+            <div class="modal-content" style="max-width: 800px;">
                 <div class="modal-header">
-                    <h3>Đổi chủ hộ</h3>
+                    <h3>🔄 Đổi chủ hộ</h3>
                     <button class="close-btn" onclick="document.getElementById('change-owner-modal').remove()">&times;</button>
                 </div>
                 <div class="modal-body" style="background: white; max-height: 70vh; overflow-y: auto;">
-                    <p><strong>Chủ hộ hiện tại:</strong> ${currentOwner ? currentOwner.HOTEN : 'N/A'}</p>
+                    <div style="background: #e3f2fd; padding: 12px; border-radius: 6px; margin-bottom: 20px;">
+                        <p style="margin: 0;"><strong>👤 Chủ hộ hiện tại:</strong> ${currentOwner ? currentOwner.HOTEN : 'N/A'}</p>
+                    </div>
                     
                     <div class="form-group">
-                        <label>Chọn chủ hộ mới:</label>
-                        <select id="new-owner-select" class="form-control" onchange="showRelationUpdateSection()">
-                            <option value="">-- Chọn --</option>
+                        <label><strong>Chọn chủ hộ mới:</strong></label>
+                        <select id="new-owner-select" class="form-control" onchange="showRelationUpdateSection()" style="padding: 10px;">
+                            <option value="">-- Chọn thành viên --</option>
                             ${otherMembers.map(m => `<option value="${m.MANHANKHAU}">${m.HOTEN} (${m.QUANHECHUHO || 'N/A'})</option>`).join('')}
                         </select>
                     </div>
                     
-                    <!-- Phần cập nhật quan hệ (Mặc định ẩn) -->
-                    <div id="relation-update-section" style="display: none; margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 6px;">
-                        <h4 style="margin-bottom: 15px; font-size: 16px; color: #495057;">Cập nhật quan hệ các thành viên</h4>
+                    <div id="relation-update-section" style="display: none; margin-top: 20px; padding: 20px; background: #f8f9fa; border-radius: 8px; border: 2px solid #007bff;">
+                        <h4 style="margin: 0 0 15px 0; font-size: 16px; color: #0056b3;">
+                            📝 Cập nhật quan hệ các thành viên với chủ hộ mới
+                        </h4>
                         
-                        <!-- Quan hệ chủ hộ cũ -->
-                        <div class="form-group">
-                            <label><strong>${currentOwner ? currentOwner.HOTEN : ''}</strong> (Chủ hộ cũ) → Quan hệ mới:</label>
-                            <select id="old-owner-relation" class="form-control">
+                        <div style="background: #fff3cd; padding: 10px; border-radius: 4px; margin-bottom: 15px; border-left: 4px solid #ffc107;">
+                            <small style="color: #856404;">
+                                💡 <strong>Lưu ý:</strong> Vui lòng cập nhật quan hệ của các thành viên với chủ hộ mới. 
+                                Để trống nếu muốn giữ nguyên quan hệ hiện tại.
+                            </small>
+                        </div>
+                        
+                        <div class="form-group" style="background: white; padding: 15px; border-radius: 6px; margin-bottom: 12px; border: 1px solid #dee2e6;">
+                            <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                                <span style="font-weight: 600; color: #dc3545;">👤 ${currentOwner ? currentOwner.HOTEN : ''}</span>
+                                <span style="background: #ffc107; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;">CHỦ HỘ CŨ</span>
+                            </label>
+                            <select id="old-owner-relation" class="form-control" style="padding: 8px;">
                                 <option value="">-- Giữ nguyên --</option>
                                 <option value="Bố">Bố</option>
                                 <option value="Mẹ">Mẹ</option>
@@ -401,13 +493,14 @@ async function handleChangeOwner(sohokhau) {
                             </select>
                         </div>
                         
-                        <!-- Các thành viên khác -->
                         <div id="other-members-relations"></div>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button class="btn btn-secondary" onclick="document.getElementById('change-owner-modal').remove()">Hủy</button>
-                    <button class="btn btn-primary" onclick="confirmChangeOwnerWithRelations(${sohokhau}, ${currentOwner ? currentOwner.MANHANKHAU : null})">Xác nhận</button>
+                    <button class="btn btn-secondary" onclick="document.getElementById('change-owner-modal').remove()">❌ Hủy</button>
+                    <button class="btn btn-primary" onclick="confirmChangeOwnerWithRelations(${sohokhau}, ${currentOwner ? currentOwner.MANHANKHAU : null})">
+                        ✅ Xác nhận đổi chủ hộ
+                    </button>
                 </div>
             </div>
         </div>
@@ -415,56 +508,112 @@ async function handleChangeOwner(sohokhau) {
     document.body.insertAdjacentHTML('beforeend', html);
 }
 
-// Hiện phần cập nhật quan hệ khi chọn chủ hộ mới
 function showRelationUpdateSection() {
     const section = document.getElementById('relation-update-section');
-    const newOwnerId = document.getElementById('new-owner-select').value;
+    const newOwnerIdStr = document.getElementById('new-owner-select').value;
+    const otherMembersContainer = document.getElementById('other-members-relations');
     
-    if (newOwnerId) {
-        section.style.display = 'block';
-    } else {
+    if (!newOwnerIdStr) {
         section.style.display = 'none';
+        return;
     }
+    
+    const newOwnerId = parseInt(newOwnerIdStr);
+    const allMembers = window.currentHouseholdMembers || [];
+    
+    const membersToUpdate = allMembers.filter(m => 
+        m.MANHANKHAU !== newOwnerId && !m.LA_CHU_HO
+    );
+    
+    otherMembersContainer.innerHTML = membersToUpdate.map(member => `
+        <div class="form-group" style="background: white; padding: 15px; border-radius: 6px; margin-bottom: 12px; border: 1px solid #dee2e6;">
+            <label style="font-weight: 600; color: #495057; margin-bottom: 8px; display: block;">
+                👤 ${member.HOTEN}
+                <span style="color: #6c757d; font-weight: 400; font-size: 13px;">
+                    (Hiện tại: ${member.QUANHECHUHO || 'Chưa rõ'})
+                </span>
+            </label>
+            <select id="member-relation-${member.MANHANKHAU}" class="form-control" style="padding: 8px;">
+                <option value="">-- Giữ nguyên --</option>
+                <option value="Bố">Bố</option>
+                <option value="Mẹ">Mẹ</option>
+                <option value="Ông">Ông</option>
+                <option value="Bà">Bà</option>
+                <option value="Vợ">Vợ</option>
+                <option value="Chồng">Chồng</option>
+                <option value="Anh">Anh</option>
+                <option value="Chị">Chị</option>
+                <option value="Em">Em</option>
+                <option value="Con">Con</option>
+                <option value="Cháu">Cháu</option>
+                <option value="Khác">Khác</option>
+            </select>
+        </div>
+    `).join('');
+    
+    section.style.display = 'block';
 }
 
 async function confirmChangeOwnerWithRelations(sohokhau, oldOwnerId) {
-    const newOwnerId = document.getElementById('new-owner-select').value;
-    if (!newOwnerId) return showAlert('Vui lòng chọn chủ hộ mới', 'warning');
-
+    const newOwnerIdStr = document.getElementById('new-owner-select').value;
+    if (!newOwnerIdStr) return showAlert('Vui lòng chọn chủ hộ mới', 'warning');
+    
+    const newOwnerId = parseInt(newOwnerIdStr);
     const oldOwnerNewRelation = document.getElementById('old-owner-relation').value;
     
     try {
+        const members = window.currentHouseholdMembers || [];
+        
         // 1. Đổi chủ hộ
         const changeOwnerResponse = await fetch(`${API_BASE_URL}/${sohokhau}/change-owner`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include',
-            body: JSON.stringify({ newOwnerId: parseInt(newOwnerId) })
+            body: JSON.stringify({ newOwnerId })
         });
         
         const changeOwnerResult = await changeOwnerResponse.json();
         if (!changeOwnerResult.success) throw new Error(changeOwnerResult.error);
         
-        // 2. Cập nhật quan hệ chủ hộ cũ (nếu có)
+        // 2. Cập nhật quan hệ chủ hộ cũ
         if (oldOwnerNewRelation && oldOwnerId) {
             await fetch(`${API_BASE_URL}/${sohokhau}/update-relation`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
                 body: JSON.stringify({ 
-                    memberId: parseInt(oldOwnerId), 
+                    memberId: oldOwnerId, 
                     newRelation: oldOwnerNewRelation 
                 })
             });
         }
         
-        showAlert('Đổi chủ hộ thành công!', 'success');
+        // 3. Cập nhật quan hệ các thành viên khác
+        const otherMembers = members.filter(m => m.MANHANKHAU !== newOwnerId && !m.LA_CHU_HO);
+        
+        for (const member of otherMembers) {
+            const selectElement = document.getElementById(`member-relation-${member.MANHANKHAU}`);
+            if (selectElement && selectElement.value) {
+                await fetch(`${API_BASE_URL}/${sohokhau}/update-relation`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ 
+                        memberId: member.MANHANKHAU, 
+                        newRelation: selectElement.value 
+                    })
+                });
+            }
+        }
+        
+        showAlert('✅ Đổi chủ hộ và cập nhật quan hệ thành công!', 'success');
         document.getElementById('change-owner-modal').remove();
         closeModal('detail-modal');
         fetchHouseholds();
         
     } catch (error) {
-        showAlert(error.message, 'error');
+        console.error('Error:', error);
+        showAlert('❌ Lỗi: ' + error.message, 'error');
     }
 }
 // ============================================

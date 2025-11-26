@@ -375,5 +375,37 @@ exports.addMemberToHousehold = async (req, res) => {
 };
 
 // ============================================
-// 10. TÁCH HỘ KHẨU (CẢI TIẾN)
+// 11. XÓA THÀNH VIÊN KHỎI HỘ KHẨU (MỚI)
 // ============================================
+exports.removeMemberFromHousehold = async (req, res) => {
+    try {
+        const sohokhau = req.params.id;
+        const { manhankhau, lydo } = req.body;
+        const userId = req.user?.id;
+
+        if (!manhankhau) {
+            return res.status(400).json({
+                success: false,
+                error: 'Thiếu thông tin thành viên cần xóa'
+            });
+        }
+
+        await Household.removeMemberFromHousehold(
+            sohokhau, 
+            manhankhau, 
+            lydo || 'Không rõ lý do', 
+            userId
+        );
+
+        res.status(200).json({
+            success: true,
+            message: 'Xóa thành viên khỏi hộ khẩu thành công'
+        });
+    } catch (error) {
+        console.error('Remove member error:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message || 'Lỗi máy chủ'
+        });
+    }
+};

@@ -637,6 +637,79 @@ const addMemberToHousehold = async (sohokhau, manhankhau, quanhechuho, updatedBy
   }
 };
 
+// ============================================
+// 12. XÓA THÀNH VIÊN KHỎI HỘ KHẨU (MỚI)
+// ============================================
+const removeMemberFromHousehold = async (sohokhau, manhankhau, lydo, updatedBy = null) => {
+  const connection = await pool.getConnection();
+  
+  try {
+    await connection.beginTransaction();
+    
+    // 1. Kiểm tra thành viên có thuộc hộ không
+    const [checkMember] = await connection.query(`
+      SELECT hknk.*, nk.HOTEN
+      FROM HO_KHAU_NHAN_KHAU hknk
+      JOIN NHAN_KHAU nk ON hknk.MANHANKHAU = nk.MANHANKHAU
+      WHERE hknk.SOHOKHAU = ? 
+      AND hknk.MANHANKHAU = ? 
+      AND hknk.TRANGTHAI = 'DangO'
+    `, [sohokhau, manhankhau]);
+    
+    if (checkMember.length === 0) {
+      throw new Error('Nhân khẩu không thuộc hộ khẩu này hoặc đã rời hộ');
+    }
+    
+    const member = checkMember[0];
+    
+    // 2. KHÔNG CHO XÓA CHỦ HỘ
+    if (member.LA_CHU_HO) {
+      throw new Error('Không thể xóa chủ hộ. Vui lòng đổi chủ hộ trước khi xóa.');
+    }
+    
+    // 3. Đánh dấu thành viên rời hộ
+    await connection.query(`
+      UPDATE HO_KHAU_NHAN_KHAU
+      SET TRANGTHAI = 'DaRoi',
+          NGAY_ROI_HO = CURDATE(),
+          LYDO_ROI_HO = ?
+      WHERE SOHOKHAU = ? AND MANHANKHAU = ? AND TRANGTHAI = 'DangO'
+    `, [lydo || 'Xóa khỏi hộ khẩu', sohokhau, manhankhau]);
+    
+    // 4. Ghi log
+    await connection.query(`
+      INSERT INTO LICH_SU_HO_KHAU (
+        SOHOKHAU, LOAI_BIEN_DONG, NGAY_BIEN_DONG,
+        MO_TA, NGUOI_THUC_HIEN
+      ) VALUES (?, 'XoaThanhVien', CURDATE(), ?, ?)
+    `, [
+      sohokhau, 
+      `Xóa nhân khẩu ${member.HOTEN} (ID: ${manhankhau}) khỏi hộ. Lý do: ${lydo || 'Không rõ'}`,
+      updatedBy
+    ]);
+    
+    await connection.query(`
+      INSERT INTO LICH_SU_NHAN_KHAU (
+        MANHANKHAU, LOAI_BIEN_DONG, NGAY_BIEN_DONG,
+        LYDO, NGUOI_THUC_HIEN
+      ) VALUES (?, 'RoiHo', CURDATE(), ?, ?)
+    `, [
+      manhankhau, 
+      `Rời hộ khẩu số ${sohokhau}. Lý do: ${lydo || 'Không rõ'}`,
+      updatedBy
+    ]);
+    
+    await connection.commit();
+    return { success: true };
+    
+  } catch (error) {
+    await connection.rollback();
+    throw error;
+  } finally {
+    connection.release();
+  }
+};
+
 
 module.exports = {
   getAllHousehold,
@@ -649,5 +722,6 @@ module.exports = {
   updateMemberRelation,       // MỚI
   getHouseholdDetails,
   splitHousehold,
-  addMemberToHousehold        // MỚI
+  addMemberToHousehold,        // MỚI
+  removeMemberFromHousehold     //MỚI
 };
