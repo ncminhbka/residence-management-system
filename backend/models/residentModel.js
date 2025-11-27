@@ -279,7 +279,7 @@ const updateResident = async (id, updatedData, updatedBy = null) => {
             }
 
             if (updateLogFields.length > 0) {
-              updateLogFields.push('UPDATED_AT = NOW()');
+              updateLogFields.push('CREATED_AT = NOW()');
               updateLogValues.push(existingLog[0].ID);
 
               await connection.query(`

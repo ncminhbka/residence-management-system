@@ -150,7 +150,7 @@ exports.updateResident = async (req, res) => {
         const allowedFields = [
             'HOTEN', 'BIDANH', 'NGAYSINH', 'GIOITINH', 'NOISINH', 'NGUYENQUAN',
             'DANTOC', 'QUOCTICH', 'CCCD', 'NOILAMVIEC', 'NGHENGHIEP', 'NGAYCAP', 'NOICAP',
-            'SOHOKHAU', 'QUANHECHUHO', 'TRANGTHAI', 'NOITHUONGTRUCU',
+            'TRANGTHAI', 'NOITHUONGTRUCU',
             // Các trường phụ phục vụ ghi log biến động
             'NOICHUYEN', 'GHICHU', 'NGAYCHUYENDI'
         ];

@@ -51,7 +51,8 @@ function renderResidents(residents) {
                 </td>
                 <td>${resident.NGAYSINH ? formatDate(resident.NGAYSINH) : '-'}</td>
                 <td>${resident.CCCD || '<span class="text-muted">Chưa có</span>'}</td> 
-                <td>${resident.DIACHI_HK || resident.NOITHUONGTRUCU || '-'}</td>
+                <td>${resident.DIACHI_HK || '-'}</td>
+                <td>${resident.SOHOKHAU || 'Chưa có hộ'}</td>
                 <td>
                     <div class="action-buttons">
                         <button class="btn btn-sm btn-primary" onclick="viewDetails(${resident.MANHANKHAU})">Xem</button>
