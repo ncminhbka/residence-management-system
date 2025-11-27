@@ -1,191 +1,411 @@
 const Household = require('../models/householdModel');
-const Resident = require('../models/residentModel');
 
-// Tạo mới một hộ khẩu
-exports.createHousehold = async (req, res) => {
-    try {
-        const { manhankhauchuho, diachi, hososo, sodangkyso, toso } = req.body;
-        
-        // BUG FIX: Controller cũ kiểm tra hotenchuho (không tồn tại trong request)
-        if (!manhankhauchuho || !diachi || !hososo || !sodangkyso || !toso) {
-            return res.status(400).json({ success: false, error: 'Thiếu thông tin bắt buộc' });
-        }
-        
-        // BUG FIX: isHoKhauTaken chỉ nhận 1 tham số (maChuHo), không phải 2
-        const isTaken = await Household.isHoKhauTaken(manhankhauchuho);
-        if (isTaken) {
-            return res.status(400).json({ success: false, error: 'Chủ hộ khẩu đã đứng tên hộ khẩu khác' });
-        }
-
-        const newHousehold = await Household.addHouseholds(manhankhauchuho, diachi, hososo, sodangkyso, toso);
-
-        res.status(201).json({ 
-            success: true, 
-            message: 'Tạo mới hộ khẩu thành công', 
-            data: { 
-                sohokhau: newHousehold.insertId,
-                manhankhauchuho,
-                diachi, 
-                hososo, 
-                sodangkyso, 
-                toso 
-            } 
-        });
-    } catch (error) {
-        console.error('Create household error:', error);
-        res.status(500).json({ success: false, error: 'Lỗi máy chủ: ' + error.message });
-    }
-};
-
-// Lấy tất cả danh sách hộ khẩu
+// ============================================
+// 1. LẤY DANH SÁCH HỘ KHẨU
+// ============================================
 exports.getAllHouseholds = async (req, res) => {
     try {
         const households = await Household.getAllHousehold();
         res.status(200).json({
-            success: true, 
+            success: true,
             data: households,
-            pagination: { 
-                totalItems: households.length, 
-                totalPages: Math.ceil(households.length / 10), 
-                currentPage: 1 
+            pagination: {
+                totalItems: households.length,
+                totalPages: Math.ceil(households.length / 10),
+                currentPage: 1
             }
         });
     } catch (error) {
         console.error('Get all households error:', error);
-        res.status(500).json({ success: false, error: 'Lỗi máy chủ: ' + error.message });
+        res.status(500).json({
+            success: false,
+            error: 'Lỗi máy chủ: ' + error.message
+        });
     }
 };
 
-// Xóa hộ khẩu bằng số hộ khẩu
-exports.deleteHousehold = async (req, res) => {
-    try {
-        // BUG FIX: Route dùng :id, không phải :sohokhau
-        const result = await Household.deleteHouseholds(req.params.id);
-        if (result.affectedRows === 0) {
-            return res.status(404).json({ success: false, error: 'Hộ khẩu không tồn tại' });
-        }
-        res.status(200).json({ success: true, message: 'Xóa hộ khẩu thành công' });
-    } catch (error) {
-        console.error('Delete household error:', error);
-        res.status(500).json({ success: false, error: 'Lỗi máy chủ: ' + error.message });
-    }
-};
-
-// Cập nhật hộ khẩu bằng số hộ khẩu
-exports.updateHousehold = async (req, res) => {
-    try {
-        // BUG FIX: Route dùng :id, không phải :sohokhau
-        const sohokhau = req.params.id;
-        const { hotenchuho, diachi, hososo, sodangkyso, toso } = req.body;
-        
-        // BUG FIX: hotenchuho thực ra là mã nhân khẩu (do frontend gửi)
-        // Model updateHouseholds nhận: (sohokhau, newMaChuHo, newDiaChi, newHosoSo, newSoDangKySo, newToSo)
-        const result = await Household.updateHouseholds(sohokhau, hotenchuho, diachi, hososo, sodangkyso, toso);
-        
-        if (result.affectedRows === 0) {
-            return res.status(404).json({ success: false, error: 'Hộ khẩu không tồn tại' });
-        }
-        res.status(200).json({ success: true, message: 'Cập nhật hộ khẩu thành công' });
-    } catch (error) {
-        console.error('Update household error:', error);
-        res.status(500).json({ success: false, error: 'Lỗi máy chủ: ' + error.message });
-    }
-};
-
-// Tìm kiếm hộ khẩu theo tên chủ hộ hoặc số hộ khẩu
+// ============================================
+// 2. TÌM KIẾM HỘ KHẨU
+// ============================================
 exports.searchHouseholds = async (req, res) => {
     try {
         const { query } = req.query;
+
         if (!query) {
-            return res.status(400).json({ success: false, error: 'Thiếu thông tin tìm kiếm' });
+            return res.status(400).json({
+                success: false,
+                error: 'Thiếu thông tin tìm kiếm'
+            });
         }
+
         const households = await Household.searchHouseholds(query);
         res.status(200).json({ success: true, data: households });
     } catch (error) {
         console.error('Search households error:', error);
-        res.status(500).json({ success: false, error: 'Lỗi máy chủ: ' + error.message });
+        res.status(500).json({
+            success: false,
+            error: 'Lỗi máy chủ: ' + error.message
+        });
     }
 };
 
-// Lấy thông tin chi tiết hộ khẩu
+// ============================================
+// 3. TẠO HỘ KHẨU MỚI
+// ============================================
+exports.createHousehold = async (req, res) => {
+    try {
+        const { manhankhauchuho, diachi, hososo, sodangkyso, toso } = req.body;
+        const userId = req.user?.id;
+
+        if (!manhankhauchuho || !diachi || !hososo || !sodangkyso || !toso) {
+            return res.status(400).json({
+                success: false,
+                error: 'Thiếu thông tin bắt buộc'
+            });
+        }
+
+        // Kiểm tra chủ hộ đã đứng tên hộ nào chưa
+        const isTaken = await Household.isHoKhauTaken(manhankhauchuho);
+        if (isTaken) {
+            return res.status(400).json({
+                success: false,
+                error: 'Nhân khẩu này đã là chủ hộ của một hộ khẩu khác'
+            });
+        }
+
+        const newHousehold = await Household.addHouseholds(
+            manhankhauchuho,
+            diachi,
+            hososo,
+            sodangkyso,
+            toso,
+            userId
+        );
+
+        res.status(201).json({
+            success: true,
+            message: 'Tạo mới hộ khẩu thành công',
+            data: {
+                sohokhau: newHousehold.insertId,
+                manhankhauchuho,
+                diachi,
+                hososo,
+                sodangkyso,
+                toso
+            }
+        });
+    } catch (error) {
+        console.error('Create household error:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message || 'Lỗi máy chủ'
+        });
+    }
+};
+
+// ============================================
+// 4. CẬP NHẬT HỘ KHẨU
+// ============================================
+exports.updateHousehold = async (req, res) => {
+    try {
+        const sohokhau = req.params.id;
+        const { diachi, hososo, sodangkyso, toso } = req.body;
+        const userId = req.user?.id;
+
+        const result = await Household.updateHouseholds(
+            sohokhau,
+            { diachi, hososo, sodangkyso, toso },
+            userId
+        );
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({
+                success: false,
+                error: 'Hộ khẩu không tồn tại'
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            message: 'Cập nhật hộ khẩu thành công'
+        });
+    } catch (error) {
+        console.error('Update household error:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message || 'Lỗi máy chủ'
+        });
+    }
+};
+
+// ============================================
+// 5. XÓA HỘ KHẨU
+// ============================================
+exports.deleteHousehold = async (req, res) => {
+    try {
+        const sohokhau = req.params.id;
+        const userId = req.user?.id;
+
+        const result = await Household.deleteHouseholds(sohokhau, userId);
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({
+                success: false,
+                error: 'Hộ khẩu không tồn tại'
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            message: 'Xóa hộ khẩu thành công'
+        });
+    } catch (error) {
+        console.error('Delete household error:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message || 'Lỗi máy chủ'
+        });
+    }
+};
+
+// ============================================
+// 6. XEM CHI TIẾT HỘ KHẨU
+// ============================================
 exports.getHouseholdDetails = async (req, res) => {
     try {
-        // BUG FIX: Route dùng :id, không phải :sohokhau
         const sohokhau = req.params.id;
-        
+
         // Lấy thông tin hộ khẩu
         const household = await Household.searchHouseholds(sohokhau);
         if (!household || household.length === 0) {
-            return res.status(404).json({ success: false, error: 'Hộ khẩu không tồn tại' });
+            return res.status(404).json({
+                success: false,
+                error: 'Hộ khẩu không tồn tại'
+            });
         }
-        
-        // Lấy danh sách thành viên (có thể rỗng)
+
+        // Lấy danh sách thành viên
         const members = await Household.getHouseholdDetails(sohokhau);
-        
-        // BUG FIX CRITICAL: Không trả về 404 nếu không có thành viên
-        // Một hộ khẩu mới tạo có thể chưa có thành viên nào
-        res.status(200).json({ 
-            success: true, 
-            data1: household, 
-            data2: members || []  // Trả về array rỗng nếu không có thành viên
+
+        res.status(200).json({
+            success: true,
+            data1: household,
+            data2: members || []
         });
     } catch (error) {
         console.error('Get household details error:', error);
-        res.status(500).json({ success: false, error: 'Lỗi máy chủ: ' + error.message });
+        res.status(500).json({
+            success: false,
+            error: error.message || 'Lỗi máy chủ'
+        });
     }
 };
 
-// Tách hộ mới nhưng vẫn giữ nguyên chủ hộ khẩu cũ
+// ============================================
+// 7. ĐỔI CHỦ HỘ (MỚI)
+// ============================================
+exports.changeOwner = async (req, res) => {
+    try {
+        const sohokhau = req.params.id;
+        const { newOwnerId } = req.body;
+        const userId = req.user?.id;
+
+        if (!newOwnerId) {
+            return res.status(400).json({
+                success: false,
+                error: 'Thiếu thông tin chủ hộ mới'
+            });
+        }
+
+        await Household.changeHouseholdOwner(sohokhau, newOwnerId, userId);
+
+        res.status(200).json({
+            success: true,
+            message: 'Đổi chủ hộ thành công'
+        });
+    } catch (error) {
+        console.error('Change owner error:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message || 'Lỗi máy chủ'
+        });
+    }
+};
+
+// ============================================
+// 8. THAY ĐỔI QUAN HỆ THÀNH VIÊN (MỚI)
+// ============================================
+exports.updateMemberRelation = async (req, res) => {
+    try {
+        const sohokhau = req.params.id;
+        const { memberId, newRelation } = req.body;
+        const userId = req.user?.id;
+
+        if (!memberId || !newRelation) {
+            return res.status(400).json({
+                success: false,
+                error: 'Thiếu thông tin'
+            });
+        }
+
+        await Household.updateMemberRelation(
+            sohokhau,
+            memberId,
+            newRelation,
+            userId
+        );
+
+        res.status(200).json({
+            success: true,
+            message: 'Cập nhật quan hệ thành công'
+        });
+    } catch (error) {
+        console.error('Update relation error:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message || 'Lỗi máy chủ'
+        });
+    }
+};
+
+// ============================================
+// 9. TÁCH HỘ KHẨU (CẢI TIẾN)
+// ============================================
 exports.splitHousehold = async (req, res) => {
     try {
-        const sohokhaugoc = req.body;
-        const {machuhomoi, diachimoi, hososomoi, sodangkysomoi, tosomoi } = req.body.thongtinhokhaumoi;
-        const membersToMove = req.body.thanhviensanghokhaumoi;
-        
-        // Kiểm tra thông tin đầu vào
-        if (!sohokhaugoc || !machuhomoi || !diachimoi || !hososomoi || !sodangkysomoi || !tosomoi) {
-            return res.status(400).json({ success: false, error: 'Thiếu thông tin hộ khẩu mới' });
+        const userId = req.user?.id;
+        const {
+            sohokhaugoc,
+            thongtinhokhaumoi,
+            thanhviensanghokhaumoi,
+            quanheThanhVien  // MỚI: Object chứa quan hệ của từng thành viên
+        } = req.body;
+
+        // Validate
+        if (!sohokhaugoc || !thongtinhokhaumoi || !thanhviensanghokhaumoi) {
+            return res.status(400).json({
+                success: false,
+                error: 'Thiếu thông tin tách hộ'
+            });
         }
-        
-        if (!membersToMove || membersToMove.length === 0) {
-            return res.status(400).json({ success: false, error: 'Vui lòng chọn ít nhất một thành viên để chuyển' });
+
+        const { machuhomoi, diachimoi, hososomoi, sodangkysomoi, tosomoi } = thongtinhokhaumoi;
+
+        if (!machuhomoi || !diachimoi || !hososomoi || !sodangkysomoi || !tosomoi) {
+            return res.status(400).json({
+                success: false,
+                error: 'Thiếu thông tin hộ khẩu mới'
+            });
         }
-        
-        // BUG FIX: Kiểm tra chủ hộ mới có bị trùng không
+
+        if (!thanhviensanghokhaumoi || thanhviensanghokhaumoi.length === 0) {
+            return res.status(400).json({
+                success: false,
+                error: 'Vui lòng chọn ít nhất một thành viên để chuyển'
+            });
+        }
+
+        // Kiểm tra chủ hộ mới có bị trùng không
         const isTaken = await Household.isHoKhauTaken(machuhomoi);
         if (isTaken) {
-            return res.status(400).json({ success: false, error: 'Chủ hộ mới đã đứng tên hộ khẩu khác' });
+            return res.status(400).json({
+                success: false,
+                error: 'Chủ hộ mới đã là chủ hộ của hộ khẩu khác'
+            });
         }
 
-        const isExist = await Household.isExistCitizen(machuhomoi);
-        if (!isExist) {
-            return res.status(400).json({ success: false, error: 'Mã nhân khẩu chủ hộ mới không tồn tại' });
-        }
+        // Tách hộ
+        const result = await Household.splitHousehold(
+            sohokhaugoc,
+            {
+                machuho: machuhomoi,
+                diachi: diachimoi,
+                hososo: hososomoi,
+                sodangkyso: sodangkysomoi,
+                toso: tosomoi,
+                quanheThanhVien: quanheThanhVien || {}  // Truyền thêm quan hệ
+            },
+            thanhviensanghokhaumoi,
+            userId
+        );
 
-        const isBelongToOtherHousehold = await Household.isBelongToOtherHousehold(machuhomoi, membersToMove);
-        if (isBelongToOtherHousehold){
-            return res.status(400).json({ success: false, error: 'Chủ hộ mới đang thuộc hộ khẩu khác' });
-        }
-        
-        // Tạo hộ khẩu mới
-        const newHousehold = await Household.addHouseholds(machuhomoi, diachimoi, hososomoi, sodangkysomoi, tosomoi);
-        
-        // Chuyển thành viên sang hộ khẩu mới
-        const result = await Household.moveMembersToNewHousehold(membersToMove, newHousehold.insertId);
-        
-        if (result.affectedRows === 0) {
-            return res.status(500).json({ success: false, error: 'Lỗi khi chuyển thành viên sang hộ khẩu mới' });
-        }
-
-        res.status(200).json({ 
-            success: true, 
-            message: 'Tách hộ khẩu thành công', 
-            data: { sohokhaumoi: newHousehold.insertId } 
+        res.status(200).json({
+            success: true,
+            message: 'Tách hộ khẩu thành công',
+            data: { sohokhaumoi: result.insertId }
         });
     } catch (error) {
         console.error('Split household error:', error);
-        res.status(500).json({ success: false, error: 'Lỗi máy chủ: ' + error.message });
+        res.status(500).json({
+            success: false,
+            error: error.message || 'Lỗi máy chủ'
+        });
     }
+};
 
-    
+// ============================================
+// 10. THÊM THÀNH VIÊN VÀO HỘ KHẨU (MỚI)
+// ============================================
+exports.addMemberToHousehold = async (req, res) => {
+    try {
+        const sohokhau = req.params.id;
+        const { manhankhau, quanhechuho } = req.body;
+        const userId = req.user?.id;
+
+        if (!manhankhau || !quanhechuho) {
+            return res.status(400).json({
+                success: false,
+                error: 'Thiếu thông tin thành viên'
+            });
+        }
+
+        await Household.addMemberToHousehold(sohokhau, manhankhau, quanhechuho, userId);
+
+        res.status(200).json({
+            success: true,
+            message: 'Thêm thành viên vào hộ khẩu thành công'
+        });
+    } catch (error) {
+        console.error('Add member error:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message || 'Lỗi máy chủ'
+        });
+    }
+};
+
+// ============================================
+// 11. XÓA THÀNH VIÊN KHỎI HỘ KHẨU (MỚI)
+// ============================================
+exports.removeMemberFromHousehold = async (req, res) => {
+    try {
+        const sohokhau = req.params.id;
+        const { manhankhau, lydo } = req.body;
+        const userId = req.user?.id;
+
+        if (!manhankhau) {
+            return res.status(400).json({
+                success: false,
+                error: 'Thiếu thông tin thành viên cần xóa'
+            });
+        }
+
+        await Household.removeMemberFromHousehold(
+            sohokhau, 
+            manhankhau, 
+            lydo || 'Không rõ lý do', 
+            userId
+        );
+
+        res.status(200).json({
+            success: true,
+            message: 'Xóa thành viên khỏi hộ khẩu thành công'
+        });
+    } catch (error) {
+        console.error('Remove member error:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message || 'Lỗi máy chủ'
+        });
+    }
 };

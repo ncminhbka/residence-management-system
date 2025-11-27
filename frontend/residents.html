@@ -10,6 +10,72 @@
     <link rel="stylesheet" href="assets/css/residents.css" />
 
     <style>
+        /* [MỚI] CSS Phân trang (Bạn đang thiếu phần này) */
+        .pagination {
+            display: flex;
+            justify-content: flex-end;
+            gap: 5px;
+            margin-top: 20px;
+        }
+
+        .pagination button {
+            padding: 8px 12px;
+            border: 1px solid #dee2e6;
+            background: white;
+            cursor: pointer;
+            border-radius: 4px;
+            color: #007bff;
+            font-size: 14px;
+            min-width: 35px;
+        }
+
+        .pagination button:hover {
+            background-color: #e9ecef;
+        }
+
+        .pagination button.active {
+            background: #007bff;
+            color: white;
+            border-color: #007bff;
+        }
+
+        .pagination button:disabled {
+            color: #6c757d;
+            cursor: not-allowed;
+            background: #e9ecef;
+        }
+
+        /* CSS ẩn hiện form và làm mờ hàng */
+        .hidden-section {
+            display: none;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        .row-dimmed {
+            background-color: #f8f9fa;
+            color: #adb5bd !important;
+        }
+
+        .row-dimmed td {
+            color: #adb5bd !important;
+        }
+
+        .row-dimmed strong {
+            color: #6c757d;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
         /* ==== Content Header ==== */
         .content-header {
             display: flex;
@@ -373,10 +439,9 @@
         <section class="content">
             <h2>Quản lý Nhân khẩu</h2>
 
-            <!-- Thanh tìm kiếm và nút thêm -->
             <div class="content-header">
                 <div class="search-bar">
-                    <input id="search-input" type="text" placeholder="Tìm theo họ tên" />
+                    <input id="search-input" type="text" placeholder="Tìm theo họ tên hoặc số CCCD" />
                     <button id="search-btn" class="btn btn-primary">Tìm kiếm</button>
                     <button id="clear-search-btn" class="btn btn-secondary">Xóa</button>
                 </div>
@@ -391,16 +456,17 @@
                 <table class="data-table">
                     <thead>
                         <tr>
-                            <th>Mã NK</th>
-                            <th>Họ tên</th>
-                            <th>Nơi sinh</th>
-                            <th>Nguyên quán</th>
-                            <th>Hành động</th>
+                            <th style="width: 80px;">Mã NK</th>
+                            <th style="width: 200px;">Họ tên</th>
+                            <th style="width: 120px;">Ngày sinh</th>
+                            <th style="width: 150px;">CCCD</th>
+                            <th>Địa chỉ</th>
+                            <th style="width: 180px;">Hành động</th>
                         </tr>
                     </thead>
                     <tbody id="residents-table-body">
                         <tr>
-                            <td colspan="5" style="text-align: center; padding: 40px; color: #6c757d;">
+                            <td colspan="6" style="text-align: center; padding: 40px; color: #6c757d;">
                                 Đang tải dữ liệu...
                             </td>
                         </tr>
@@ -408,6 +474,7 @@
                 </table>
             </div>
 
+            <!-- Vùng chứa nút phân trang -->
             <div id="pagination-controls" class="pagination"></div>
         </section>
     </main>
@@ -475,17 +542,13 @@
                     </div>
                 </div>
 
-                <!-- Thông tin công việc & Giấy tờ -->
+                <!-- Giấy tờ tùy thân & Công việc -->
                 <div class="info-section">
-                    <h4>Thông tin công việc & Giấy tờ</h4>
+                    <h4>Giấy tờ tùy thân & Công việc</h4>
                     <div class="info-grid">
                         <div class="info-item">
-                            <span class="info-label">Nghề nghiệp:</span>
-                            <span class="info-value" id="detail-nghenghiep">-</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Quan hệ chủ hộ:</span>
-                            <span class="info-value" id="detail-quanhechuho">-</span>
+                            <span class="info-label">Số CCCD/CMND:</span>
+                            <span class="info-value" id="detail-cccd">-</span>
                         </div>
                         <div class="info-item">
                             <span class="info-label">Ngày cấp:</span>
@@ -494,6 +557,18 @@
                         <div class="info-item">
                             <span class="info-label">Nơi cấp:</span>
                             <span class="info-value" id="detail-noicap">-</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Quan hệ chủ hộ:</span>
+                            <span class="info-value" id="detail-quanhechuho">-</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Nghề nghiệp:</span>
+                            <span class="info-value" id="detail-nghenghiep">-</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Nơi làm việc:</span>
+                            <span class="info-value" id="detail-noilamviec">-</span>
                         </div>
                     </div>
                 </div>
@@ -509,6 +584,25 @@
                         <div class="info-item">
                             <span class="info-label">Nơi thường trú cũ:</span>
                             <span class="info-value" id="detail-noithuongtrucu">-</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- [MỚI] KHỐI HIỂN THỊ BIẾN ĐỘNG (Mặc định ẩn) -->
+                <div id="detail-move-section" class="info-section" style="border-color: #ffc107; display: none;">
+                    <h4 style="border-bottom-color: #ffc107; color: #856404;">Thông tin biến động</h4>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <span class="info-label">Ngày biến động:</span>
+                            <span class="info-value" id="detail-ngaychuyendi">-</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Nơi chuyển đến:</span>
+                            <span class="info-value" id="detail-noichuyen">-</span>
+                        </div>
+                        <div class="info-item" style="grid-column: span 2;">
+                            <span class="info-label">Ghi chú:</span>
+                            <span class="info-value" id="detail-ghichu">-</span>
                         </div>
                     </div>
                 </div>
@@ -581,23 +675,55 @@
                         </div>
                     </div>
 
-                    <!-- Thông tin hộ khẩu -->
+                    <!-- Giấy tờ tùy thân & Công việc -->
                     <div class="info-section">
-                        <h4>Thông tin hộ khẩu</h4>
+                        <h4>Giấy tờ tùy thân & Công việc</h4>
                         <div class="info-grid">
                             <div class="form-group">
-                                <label for="sohokhau">Số hộ khẩu <span style="color: red">*</span></label>
-                                <input type="text" id="sohokhau" required />
+                                <label for="cccd">Số CCCD/CMND</label>
+                                <input type="text" id="cccd" placeholder="Nhập số CCCD/CMND" />
                             </div>
                             <div class="form-group">
-                                <label for="quanhechuho">Quan hệ chủ hộ <span style="color: red">*</span></label>
-                                <select id="quanhechuho" required>
+                                <label for="ngaycap">Ngày cấp</label>
+                                <input type="date" id="ngaycap" />
+                            </div>
+                            <div class="form-group">
+                                <label for="noicap">Nơi cấp</label>
+                                <input type="text" id="noicap" placeholder="Cục CS QLHC về TTXH" />
+                            </div>
+                            <div class="form-group">
+                                <label for="nghenghiep">Nghề nghiệp</label>
+                                <input type="text" id="nghenghiep" />
+                            </div>
+                            <div class="form-group" style="grid-column: span 2;">
+                                <label for="noilamviec">Nơi làm việc</label>
+                                <input type="text" id="noilamviec" placeholder="Tên cơ quan, địa chỉ nơi làm việc" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Thông tin hộ khẩu -->
+                    <div class="info-section">
+                        <h4>Thông tin hộ khẩu (Tùy chọn)</h4>
+                        <div class="info-grid">
+                            <div class="form-group">
+                                <label for="sohokhau">Số hộ khẩu (ID Hộ)</label>
+                                <input type="text" id="sohokhau" placeholder="Để trống nếu chưa có hộ khẩu" />
+                                <small style="color: #6c757d; font-size: 12px;">💡 Có thể thêm vào hộ khẩu sau</small>
+                            </div>
+                            <div class="form-group">
+                                <label for="quanhechuho">Quan hệ chủ hộ</label>
+                                <select id="quanhechuho">
                                     <option value="">-- Chọn --</option>
                                     <option value="Chủ hộ">Chủ hộ</option>
-                                    <option value="Vợ/Chồng">Vợ/Chồng</option>
+                                    <option value="Vợ">Vợ</option>
+                                    <option value="Chồng">Chồng</option>
                                     <option value="Con">Con</option>
-                                    <option value="Cha/Mẹ">Cha/Mẹ</option>
-                                    <option value="Anh/Chị/Em">Anh/Chị/Em</option>
+                                    <option value="Bố">Bố</option>
+                                    <option value="Mẹ">Mẹ</option>
+                                    <option value="Ông">Ông</option>
+                                    <option value="Bà">Bà</option>
+                                    <option value="Cháu">Cháu</option>
                                     <option value="Khác">Khác</option>
                                 </select>
                             </div>
@@ -605,28 +731,44 @@
                                 <label for="trangthai">Trạng thái <span style="color: red">*</span></label>
                                 <select id="trangthai" required>
                                     <option value="">-- Chọn --</option>
-                                    <option value="Thường trú">Thường trú</option>
-                                    <option value="Tạm trú">Tạm trú</option>
-                                    <option value="Tạm vắng">Tạm vắng</option>
+                                    <option value="ThuongTru">Thường trú</option>
+                                    <option value="TamTru">Tạm trú</option>
+                                    <option value="TamVang">Tạm vắng</option>
+                                    <option value="ChuyenDi">Đã chuyển đi</option>
+                                    <option value="DaQuaDoi">Đã qua đời</option>
                                 </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="noithuongtrucu">Nơi thường trú cũ</label>
+                                <input type="text" id="noithuongtrucu" />
                             </div>
                         </div>
                     </div>
 
-                    <!-- Thông tin bổ sung -->
-                    <div class="info-section">
-                        <h4>Thông tin bổ sung</h4>
+                    <!-- [MỚI] Khối thông tin biến động (Mặc định ẩn) -->
+                    <div id="move-info-section" class="info-section hidden-section"
+                        style="border-color: #ffc107; background-color: #fff9db;">
+                        <h4 style="border-bottom-color: #ffc107; color: #856404;">Thông tin biến động (Chuyển đi / Qua
+                            đời)</h4>
                         <div class="info-grid">
                             <div class="form-group">
-                                <label for="nghenghiep">Nghề nghiệp</label>
-                                <input type="text" id="nghenghiep" />
+                                <label for="ngaychuyendi">Ngày chuyển / Ngày mất</label>
+                                <input type="date" id="ngaychuyendi" />
+                            </div>
+                            <div class="form-group" id="div-noichuyen">
+                                <label for="noichuyen">Nơi chuyển đến</label>
+                                <input type="text" id="noichuyen" placeholder="Địa chỉ nơi chuyển đến" />
+                            </div>
+                            <div class="form-group" style="grid-column: span 2;">
+                                <label for="ghichu">Ghi chú</label>
+                                <input type="text" id="ghichu" placeholder="Lý do chuyển hoặc ghi chú thêm" />
                             </div>
                         </div>
                     </div>
 
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" onclick="closeModal()">Hủy</button>
-                        <button type="submit" class="btn btn-primary">Lưu</button>
+                        <button type="submit" class="btn btn-primary">Lưu thông tin</button>
                     </div>
                 </form>
             </div>
