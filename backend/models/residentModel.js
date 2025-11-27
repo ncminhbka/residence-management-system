@@ -5,7 +5,6 @@ const getAllResidents = async () => {
   const [rows] = await pool.query(`SELECT nk.*, hk.DIACHI AS DIACHI_HK
     FROM NHAN_KHAU nk
     LEFT JOIN HO_KHAU hk ON nk.SOHOKHAU = hk.SOHOKHAU
-    WHERE hk.DELETE_FLAG = FALSE
     ORDER BY nk.MANHANKHAU ASC;`);
   return rows;
 };
@@ -16,8 +15,7 @@ const searchResidents = async (query) => {
   const [rows] = await pool.query(`SELECT nk.*, hk.DIACHI AS DIACHI_HK
     FROM NHAN_KHAU nk
     LEFT JOIN HO_KHAU hk ON nk.SOHOKHAU = hk.SOHOKHAU
-    WHERE hk.DELETE_FLAG = FALSE
-    AND nk.HOTEN LIKE ?
+    WHERE nk.HOTEN LIKE ?
     ORDER BY nk.MANHANKHAU ASC;`, [like]);
   return rows;
 };
