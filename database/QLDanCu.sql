@@ -37,7 +37,7 @@ CREATE TABLE NHAN_KHAU (
     NOITHUONGTRUCU VARCHAR(100) DEFAULT NULL,
     
     -- Trạng thái hiện tại của nhân khẩu
-    TRANGTHAI ENUM('ThuongTru', 'TamTru', 'TamVang', 'ChuyenDi', 'DaQuaDoi') 
+    TRANGTHAI ENUM('ThuongTru', 'TamTru', 'TamVang', 'ChuyenDi', 'DaQuaDoi', 'MoiThem') 
         NOT NULL DEFAULT 'ThuongTru',
     
     -- Metadata
