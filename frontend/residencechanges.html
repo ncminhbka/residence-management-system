@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quản lý Biến động Cư trú</title>
+  
+  <link rel="stylesheet" href="assets/css/layout.css" />
+  <link rel="stylesheet" href="assets/css/style.css" />
+  <link rel="stylesheet" href="assets/css/residents.css" />
+
+  <style>
+      .tabs { display: flex; gap: 15px; margin-bottom: 25px; border-bottom: 2px solid #e9ecef; }
+      .tab-btn { 
+          padding: 12px 25px; 
+          cursor: pointer; 
+          border: none; 
+          background: none; 
+          font-weight: 600; 
+          color: #6c757d; 
+          font-size: 15px; 
+          transition: all 0.3s ease;
+          position: relative;
+      }
+      .tab-btn:hover { color: #007bff; background: rgba(0,123,255,0.05); border-radius: 5px 5px 0 0; }
+      .tab-btn.active { color: #007bff; }
+      .tab-btn.active::after {
+          content: '';
+          position: absolute;
+          bottom: -2px;
+          left: 0;
+          width: 100%;
+          height: 3px;
+          background: #007bff;
+      }
+      .tab-content { display: none; animation: fadeIn 0.4s ease; }
+      .tab-content.active { display: block; }
+      
+      /* Badge trạng thái */
+      .badge { padding: 4px 8px; border-radius: 12px; font-size: 0.8rem; font-weight: 600; }
+      .badge-warning { background: #fff3cd; color: #856404; }
+      .badge-success { background: #d4edda; color: #155724; }
+
+      @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  </style>
+</head>
+
+<body>
+  <div id="navbar"></div>
+
+  <main class="dashboard">
+    <aside id="sidebar"></aside>
+
+    <section class="content">
+      <h2>📋 Quản lý Biến động Cư trú (Tạm trú / Tạm vắng)</h2>
+      <p style="color: #666; margin-bottom: 20px;">Quản lý công dân tạm vắng mặt tại địa phương và công dân từ nơi khác đến tạm trú.</p>
+
+      <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('tamvang')">Quản lý Tạm vắng</button>
+        <button class="tab-btn" onclick="switchTab('tamtru')">Quản lý Tạm trú</button>
+      </div>
+
+      <div id="tab-tamvang" class="tab-content active">
+        <div class="content-header">
+            <div class="search-bar">
+                <input id="search-tv" type="text" placeholder="Tìm theo tên hoặc mã nhân khẩu..." onkeyup="handleSearch('tamvang')" />
+                <button class="btn btn-primary" onclick="handleSearch('tamvang')">Tìm kiếm</button>
+            </div>
+            <button class="btn btn-primary" onclick="openModal('modal-tamvang')">+ Khai báo Tạm vắng</button>
+        </div>
+
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Mã NK</th>
+                        <th>Họ tên</th>
+                        <th>Nơi đến</th>
+                        <th>Thời gian vắng</th>
+                        <th>Lý do</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody id="tbody-tamvang">
+                    </tbody>
+            </table>
+        </div>
+      </div>
+
+      <div id="tab-tamtru" class="tab-content">
+        <div class="content-header">
+            <div class="search-bar">
+                <input id="search-tt" type="text" placeholder="Tìm người tạm trú..." onkeyup="handleSearch('tamtru')" />
+                <button class="btn btn-primary" onclick="handleSearch('tamtru')">Tìm kiếm</button>
+            </div>
+            <button class="btn btn-primary" onclick="openModal('modal-tamtru')">+ Đăng ký Tạm trú</button>
+        </div>
+
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Họ tên</th>
+                        <th>CCCD/CMND</th>
+                        <th>Địa chỉ tạm trú</th>
+                        <th>Thời hạn</th>
+                        <th>Trạng thái</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody id="tbody-tamtru">
+                    </tbody>
+            </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="modal-tamvang" class="modal-overlay hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Khai báo Tạm vắng</h3>
+        <button class="close-btn" onclick="closeModal('modal-tamvang')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="form-tamvang">
+            <div class="form-group">
+                <label>Mã Nhân Khẩu (Trong hệ thống) <span style="color:red">*</span></label>
+                <input type="number" id="tv-id" required placeholder="Nhập ID nhân khẩu (VD: 1, 2...)">
+                <small style="color:#666; font-size:12px;">Nhập ID để hệ thống tự lấy tên người dân.</small>
+            </div>
+            <div class="form-group">
+                <label>Nơi đến tạm trú <span style="color:red">*</span></label>
+                <input type="text" id="tv-noiden" required placeholder="Địa chỉ nơi chuyển đến">
+            </div>
+            <div class="info-grid">
+                <div class="form-group">
+                    <label>Từ ngày</label>
+                    <input type="date" id="tv-tungay" required>
+                </div>
+                <div class="form-group">
+                    <label>Đến ngày</label>
+                    <input type="date" id="tv-denngay" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Lý do</label>
+                <textarea id="tv-lydo" class="form-control" rows="3"></textarea>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeModal('modal-tamvang')">Hủy</button>
+                <button type="submit" class="btn btn-primary">Lưu dữ liệu</button>
+            </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div id="modal-tamtru" class="modal-overlay hidden">
+    <div class="modal-content" style="max-width: 800px;">
+      <div class="modal-header">
+        <h3>Đăng ký Tạm trú (Người từ nơi khác đến)</h3>
+        <button class="close-btn" onclick="closeModal('modal-tamtru')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="form-tamtru">
+            <div class="info-section">
+                <h4 style="margin-bottom:15px; border-bottom:1px solid #eee; padding-bottom:5px;">Thông tin cá nhân</h4>
+                <div class="info-grid">
+                    <div class="form-group">
+                        <label>Họ và tên <span style="color:red">*</span></label>
+                        <input type="text" id="tt-hoten" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Ngày sinh <span style="color:red">*</span></label>
+                        <input type="date" id="tt-ngaysinh" required>
+                    </div>
+                    <div class="form-group">
+                        <label>CCCD/CMND <span style="color:red">*</span></label>
+                        <input type="text" id="tt-cccd" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Giới tính</label>
+                        <select id="tt-gioitinh">
+                            <option value="Nam">Nam</option>
+                            <option value="Nữ">Nữ</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group" style="margin-top:10px;">
+                    <label>Quê quán / Thường trú</label>
+                    <input type="text" id="tt-quequan" placeholder="Địa chỉ thường trú ở quê">
+                </div>
+            </div>
+
+            <div class="info-section" style="margin-top:20px;">
+                <h4 style="margin-bottom:15px; border-bottom:1px solid #eee; padding-bottom:5px;">Thông tin đăng ký</h4>
+                <div class="form-group">
+                    <label>Địa chỉ Tạm trú (Tại tổ dân phố) <span style="color:red">*</span></label>
+                    <input type="text" id="tt-diachi" required placeholder="Ví dụ: Số nhà 10, Ngõ 5...">
+                </div>
+                <div class="info-grid">
+                    <div class="form-group">
+                        <label>Từ ngày</label>
+                        <input type="date" id="tt-tungay" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Đến ngày</label>
+                        <input type="date" id="tt-denngay" required>
+                    </div>
+                </div>
+                <div class="form-group" style="margin-top:10px;">
+                    <label>Lý do</label>
+                    <textarea id="tt-lydo" class="form-control" rows="2"></textarea>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeModal('modal-tamtru')">Hủy</button>
+                <button type="submit" class="btn btn-primary">Lưu dữ liệu</button>
+            </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="assets/js/layout.js"></script>
+  <script src="assets/js/residencechanges.js"></script>
+</body>
+</html>
