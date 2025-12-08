@@ -21,12 +21,14 @@ const accountRoutes = require('./routes/accountRoutes');
 const householdRoutes = require('./routes/householdRoutes');
 const residentRoutes = require('./routes/residentRoutes');
 const residenceChangesRoutes = require('./routes/residencechangesRoutes');
+const facilitiesRoutes = require('./routes/facilitiesRoutes');
 
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/accounts', accountRoutes);
 app.use('/api/v1/households', householdRoutes);
 app.use('/api/v1/residents', residentRoutes);
 app.use('/api/v1/residencechanges', residenceChangesRoutes);
+app.use('/api/v1/facilities', facilitiesRoutes);
 
 // =============================
 // Serve Frontend (Static Files)
