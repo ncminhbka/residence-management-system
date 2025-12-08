@@ -71,7 +71,7 @@ function renderMenu(role) {
     { name: "Dashboard", href: "dashboard.html", roles: ["ALL"] },
     { name: "Quản lý hộ khẩu", href: "households.html", roles: ["TO_TRUONG", "TO_PHO"] },
     { name: "Quản lý nhân khẩu", href: "residents.html", roles: ["TO_TRUONG", "TO_PHO"] },
-    { name: "Tạm trú / Tạm vắng", href: "temp.html", roles: ["TO_TRUONG", "TO_PHO"] },
+    { name: "Tạm trú / Tạm vắng", href: "residencechanges.html", roles: ["TO_TRUONG", "TO_PHO"] },
     { name: "Thống kê & Báo cáo", href: "reports.html", roles: ["TO_TRUONG", "TO_PHO"] },
     { name: "Quản lý tài khoản", href: "accounts.html", roles: ["TO_TRUONG", "TO_PHO"] },
     { name: "Nhà văn hoá", href: "nvh.html", roles: ["TO_TRUONG", "TO_PHO", "CAN_BO_NGHIEP_VU"] },

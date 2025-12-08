@@ -1,26 +1,66 @@
 <!doctype html>
-<html>
+<html lang="vi">
 <head>
-  <meta charset="utf-8" />
-  <title>Hệ thống quản trị dân cư</title>
-  <link rel="stylesheet" href="/assets/css/style.css" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Hệ thống quản trị dân cư</title>
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-pY1l2xkQf1qv6b6f0Z+Y2m1kq2xQqD1eFf9Gf3mFfV3y5z1k6a7QzG1r2A1b6h3Z4Y5x6Y7Z8X9a0b1c2d3e4==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <!-- Layout variables + base typography -->
+    <link rel="stylesheet" href="/assets/css/layout.css" />
+    <!-- Page-specific styles (overrides) -->
+    <link rel="stylesheet" href="/assets/css/style.css" />
+    <style>
+        /* Small inline improvements for the login page */
+        body { font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; }
+        .auth-header h1 { letter-spacing: 0.6px; font-weight: 700; }
+        .auth-header p { opacity: 0.95; }
+        .logo-icon { font-size: 56px; }
+    </style>
 </head>
-<body>
-  <div class="container">
-    <h1>ĐĂNG NHẬP</h1>
+<body class="login-body">
+    <div class="login-container">
+        <!-- HEADER/LOGO SECTION -->
+        <div class="auth-header" role="banner">
+            <i class="fas fa-city logo-icon" aria-hidden="true"></i>
+            <h1>HỆ THỐNG QUẢN TRỊ DÂN CƯ</h1>
+            <p>TỔ DÂN PHỐ 7, PHƯỜNG LA KHÊ</p>
+        </div>
 
-    <div class="card" id="auth-card">
-      <form id="login-form" class="form">
-        <label>Username</label>
-        <input type="text" id="login-username" required />
-        <label>Password</label>
-        <input type="password" id="login-password" required />
-        <button type="submit">Login</button>
-        <p class="error" id="login-error"></p>
-      </form>
+        <!-- LOGIN CARD -->
+        <div class="card auth-card" id="auth-card">
+            <h2 class="card-title">ĐĂNG NHẬP</h2>
+            
+            <form id="login-form" class="auth-form" autocomplete="on" novalidate>
+                
+                <!-- Input Username -->
+                <div class="form-group">
+                    <label for="login-username"><i class="fas fa-user" aria-hidden="true"></i> Tên đăng nhập</label>
+                    <input type="text" id="login-username" name="username" autocomplete="username" required placeholder="Nhập tên đăng nhập" aria-label="Tên đăng nhập" autofocus />
+                </div>
+                
+                <!-- Input Password -->
+                <div class="form-group">
+                    <label for="login-password"><i class="fas fa-lock" aria-hidden="true"></i> Mật khẩu</label>
+                    <input type="password" id="login-password" name="password" autocomplete="current-password" required placeholder="Nhập mật khẩu" aria-label="Mật khẩu" />
+                </div>
+                
+                <!-- Error Message -->
+                <p class="error-message" id="login-error" role="alert" aria-live="polite"></p>
+                
+                <!-- Button -->
+                <button type="submit" class="btn btn-login-submit">
+                    <i class="fas fa-sign-in-alt" aria-hidden="true"></i>
+                    <span>Đăng nhập</span>
+                </button>
+            </form>
+        </div>
+        
+        
     </div>
-  </div>
 
-  <script src="/assets/js/index.js"></script>
+    <script src="/assets/js/index.js"></script>
 </body>
 </html>

@@ -1,153 +1,160 @@
 <!DOCTYPE html>
 <html lang="vi">
-  <head>
+<head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Quản lý Hộ khẩu</title>
+    <title>Quản lý Hộ khẩu - Hệ thống quản trị dân cư</title>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-pY1l2xkQf1qv6b6f0Z+Y2m1kq2xQqD1eFf9Gf3mFfV3y5z1k6a7QzG1r2A1b6h3Z4Y5x6Y7Z8X9a0b1c2d3e4==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <!-- Layout variables + base typography -->
     <link rel="stylesheet" href="assets/css/layout.css" />
+    <!-- Page-specific styles -->
     <link rel="stylesheet" href="assets/css/style.css" />
     <link rel="stylesheet" href="assets/css/households.css" />
-  </head>
-  <body>
+</head>
+
+<body>
     <div id="navbar"></div>
+
     <main class="dashboard">
-      <aside id="sidebar"></aside>
-      <section class="content">
-        <h2>Quản lý Hộ khẩu</h2>
+        <aside id="sidebar"></aside>
 
-        <div class="content-header">
-          <div class="search-bar">
-            <input id="search-input" type="text" placeholder="Tìm theo tên chủ hộ hoặc số hộ khẩu..." />
-            <button id="search-btn" class="btn">Tìm kiếm</button>
-            <button id="clear-search-btn" class="btn btn-secondary">Xóa tìm kiếm</button>
-          </div>
-          <button id="add-household-btn" class="btn btn-primary">+ Thêm hộ khẩu</button>
-        </div>
+        <section class="content">
+            <h2 class="page-title"><i class="fas fa-home" aria-hidden="true"></i> Quản lý Hộ khẩu</h2>
 
-        <div class="table-container">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>STT</th>
-                <th>Số hộ khẩu</th>
-                <th>Tên chủ hộ</th>
-                <th>Địa chỉ</th>
-                <th>Hành động</th>
-              </tr>
-            </thead>
-            <tbody id="household-table-body">
-              <tr><td colspan="5">Đang tải dữ liệu...</td></tr>
-            </tbody>
-          </table>
-        </div>
+            <div class="content-header">
+                <div class="search-bar">
+                    <input id="search-input" type="text" placeholder="Tìm theo tên chủ hộ hoặc số hộ khẩu..." aria-label="Tìm kiếm hộ khẩu" />
+                    <button id="search-btn" class="btn btn-primary"><i class="fas fa-search" aria-hidden="true"></i> Tìm kiếm</button>
+                    <button id="clear-search-btn" class="btn btn-secondary"><i class="fas fa-times" aria-hidden="true"></i> Xóa tìm kiếm</button>
+                </div>
+                <button id="add-household-btn" class="btn btn-primary"><i class="fas fa-plus" aria-hidden="true"></i> Thêm hộ khẩu</button>
+            </div>
 
-        <div id="pagination-controls" class="pagination"></div>
-      </section>
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>STT</th>
+                            <th>Số hộ khẩu</th>
+                            <th>Tên chủ hộ</th>
+                            <th>Địa chỉ</th>
+                            <th>Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody id="household-table-body">
+                        <tr><td colspan="5" style="text-align: center; padding: 20px;">Đang tải dữ liệu...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div id="pagination-controls" class="pagination"></div>
+        </section>
     </main>
 
     <!-- Modal thêm / sửa hộ khẩu -->
     <div id="household-modal" class="modal-overlay hidden">
-      <div class="modal-content">
-        <span class="close-btn" data-modal="household-modal">&times;</span>
-        <h3 id="modal-title">Thêm hộ khẩu</h3>
-        <form id="household-form">
-          <input type="hidden" id="soHoKhau" />
-          <div class="form-group">
-            <label for="maNhanKhauChuHo">Mã nhân khẩu chủ hộ <span class="required">*</span></label>
-            <input type="number" id="maNhanKhauChuHo" required />
-            <small class="form-hint">Nhập mã nhân khẩu của người làm chủ hộ</small>
-          </div>
-          <div class="form-group">
-            <label for="diaChi">Địa chỉ <span class="required">*</span></label>
-            <input type="text" id="diaChi" required />
-          </div>
-          <div class="form-group">
-            <label for="hoSoSo">Hồ sơ số <span class="required">*</span></label>
-            <input type="number" id="hoSoSo" required />
-          </div>
-          <div class="form-group">
-            <label for="soDangKySo">Sổ đăng ký số <span class="required">*</span></label>
-            <input type="number" id="soDangKySo" required />
-          </div>
-          <div class="form-group">
-            <label for="toSo">Tổ số <span class="required">*</span></label>
-            <input type="number" id="toSo" required />
-          </div>
-          <div class="form-actions">
-            <button type="submit" class="btn btn-primary">Lưu</button>
-            <button type="button" class="btn btn-secondary close-btn" data-modal="household-modal">Hủy</button>
-          </div>
-        </form>
-      </div>
+        <div class="modal-content">
+            <span class="close-btn" data-modal="household-modal" aria-label="Đóng">&times;</span>
+            <h3 id="modal-title"><i class="fas fa-edit" aria-hidden="true"></i> Thêm hộ khẩu</h3>
+            <form id="household-form">
+                <input type="hidden" id="soHoKhau" />
+                <div class="form-group">
+                    <label for="maNhanKhauChuHo">Mã nhân khẩu chủ hộ <span class="required">*</span></label>
+                    <input type="number" id="maNhanKhauChuHo" required aria-label="Mã nhân khẩu chủ hộ" />
+                    <small class="form-hint">Nhập mã nhân khẩu của người làm chủ hộ</small>
+                </div>
+                <div class="form-group">
+                    <label for="diaChi">Địa chỉ <span class="required">*</span></label>
+                    <input type="text" id="diaChi" required aria-label="Địa chỉ" />
+                </div>
+                <div class="form-group">
+                    <label for="hoSoSo">Hồ sơ số <span class="required">*</span></label>
+                    <input type="number" id="hoSoSo" required aria-label="Hồ sơ số" />
+                </div>
+                <div class="form-group">
+                    <label for="soDangKySo">Sổ đăng ký số <span class="required">*</span></label>
+                    <input type="number" id="soDangKySo" required aria-label="Sổ đăng ký số" />
+                </div>
+                <div class="form-group">
+                    <label for="toSo">Tổ số <span class="required">*</span></label>
+                    <input type="number" id="toSo" required aria-label="Tổ số" />
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-save" aria-hidden="true"></i> Lưu</button>
+                    <button type="button" class="btn btn-secondary close-btn" data-modal="household-modal"><i class="fas fa-times" aria-hidden="true"></i> Hủy</button>
+                </div>
+            </form>
+        </div>
     </div>
 
     <!-- Modal chi tiết hộ khẩu -->
     <div id="detail-modal" class="modal-overlay hidden">
-      <div class="modal-content large">
-        <span class="close-btn" data-modal="detail-modal">&times;</span>
-        <h3>Chi tiết Hộ khẩu</h3>
-        <div id="detail-content"></div>
-      </div>
+        <div class="modal-content large">
+            <span class="close-btn" data-modal="detail-modal" aria-label="Đóng">&times;</span>
+            <h3><i class="fas fa-info-circle" aria-hidden="true"></i> Chi tiết Hộ khẩu</h3>
+            <div id="detail-content"></div>
+        </div>
     </div>
 
     <!-- Modal xác nhận xóa -->
     <div id="delete-modal" class="modal-overlay hidden">
-      <div class="modal-content">
-        <span class="close-btn" data-modal="delete-modal">&times;</span>
-        <h3>Xác nhận xóa</h3>
-        <p>Bạn có chắc chắn muốn xóa hộ khẩu này không?</p>
-        <p class="warning-text">⚠️ Lưu ý: Thao tác này sẽ đặt SOHOKHAU của tất cả nhân khẩu trong hộ về NULL.</p>
-        <div class="form-actions">
-          <button id="confirm-delete-btn" class="btn btn-danger">Xóa</button>
-          <button type="button" class="btn btn-secondary close-btn" data-modal="delete-modal">Hủy</button>
+        <div class="modal-content">
+            <span class="close-btn" data-modal="delete-modal" aria-label="Đóng">&times;</span>
+            <h3><i class="fas fa-exclamation-triangle" aria-hidden="true"></i> Xác nhận xóa</h3>
+            <p>Bạn có chắc chắn muốn xóa hộ khẩu này không?</p>
+            <p class="warning-text"><i class="fas fa-warning" aria-hidden="true"></i> Lưu ý: Thao tác này sẽ đặt SOHOKHAU của tất cả nhân khẩu trong hộ về NULL.</p>
+            <div class="form-actions">
+                <button id="confirm-delete-btn" class="btn btn-danger"><i class="fas fa-trash" aria-hidden="true"></i> Xóa</button>
+                <button type="button" class="btn btn-secondary close-btn" data-modal="delete-modal"><i class="fas fa-times" aria-hidden="true"></i> Hủy</button>
+            </div>
         </div>
-      </div>
     </div>
 
     <!-- Modal tách hộ khẩu -->
     <div id="split-modal" class="modal-overlay hidden">
-      <div class="modal-content large">
-        <span class="close-btn" data-modal="split-modal">&times;</span>
-        <h3>Tách hộ khẩu</h3>
-        <form id="split-form">
-          <input type="hidden" id="split-soHoKhauGoc" />
-          
-          <h4>Thông tin hộ khẩu mới</h4>
-          <div class="form-group">
-            <label for="split-maChuHoMoi">Mã nhân khẩu chủ hộ mới <span class="required">*</span></label>
-            <input type="number" id="split-maChuHoMoi" required />
-          </div>
-          <div class="form-group">
-            <label for="split-diaChi">Địa chỉ mới <span class="required">*</span></label>
-            <input type="text" id="split-diaChi" required />
-          </div>
-          <div class="form-group">
-            <label for="split-hoSoSo">Hồ sơ số <span class="required">*</span></label>
-            <input type="number" id="split-hoSoSo" required />
-          </div>
-          <div class="form-group">
-            <label for="split-soDangKySo">Sổ đăng ký số <span class="required">*</span></label>
-            <input type="number" id="split-soDangKySo" required />
-          </div>
-          <div class="form-group">
-            <label for="split-toSo">Tổ số <span class="required">*</span></label>
-            <input type="number" id="split-toSo" required />
-          </div>
+        <div class="modal-content large">
+            <span class="close-btn" data-modal="split-modal" aria-label="Đóng">&times;</span>
+            <h3><i class="fas fa-object-group" aria-hidden="true"></i> Tách hộ khẩu</h3>
+            <form id="split-form">
+                <input type="hidden" id="split-soHoKhauGoc" />
+                
+                <h4><i class="fas fa-file-alt" aria-hidden="true"></i> Thông tin hộ khẩu mới</h4>
+                <div class="form-group">
+                    <label for="split-maChuHoMoi">Mã nhân khẩu chủ hộ mới <span class="required">*</span></label>
+                    <input type="number" id="split-maChuHoMoi" required aria-label="Mã nhân khẩu chủ hộ mới" />
+                </div>
+                <div class="form-group">
+                    <label for="split-diaChi">Địa chỉ mới <span class="required">*</span></label>
+                    <input type="text" id="split-diaChi" required aria-label="Địa chỉ mới" />
+                </div>
+                <div class="form-group">
+                    <label for="split-hoSoSo">Hồ sơ số <span class="required">*</span></label>
+                    <input type="number" id="split-hoSoSo" required aria-label="Hồ sơ số" />
+                </div>
+                <div class="form-group">
+                    <label for="split-soDangKySo">Sổ đăng ký số <span class="required">*</span></label>
+                    <input type="number" id="split-soDangKySo" required aria-label="Sổ đăng ký số" />
+                </div>
+                <div class="form-group">
+                    <label for="split-toSo">Tổ số <span class="required">*</span></label>
+                    <input type="number" id="split-toSo" required aria-label="Tổ số" />
+                </div>
 
-          <h4>Chọn thành viên chuyển sang hộ khẩu mới</h4>
-          <div id="split-members-list" class="members-checklist">
-            <!-- Danh sách checkbox sẽ được render ở đây -->
-          </div>
+                <h4><i class="fas fa-users" aria-hidden="true"></i> Chọn thành viên chuyển sang hộ khẩu mới</h4>
+                <div id="split-members-list" class="members-checklist">
+                    <!-- Danh sách checkbox sẽ được render ở đây -->
+                </div>
 
-          <div class="form-actions">
-            <button type="submit" class="btn btn-primary">Tách hộ</button>
-            <button type="button" class="btn btn-secondary close-btn" data-modal="split-modal">Hủy</button>
-          </div>
-        </form>
-      </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-check" aria-hidden="true"></i> Tách hộ</button>
+                    <button type="button" class="btn btn-secondary close-btn" data-modal="split-modal"><i class="fas fa-times" aria-hidden="true"></i> Hủy</button>
+                </div>
+            </form>
+        </div>
     </div>
 
     <script src="assets/js/layout.js"></script>
     <script src="assets/js/households.js"></script>
-  </body>
+</body>
 </html>

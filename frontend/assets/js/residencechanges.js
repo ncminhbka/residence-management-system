@@ -7,8 +7,34 @@ const API_BASE = 'http://localhost:3000/api/v1/residencechanges';
 document.addEventListener('DOMContentLoaded', () => {
     loadData('tamvang');
     loadData('tamtru');
+    loadStats();
     setupForms();
 });
+
+// Lấy thống kê và cập nhật giao diện
+async function loadStats() {
+    try {
+        const res = await fetch(`${API_BASE}/stats`);
+        const json = await res.json();
+        if (json.success && json.data) {
+            document.getElementById('stat-tam-tru-active').textContent = json.data.tamTruActive;
+            document.getElementById('stat-tam-tru-expiring').textContent = json.data.tamTruExpiring;
+            document.getElementById('stat-tam-vang-active').textContent = json.data.tamVangActive;
+            document.getElementById('stat-tam-vang-returned').textContent = json.data.tamVangReturned;
+        } else {
+            // Nếu lỗi, đặt về 0
+            document.getElementById('stat-tam-tru-active').textContent = 0;
+            document.getElementById('stat-tam-tru-expiring').textContent = 0;
+            document.getElementById('stat-tam-vang-active').textContent = 0;
+            document.getElementById('stat-tam-vang-returned').textContent = 0;
+        }
+    } catch (err) {
+        document.getElementById('stat-tam-tru-active').textContent = 0;
+        document.getElementById('stat-tam-tru-expiring').textContent = 0;
+        document.getElementById('stat-tam-vang-active').textContent = 0;
+        document.getElementById('stat-tam-vang-returned').textContent = 0;
+    }
+};
 
 // --- Tab Switch Logic ---
 window.switchTab = function(tabName) {
@@ -38,7 +64,7 @@ async function loadData(type) {
         }
     } catch (error) {
         console.error("Lỗi tải dữ liệu:", error);
-        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:red">❌ Lỗi kết nối Server (Kiểm tra xem Backend đã chạy chưa)</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:red">❌ ${error.message || 'Lỗi kết nối'}</td></tr>`;
     }
 }
 

@@ -44,6 +44,25 @@ const ResidenceChangesModel = {
       ORDER BY tt.CREATED_AT DESC
     `;
     return db.execute(sql);
+
+  },
+
+  // --- Thống kê ---
+  getStats: async () => {
+    // Tạm trú đang hoạt động
+    const [tamTruActive] = await db.execute(`SELECT COUNT(*) as count FROM TAM_TRU WHERE TRANGTHAI = 'DangHieuLuc'`);
+    // Tạm trú sắp hết hạn (trong 7 ngày tới)
+    const [tamTruExpiring] = await db.execute(`SELECT COUNT(*) as count FROM TAM_TRU WHERE TRANGTHAI = 'DangHieuLuc' AND NGAYKETTHUC BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 7 DAY)`);
+    // Tạm vắng đang hoạt động
+    const [tamVangActive] = await db.execute(`SELECT COUNT(*) as count FROM TAM_VANG WHERE TRANGTHAI = 'DangTamVang'`);
+    // Tạm vắng đã trở về
+    const [tamVangReturned] = await db.execute(`SELECT COUNT(*) as count FROM TAM_VANG WHERE TRANGTHAI = 'DaTroVe'`);
+    return {
+      tamTruActive: tamTruActive[0]?.count || 0,
+      tamTruExpiring: tamTruExpiring[0]?.count || 0,
+      tamVangActive: tamVangActive[0]?.count || 0,
+      tamVangReturned: tamVangReturned[0]?.count || 0
+    };
   }
 };
 

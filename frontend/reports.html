@@ -3,9 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Dashboard - Hệ thống quản trị dân cư</title>
+  <title>Báo cáo & Thống kê - Hệ thống quản trị dân cư</title>
+  <!-- Font Awesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-pY1l2xkQf1qv6b6f0Z+Y2m1kq2xQqD1eFf9Gf3mFfV3y5z1k6a7QzG1r2A1b6h3Z4Y5x6Y7Z8X9a0b1c2d3e4==" crossorigin="anonymous" referrerpolicy="no-referrer" />
   <link rel="stylesheet" href="assets/css/layout.css" />
   <link rel="stylesheet" href="assets/css/style.css" />
+  <!-- Chart.js for visualizations -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
 </head>
 
 <body>
@@ -17,13 +21,87 @@
     <aside id="sidebar"></aside>
 
     <!-- Nội dung chính -->
-    <section class="content">
-      <h2>repott</h2>
+    <section class="content-section">
+            <h2 class="page-title">
+                <i class="fas fa-chart-line"></i> Báo cáo & Thống kê Dân cư
+            </h2>
+            
+            <div class="card content-card filter-card">
+                <div class="card-header">
+                    <i class="fas fa-filter"></i>
+                    <h3>Bộ lọc và Xuất báo cáo</h3>
+                </div>
+                <div class="card-body">
+                    <form id="reportFilterForm" class="form-filter">
+                        <div class="form-grid-filter">
+                            <div class="form-group select-group">
+                                <label for="reportType">Loại báo cáo:</label>
+                                <select id="reportType">
+                                    <option value="gioitinh">Thống kê theo Giới tính</option>
+                                    <option value="dotuoi">Thống kê theo Độ tuổi</option>
+                                    <option value="biendong">Thống kê Biến động Dân cư</option>
+                                    <option value="tamtru_tamvang">Thống kê Tạm trú/Tạm vắng</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="startDate">Từ ngày:</label>
+                                <input type="date" id="startDate" value="2025-01-01" />
+                            </div>
+                            <div class="form-group">
+                                <label for="endDate">Đến ngày:</label>
+                                <input type="date" id="endDate" value="2025-12-31" />
+                            </div>
+                        </div>
+                        <div class="button-group">
+                            <button type="button" id="btnViewReport" class="btn btn-primary">
+                                <i class="fas fa-eye"></i> Xem báo cáo
+                            </button>
+                            <button type="button" id="btnExportExcel" class="btn btn-success">
+                                <i class="fas fa-file-excel"></i> Xuất Excel
+                            </button>
+                            <button type="button" id="btnExportPdf" class="btn btn-danger">
+                                <i class="fas fa-file-pdf"></i> Xuất PDF
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
 
-    </section>
-  </main>
+            <div class="card content-card report-card">
+                <div class="card-header">
+                    <i class="fas fa-chart-area"></i>
+                    <h3>Kết quả Thống kê (<span id="currentReportTitle">Thống kê theo Giới tính</span>)</h3>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container" id="reportChartContainer">
+                        <canvas id="reportChart"></canvas>
+                    </div>
 
-  <script src="assets/js/layout.js"></script>
+                    <div class="table-responsive report-table-data">
+                        <table id="detailedReportTable" class="data-table">
+                            <colgroup>
+                                <col style="width:60%">
+                                <col style="width:20%">
+                                <col style="width:20%">
+                            </colgroup>
+                            <thead>
+                                <tr>
+                                    <th style="text-align:left">Chỉ mục</th>
+                                    <th style="text-align:right">Số lượng</th>
+                                    <th style="text-align:right">Tỷ lệ (%)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+        </section>
+    </main>
 
+    <script src="assets/js/layout.js"></script>
+    <script src="assets/js/reports.js"></script>
 </body>
 </html>

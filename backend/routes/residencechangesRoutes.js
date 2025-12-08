@@ -10,6 +10,7 @@ if (!controller) {
     console.error("❌ Lỗi: Không thể load residencechangesController. Kiểm tra lại tên file!");
 }
 
+
 // API Tạm Vắng
 router.get('/tamvang', controller.getTamVang);
 router.post('/tamvang', controller.createTamVang);
@@ -17,5 +18,8 @@ router.post('/tamvang', controller.createTamVang);
 // API Tạm Trú
 router.get('/tamtru', controller.getTamTru);
 router.post('/tamtru', controller.createTamTru);
+
+// API Thống kê
+router.get('/stats', controller.getStats);
 
 module.exports = router;
