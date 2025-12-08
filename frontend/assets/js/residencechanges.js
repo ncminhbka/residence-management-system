@@ -1,53 +1,9 @@
-// assets/js/residencechanges.js
+// frontend/assets/js/residencechanges.js
 
-// ==========================================
-// 1. MOCK DATA (DỮ LIỆU GIẢ LẬP)
-// ==========================================
-const MOCK_TAM_VANG = [
-    { id: 1, idNhanKhau: 101, hoTen: 'Nguyễn Văn A', noiDen: 'Quận 1, TP.HCM', tuNgay: '2023-11-01', denNgay: '2023-12-01', lyDo: 'Đi công tác dài ngày' },
-    { id: 2, idNhanKhau: 105, hoTen: 'Trần Thị Mai', noiDen: 'Đà Nẵng', tuNgay: '2023-10-15', denNgay: '2023-11-15', lyDo: 'Thăm người thân ốm' },
-    { id: 3, idNhanKhau: 202, hoTen: 'Phạm Văn Hùng', noiDen: 'Nhật Bản', tuNgay: '2024-01-01', denNgay: '2024-12-31', lyDo: 'Xuất khẩu lao động' }
-];
+// 1. CẤU HÌNH API
+const API_BASE = 'http://localhost:3000/api/v1/residencechanges'; 
+// Lưu ý: Đổi cổng 3000 nếu backend bạn chạy cổng khác
 
-const MOCK_TAM_TRU = [
-    { id: 1, hoTen: 'Lê Văn Khách', ngaysinh: '1999-05-20', cccd: '038099000111', diaChi: 'Số 10, Ngõ 5, Tổ 7', tuNgay: '2024-01-01', denNgay: '2024-06-01', lyDo: 'Sinh viên thuê trọ' },
-    { id: 2, hoTen: 'Hoàng Thị Bích', ngaysinh: '1995-08-12', cccd: '001095000222', diaChi: 'Số 15A, Đường Chiến Thắng', tuNgay: '2023-12-01', denNgay: '2024-03-01', lyDo: 'Làm việc thời vụ' }
-];
-
-// ==========================================
-// 2. GIẢ LẬP API (MOCKING API CALLS)
-// ==========================================
-function mockApiCall(type, method, data = null) {
-    return new Promise((resolve) => {
-        // Giả lập độ trễ mạng 500ms
-        setTimeout(() => {
-            console.log(`[MOCK API] ${method} /api/${type}`, data);
-
-            if (method === 'GET') {
-                if (type === 'tamvang') resolve({ success: true, data: [...MOCK_TAM_VANG] });
-                else if (type === 'tamtru') resolve({ success: true, data: [...MOCK_TAM_TRU] });
-            } 
-            else if (method === 'POST') {
-                // Giả lập lưu dữ liệu mới vào mảng
-                const newItem = { 
-                    ...data, 
-                    id: Date.now(),
-                    // Nếu là tạm vắng, giả lập việc Backend tự tìm tên từ ID nhân khẩu
-                    hoTen: type === 'tamvang' ? `Cư dân (Mã ${data.idNhanKhau})` : data.hoTen 
-                };
-                
-                if (type === 'tamvang') MOCK_TAM_VANG.unshift(newItem);
-                else MOCK_TAM_TRU.unshift(newItem);
-
-                resolve({ success: true, message: 'Lưu dữ liệu thành công! (Mock)' });
-            }
-        }, 500); 
-    });
-}
-
-// ==========================================
-// 3. LOGIC CHÍNH CỦA TRANG
-// ==========================================
 document.addEventListener('DOMContentLoaded', () => {
     loadData('tamvang');
     loadData('tamtru');
@@ -58,20 +14,55 @@ document.addEventListener('DOMContentLoaded', () => {
 window.switchTab = function(tabName) {
     document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
     document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-    
     document.getElementById(`tab-${tabName}`).classList.add('active');
     document.querySelector(`button[onclick="switchTab('${tabName}')"]`).classList.add('active');
 }
 
-// --- Load Data ---
+// ==========================================
+// 2. LOAD DATA (GET API)
+// ==========================================
 async function loadData(type) {
     const tbody = document.getElementById(`tbody-${type}`);
-    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 20px;">⏳ Đang tải dữ liệu...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 20px;">⏳ Đang tải dữ liệu từ Server...</td></tr>';
 
-    const res = await mockApiCall(type, 'GET');
-    
-    if (res.success) {
-        renderTable(type, res.data);
+    try {
+        const response = await fetch(`${API_BASE}/${type}`);
+        const json = await response.json();
+
+        if (json.success) {
+            // Chuyển đổi dữ liệu từ SQL (chữ hoa) sang Format Frontend (chữ thường)
+            const mappedData = json.data.map(item => mapDataFromDB(type, item));
+            renderTable(type, mappedData);
+        } else {
+            tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:red">❌ ${json.message}</td></tr>`;
+        }
+    } catch (error) {
+        console.error("Lỗi tải dữ liệu:", error);
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:red">❌ Lỗi kết nối Server (Kiểm tra xem Backend đã chạy chưa)</td></tr>`;
+    }
+}
+
+// Hàm chuyển đổi tên cột Database -> Tên biến Frontend dùng
+function mapDataFromDB(type, dbItem) {
+    if (type === 'tamvang') {
+        return {
+            idNhanKhau: dbItem.MANHANKHAU, 
+            hoTen: dbItem.HOTEN,
+            noiDen: dbItem.NOITAMTRU, // Database: NOITAMTRU -> Frontend: noiDen
+            tuNgay: dbItem.NGAYBATDAU,
+            denNgay: dbItem.NGAYKETTHUC,
+            lyDo: dbItem.LYDO
+        };
+    } else {
+        return {
+            hoTen: dbItem.HOTEN,
+            ngaysinh: dbItem.NGAYSINH,
+            cccd: dbItem.CCCD, // Lấy từ bảng NHAN_KHAU join sang
+            diaChi: dbItem.DIACHITAMTRU,
+            tuNgay: dbItem.NGAYBATDAU,
+            denNgay: dbItem.NGAYKETTHUC,
+            lyDo: dbItem.GHICHU // Database: GHICHU -> Frontend: lyDo
+        };
     }
 }
 
@@ -79,7 +70,7 @@ async function loadData(type) {
 function renderTable(type, data) {
     const tbody = document.getElementById(`tbody-${type}`);
     
-    if (data.length === 0) {
+    if (!data || data.length === 0) {
         tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 20px; color: #888;">Chưa có dữ liệu</td></tr>';
         return;
     }
@@ -90,9 +81,7 @@ function renderTable(type, data) {
                 <td><span style="background:#eee; padding:2px 6px; border-radius:4px; font-weight:bold;">${item.idNhanKhau}</span></td>
                 <td><strong>${item.hoTen}</strong></td>
                 <td>${item.noiDen}</td>
-                <td>
-                    ${formatDate(item.tuNgay)} <span style="color:#999">➝</span> ${formatDate(item.denNgay)}
-                </td>
+                <td>${formatDate(item.tuNgay)} <span style="color:#999">➝</span> ${formatDate(item.denNgay)}</td>
                 <td>${item.lyDo}</td>
                 <td>
                     <button class="btn btn-sm btn-secondary" onclick='printPaper("tamvang", ${JSON.stringify(item)})'>🖨️ In giấy</button>
@@ -102,12 +91,10 @@ function renderTable(type, data) {
     } else {
         tbody.innerHTML = data.map(item => `
             <tr>
-                <td><strong>${item.hoTen}</strong><br><small style="color:#666">${item.ngaysinh}</small></td>
-                <td>${item.cccd}</td>
+                <td><strong>${item.hoTen}</strong><br><small style="color:#666">${formatDate(item.ngaysinh)}</small></td>
+                <td>${item.cccd || 'Chưa có'}</td>
                 <td>${item.diaChi}</td>
-                <td>
-                    ${formatDate(item.tuNgay)} <br> <span style="color:#999">đến</span> ${formatDate(item.denNgay)}
-                </td>
+                <td>${formatDate(item.tuNgay)} <br> <span style="color:#999">đến</span> ${formatDate(item.denNgay)}</td>
                 <td><span class="badge badge-success">Đang hiệu lực</span></td>
                 <td>
                     <button class="btn btn-sm btn-secondary" onclick='printPaper("tamtru", ${JSON.stringify(item)})'>🖨️ In giấy</button>
@@ -117,136 +104,119 @@ function renderTable(type, data) {
     }
 }
 
-// --- Form Handling ---
+// ==========================================
+// 3. SEND DATA (POST API)
+// ==========================================
 function setupForms() {
-    // Xử lý Form Tạm Vắng
+    // Form Tạm Vắng
     document.getElementById('form-tamvang').addEventListener('submit', async (e) => {
         e.preventDefault();
-        const data = {
-            idNhanKhau: document.getElementById('tv-id').value,
+        const payload = {
+            manhankhau: document.getElementById('tv-id').value,
             noiden: document.getElementById('tv-noiden').value,
-            tuNgay: document.getElementById('tv-tungay').value,
-            denNgay: document.getElementById('tv-denngay').value,
-            lyDo: document.getElementById('tv-lydo').value
+            tungay: document.getElementById('tv-tungay').value,
+            denngay: document.getElementById('tv-denngay').value,
+            lydo: document.getElementById('tv-lydo').value
         };
-        await handleSave('tamvang', data, 'modal-tamvang');
+        await handleSave('tamvang', payload, 'modal-tamvang');
     });
 
-    // Xử lý Form Tạm Trú
+    // Form Tạm Trú
     document.getElementById('form-tamtru').addEventListener('submit', async (e) => {
         e.preventDefault();
-        const data = {
-            hoTen: document.getElementById('tt-hoten').value,
-            ngaysinh: document.getElementById('tt-ngaysinh').value,
-            cccd: document.getElementById('tt-cccd').value,
-            gioiTinh: document.getElementById('tt-gioitinh').value,
-            queQuan: document.getElementById('tt-quequan').value,
-            diaChi: document.getElementById('tt-diachi').value,
-            tuNgay: document.getElementById('tt-tungay').value,
-            denNgay: document.getElementById('tt-denngay').value,
-            lyDo: document.getElementById('tt-lydo').value
+        const payload = {
+            manhankhau: document.getElementById('tt-manhankhau').value, // DB yêu cầu Mã Nhân Khẩu
+            diachi: document.getElementById('tt-diachi').value,
+            tungay: document.getElementById('tt-tungay').value,
+            denngay: document.getElementById('tt-denngay').value,
+            lydo: document.getElementById('tt-lydo').value
         };
-        await handleSave('tamtru', data, 'modal-tamtru');
+        await handleSave('tamtru', payload, 'modal-tamtru');
     });
 }
 
 async function handleSave(type, data, modalId) {
-    const res = await mockApiCall(type, 'POST', data);
-    if (res.success) {
-        alert('✅ ' + res.message);
-        closeModal(modalId);
-        loadData(type); // Reload bảng
-        
-        if (confirm('Bạn có muốn in giấy xác nhận ngay không?')) {
-            printPaper(type, { ...data, hoTen: data.hoTen || `Người dân (ID: ${data.idNhanKhau})` });
+    try {
+        const response = await fetch(`${API_BASE}/${type}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+
+        const json = await response.json();
+
+        if (response.ok && json.success) {
+            alert('✅ ' + json.message);
+            closeModal(modalId);
+            loadData(type); // Tải lại bảng để thấy dữ liệu mới
+        } else {
+            alert('❌ Thất bại: ' + (json.message || 'Lỗi không xác định'));
         }
+    } catch (error) {
+        console.error("Lỗi gửi dữ liệu:", error);
+        alert('❌ Lỗi kết nối đến Server');
     }
 }
 
-// --- Search Filter (Client Side) ---
+// --- Search Filter Client Side (Tìm trên dữ liệu đã tải về) ---
 window.handleSearch = function(type) {
     const inputId = type === 'tamvang' ? 'search-tv' : 'search-tt';
     const query = document.getElementById(inputId).value.toLowerCase();
     
-    // Chọn nguồn dữ liệu
-    const sourceData = type === 'tamvang' ? MOCK_TAM_VANG : MOCK_TAM_TRU;
-
-    // Lọc
-    const filtered = sourceData.filter(item => {
-        return (item.hoTen && item.hoTen.toLowerCase().includes(query)) ||
-               (item.cccd && item.cccd.includes(query)) ||
-               (item.idNhanKhau && item.idNhanKhau.toString().includes(query));
+    // Lưu ý: Đây là tìm kiếm tạm thời trên giao diện. 
+    // Nếu dữ liệu lớn, bạn nên viết thêm API search ở Backend.
+    const rows = document.querySelectorAll(`#tbody-${type} tr`);
+    rows.forEach(row => {
+        const text = row.innerText.toLowerCase();
+        row.style.display = text.includes(query) ? '' : 'none';
     });
-
-    renderTable(type, filtered);
 }
+
 
 // ==========================================
 // 4. TIỆN ÍCH (Print, Modal, Utils)
 // ==========================================
 window.printPaper = function(type, data) {
     const title = type === 'tamvang' ? 'GIẤY KHAI BÁO TẠM VẮNG' : 'GIẤY KHAI BÁO TẠM TRÚ';
+    const w = window.open('', '', 'height=600,width=800');
     
-    const printWindow = window.open('', '', 'height=600,width=800');
-    printWindow.document.write('<html><head><title>In Giấy Xác Nhận</title>');
-    printWindow.document.write(`
+    w.document.write(`
+        <html><head><title>In Giấy Xác Nhận</title>
         <style>
             body { font-family: "Times New Roman", serif; padding: 40px; line-height: 1.6; }
             .header { text-align: center; margin-bottom: 30px; }
             h2 { text-transform: uppercase; margin: 10px 0; }
-            .content p { margin: 10px 0; font-size: 14pt; }
             .footer { margin-top: 50px; text-align: right; }
         </style>
-    `);
-    printWindow.document.write('</head><body>');
-    
-    printWindow.document.write(`
+        </head><body>
         <div class="header">
             <p><strong>CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</strong><br>Độc lập - Tự do - Hạnh phúc</p>
             <hr style="width: 200px;">
             <h2>${title}</h2>
         </div>
-        <div class="content">
+        <div>
             <p>Kính gửi: Công an Phường La Khê</p>
-    `);
-
-    if (type === 'tamvang') {
-        printWindow.document.write(`
-            <p>Tôi tên là: (Chủ hộ/Người khai báo)............................</p>
-            <p>Xin khai báo tạm vắng cho nhân khẩu: <strong>${data.hoTen}</strong> (Mã: ${data.idNhanKhau})</p>
-            <p>Nơi đến tạm trú: <strong>${data.noiDen || data.noiden}</strong></p>
+            <p>Họ tên: <strong>${data.hoTen}</strong></p>
+            <p>Nơi cư trú: ${type === 'tamvang' ? data.noiDen : data.diaChi}</p>
             <p>Thời gian: Từ ${formatDate(data.tuNgay)} đến ${formatDate(data.denNgay)}</p>
             <p>Lý do: ${data.lyDo}</p>
-        `);
-    } else {
-        printWindow.document.write(`
-            <p>Họ tên người đăng ký: <strong>${data.hoTen}</strong></p>
-            <p>Ngày sinh: ${formatDate(data.ngaysinh)} - CCCD: ${data.cccd}</p>
-            <p>Quê quán: ${data.queQuan || '....................'}</p>
-            <p>Nay xin đăng ký tạm trú tại: <strong>${data.diaChi}</strong></p>
-            <p>Thời gian: Từ ${formatDate(data.tuNgay)} đến ${formatDate(data.denNgay)}</p>
-            <p>Lý do: ${data.lyDo}</p>
-        `);
-    }
-
-    printWindow.document.write(`
         </div>
         <div class="footer">
-            <p><em>Hà Nội, ngày......tháng......năm......</em></p>
-            <p><strong>Người khai báo</strong><br>(Ký và ghi rõ họ tên)</p>
+            <p><em>Ngày......tháng......năm......</em></p>
+            <p><strong>Người khai báo</strong></p>
         </div>
-    </body></html>`);
+        </body></html>
+    `);
     
-    printWindow.document.close();
-    // setTimeout để đảm bảo nội dung load xong mới in
-    setTimeout(() => { printWindow.print(); }, 500);
+    w.document.close();
+    setTimeout(() => { w.print(); }, 500);
 }
 
 // Helpers
 function formatDate(str) { 
     if(!str) return ''; 
     const d = new Date(str); 
-    if(isNaN(d.getTime())) return str; // Nếu không phải ngày thì trả về nguyên gốc
+    if(isNaN(d.getTime())) return str;
     return `${d.getDate().toString().padStart(2,'0')}/${(d.getMonth()+1).toString().padStart(2,'0')}/${d.getFullYear()}`; 
 }
 
@@ -258,8 +228,6 @@ window.closeModal = function(id) {
     document.getElementById(id).classList.add('hidden'); 
     document.getElementById(id).classList.remove('show'); 
 }
-
-// Đóng modal khi click ra ngoài
 window.onclick = function(e) { 
     if(e.target.classList.contains('modal-overlay')) { 
         e.target.classList.add('hidden'); 

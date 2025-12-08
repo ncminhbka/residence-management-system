@@ -157,67 +157,48 @@
   </div>
 
   <div id="modal-tamtru" class="modal-overlay hidden">
-    <div class="modal-content" style="max-width: 800px;">
+    <div class="modal-content" style="max-width: 600px;">
       <div class="modal-header">
-        <h3>Đăng ký Tạm trú (Người từ nơi khác đến)</h3>
+        <h3>Đăng ký Tạm trú</h3>
         <button class="close-btn" onclick="closeModal('modal-tamtru')">&times;</button>
       </div>
       <div class="modal-body">
+        
+        <div style="background:#e3f2fd; padding:12px; margin-bottom:15px; border-radius:4px; font-size:13px; border-left: 4px solid #2196F3; color: #0d47a1;">
+            ℹ️ <strong>Lưu ý quan trọng:</strong><br>
+            Người đăng ký tạm trú <strong>phải được thêm vào danh sách "Nhân khẩu" trước</strong>. <br>Sau đó hãy nhập Mã nhân khẩu (ID) của họ vào dưới đây.
+        </div>
+        
         <form id="form-tamtru">
-            <div class="info-section">
-                <h4 style="margin-bottom:15px; border-bottom:1px solid #eee; padding-bottom:5px;">Thông tin cá nhân</h4>
-                <div class="info-grid">
-                    <div class="form-group">
-                        <label>Họ và tên <span style="color:red">*</span></label>
-                        <input type="text" id="tt-hoten" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Ngày sinh <span style="color:red">*</span></label>
-                        <input type="date" id="tt-ngaysinh" required>
-                    </div>
-                    <div class="form-group">
-                        <label>CCCD/CMND <span style="color:red">*</span></label>
-                        <input type="text" id="tt-cccd" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Giới tính</label>
-                        <select id="tt-gioitinh">
-                            <option value="Nam">Nam</option>
-                            <option value="Nữ">Nữ</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="form-group" style="margin-top:10px;">
-                    <label>Quê quán / Thường trú</label>
-                    <input type="text" id="tt-quequan" placeholder="Địa chỉ thường trú ở quê">
-                </div>
+            <div class="form-group">
+                <label>Mã Nhân Khẩu (ID) <span style="color:red">*</span></label>
+                <input type="number" id="tt-manhankhau" required placeholder="Nhập ID người dân (Ví dụ: 101)">
             </div>
-
-            <div class="info-section" style="margin-top:20px;">
-                <h4 style="margin-bottom:15px; border-bottom:1px solid #eee; padding-bottom:5px;">Thông tin đăng ký</h4>
+            
+            <div class="form-group">
+                <label>Địa chỉ Tạm trú (Tại tổ dân phố) <span style="color:red">*</span></label>
+                <input type="text" id="tt-diachi" required placeholder="Ví dụ: Số 10, Ngõ 5...">
+            </div>
+            
+            <div class="info-grid">
                 <div class="form-group">
-                    <label>Địa chỉ Tạm trú (Tại tổ dân phố) <span style="color:red">*</span></label>
-                    <input type="text" id="tt-diachi" required placeholder="Ví dụ: Số nhà 10, Ngõ 5...">
+                    <label>Từ ngày</label>
+                    <input type="date" id="tt-tungay" required>
                 </div>
-                <div class="info-grid">
-                    <div class="form-group">
-                        <label>Từ ngày</label>
-                        <input type="date" id="tt-tungay" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Đến ngày</label>
-                        <input type="date" id="tt-denngay" required>
-                    </div>
-                </div>
-                <div class="form-group" style="margin-top:10px;">
-                    <label>Lý do</label>
-                    <textarea id="tt-lydo" class="form-control" rows="2"></textarea>
+                <div class="form-group">
+                    <label>Đến ngày</label>
+                    <input type="date" id="tt-denngay" required>
                 </div>
             </div>
-
+            
+            <div class="form-group">
+                <label>Lý do / Ghi chú</label>
+                <textarea id="tt-lydo" class="form-control" rows="2"></textarea>
+            </div>
+            
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" onclick="closeModal('modal-tamtru')">Hủy</button>
-                <button type="submit" class="btn btn-primary">Lưu dữ liệu</button>
+                <button type="submit" class="btn btn-primary">Lưu & In giấy</button>
             </div>
         </form>
       </div>
