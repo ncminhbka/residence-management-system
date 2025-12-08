@@ -3,121 +3,132 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Dashboard - Hệ thống quản trị dân cư</title>
+  <title>Quản lý Nhà Văn hóa</title>
   <link rel="stylesheet" href="assets/css/layout.css" />
   <link rel="stylesheet" href="assets/css/style.css" />
-  <link rel="stylesheet" href="assets/css/households.css" />
+  <link rel="stylesheet" href="assets/css/residents.css" /> <style>
+    .tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #ddd; }
+    .tab-btn { padding: 10px 20px; cursor: pointer; border: none; background: none; font-weight: 600; color: #666; }
+    .tab-btn.active { color: #007bff; border-bottom: 3px solid #007bff; margin-bottom: -2px; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; animation: fadeIn 0.3s; }
+    .badge-pending { background: #ffc107; color: #000; padding: 4px 8px; border-radius: 10px; font-size: 12px; }
+    .badge-approved { background: #28a745; color: #fff; padding: 4px 8px; border-radius: 10px; font-size: 12px; }
+    .badge-rejected { background: #dc3545; color: #fff; padding: 4px 8px; border-radius: 10px; font-size: 12px; }
+  </style>
 </head>
 
 <body>
-    <div id="navbar"></div>
+  <div id="navbar"></div>
+  <main class="dashboard">
+    <aside id="sidebar"></aside>
 
-    <main class="dashboard">
-        <aside id="sidebar"></aside>
+    <section class="content">
+      <h2>🏛️ Quản lý Nhà Văn hóa</h2>
 
-        <section class="content">
-            <h1>🏛️ Quản lý Nhà Văn hóa</h1>
+      <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('assets')">Quản lý Tài sản</button>
+        <button class="tab-btn" onclick="switchTab('events')">Lịch & Sự kiện</button>
+      </div>
 
-            <div class="tabs">
-                <button class="tab-btn active" onclick="openTab(event, 'AssetManagement')">
-                    Quản lý Tài sản
-                </button>
-                <button class="tab-btn" onclick="openTab(event, 'ScheduleManagement')">
-                    Lịch Sử Dụng & Phê Duyệt
-                </button>
+      <div id="tab-assets" class="tab-content active">
+        <div class="content-header">
+            <button class="btn btn-primary" onclick="openAssetModal()">+ Thêm Tài Sản</button>
+        </div>
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Mã</th>
+                        <th>Tên Tài Sản</th>
+                        <th>Đơn vị</th>
+                        <th>SL Tốt</th>
+                        <th>SL Hỏng</th>
+                        <th>Tổng</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody id="tbody-assets"></tbody>
+            </table>
+        </div>
+      </div>
+
+      <div id="tab-events" class="tab-content">
+        <div class="content-header">
+            <button class="btn btn-primary" onclick="openEventModal()">+ Đăng ký / Tạo lịch</button>
+        </div>
+        
+        <div class="table-container">
+            <h4 style="margin: 10px 0;">📅 Danh sách hoạt động</h4>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Tên sự kiện</th>
+                        <th>Thời gian</th>
+                        <th>Loại</th>
+                        <th>Trạng thái</th>
+                        <th>Phí</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody id="tbody-events"></tbody>
+            </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="modal-asset" class="modal-overlay hidden">
+    <div class="modal-content">
+      <div class="modal-header"><h3>Thông tin tài sản</h3><button class="close-btn" onclick="closeModal('modal-asset')">&times;</button></div>
+      <div class="modal-body">
+        <form id="form-asset">
+            <input type="hidden" id="asset-id">
+            <div class="form-group"><label>Tên tài sản</label><input type="text" id="asset-name" required></div>
+            <div class="form-group"><label>Đơn vị tính</label><input type="text" id="asset-unit" required value="Cái"></div>
+            <div class="info-grid">
+                <div class="form-group"><label>Số lượng Tốt</label><input type="number" id="asset-good" required min="0"></div>
+                <div class="form-group"><label>Số lượng Hỏng</label><input type="number" id="asset-bad" required min="0"></div>
             </div>
-
-            <div id="AssetManagement" class="tab-content active">
-                <h3>🛠️ Danh mục Tài sản & Hiện trạng</h3>
-                <div class="action-bar">
-                    <button class="btn btn-primary">Thêm Tài Sản Mới</button>
-                    <button class="btn btn-secondary">Thống kê Tài sản</button>
-                </div>
-
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Mã TS</th>
-                            <th>Tên Tài Sản</th>
-                            <th>Tổng Số Lượng</th>
-                            <th>Hiện Trạng Tốt</th>
-                            <th>Hiện Trạng Hỏng</th>
-                            <th>Thao tác</th>
-                        </tr>
-                    </thead>
-                        <tbody>
-                            <!-- Dữ liệu sẽ được tải động từ backend; demo rows đã được loại bỏ -->
-                        </tbody>
-                </table>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-primary">Lưu</button>
             </div>
+        </form>
+      </div>
+    </div>
+  </div>
 
-            <div id="ScheduleManagement" class="tab-content" style="display: none;">
-                <h3>📅 Lịch Sử Dụng & Đăng Ký Sự Kiện</h3>
-
-                <div class="schedule-view">
-                    <h4>Tổng quan Lịch Đã Duyệt (Để tránh trùng lặp)</h4>
-                    <div class="calendar-placeholder" style="border: 1px dashed #ccc; padding: 20px; text-align: center;">
-                        [Hiển thị Lịch (Dạng Tuần/Tháng)]
-                    </div>
-                </div>
-
-                <hr>
-
-                <div class="management-section">
-                    <h4>Danh sách Yêu cầu Đăng ký (Chờ Phê duyệt)</h4>
-                    <div class="action-bar">
-                        <button class="btn btn-info">Ghi nhận Hoạt động chung </button>
-                    </div>
-
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>Mã YC</th>
-                                <th>Người Đăng Ký</th>
-                                <th>Mục Đích</th>
-                                <th>Thời Gian Sử Dụng</th>
-                                <th>Trạng Thái</th>
-                                <th>Phí (dự kiến)</th>
-                                <th>Thao tác</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <!-- Dữ liệu đăng ký sẽ được tải động từ backend; demo rows đã được loại bỏ -->
-                        </tbody>
-                    </table>
-                </div>
+  <div id="modal-event" class="modal-overlay hidden">
+    <div class="modal-content">
+      <div class="modal-header"><h3>Đăng ký sử dụng Nhà văn hóa</h3><button class="close-btn" onclick="closeModal('modal-event')">&times;</button></div>
+      <div class="modal-body">
+        <form id="form-event">
+            <div class="form-group">
+                <label>Loại hoạt động</label>
+                <select id="evt-type" onchange="toggleFeeInput()">
+                    <option value="HopToDanPho">Họp tổ dân phố (Miễn phí)</option>
+                    <option value="VeSinhMoiTruong">Vệ sinh / Tuyên truyền (Miễn phí)</option>
+                    <option value="VanHoaGiaiTri">Thuê tổ chức sự kiện/Đám cưới (Có phí)</option>
+                </select>
             </div>
+            <div class="form-group"><label>Tên hoạt động</label><input type="text" id="evt-name" required placeholder="VD: Đám cưới nhà ông A..."></div>
+            <div class="info-grid">
+                <div class="form-group"><label>Bắt đầu</label><input type="datetime-local" id="evt-start" required></div>
+                <div class="form-group"><label>Kết thúc</label><input type="datetime-local" id="evt-end" required></div>
+            </div>
+            <div class="form-group hidden" id="div-fee">
+                <label>Phí dự kiến (VNĐ)</label>
+                <input type="number" id="evt-fee" value="0">
+            </div>
+            <div class="form-group"><label>Mô tả chi tiết</label><textarea id="evt-desc" class="form-control"></textarea></div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-primary">Gửi đăng ký</button>
+            </div>
+        </form>
+      </div>
+    </div>
+  </div>
 
-        </section>
-    </main>
-
-    <script src="assets/js/layout.js"></script>
-
-    <script>
-        function openTab(evt, tabName) {
-            var i, tabcontent, tablinks;
-            
-            // Ẩn tất cả nội dung tab
-            tabcontent = document.getElementsByClassName("tab-content");
-            for (i = 0; i < tabcontent.length; i++) {
-                tabcontent[i].style.display = "none";
-            }
-
-            // Xóa class 'active' khỏi tất cả nút tab
-            tablinks = document.getElementsByClassName("tab-btn");
-            for (i = 0; i < tablinks.length; i++) {
-                tablinks[i].className = tablinks[i].className.replace(" active", "");
-            }
-
-            // Hiển thị tab hiện tại và thêm class 'active'
-            document.getElementById(tabName).style.display = "block";
-            evt.currentTarget.className += " active";
-        }
-
-        // Đảm bảo tab 'AssetManagement' được hiển thị mặc định khi tải trang
-        document.addEventListener("DOMContentLoaded", function() {
-            // (Đã được xử lý bằng class 'active' và style mặc định trong HTML)
-        });
-    </script>
-</body>
+  <script src="assets/js/layout.js"></script>
+  <script src="assets/js/facilities.js"></script> </body>
 </html>
