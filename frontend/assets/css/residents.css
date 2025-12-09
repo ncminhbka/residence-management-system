@@ -129,16 +129,17 @@ h2.page-title i {
     text-align: left;
     border-bottom: 1px solid var(--panel-border);
     font-size: 14px;
-    color: var(--text-color-dark);
+    color: var(--text-color-light);
 }
 
 .data-table th {
-    background-color: var(--muted-bg);
+    background-color: var(--panel-header-bg);
     font-weight: 600;
+    color: var(--text-color-light);
 }
 
 .data-table tbody tr:hover {
-    background-color: var(--muted-bg);
+    background-color: transparent;
 }
 
 .action-buttons {
@@ -171,7 +172,7 @@ h2.page-title i {
     display: none;
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(0, 0, 0, 0.7);
     z-index: 1000;
     align-items: center;
     justify-content: center;
@@ -179,6 +180,10 @@ h2.page-title i {
 
 .modal-overlay.show {
     display: flex;
+}
+
+.modal-overlay.hidden {
+    display: none !important;
 }
 
 .modal-content {
@@ -206,43 +211,54 @@ h2.page-title i {
 }
 
 .modal-header {
-    background: #007bff;
+    background: var(--panel-header-bg);
     padding: 16px 24px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    color: #fff;
+    color: var(--text-color-light);
+    border-bottom: 1px solid var(--panel-border);
 }
 
 .modal-header h3 {
     margin: 0;
     font-size: 18px;
+    color: var(--text-color-light);
+    font-weight: 600;
 }
 
 .close-btn {
     border: none;
-    background: rgba(255, 255, 255, 0.2);
-    font-size: 20px;
-    color: #fff;
+    background: rgba(255, 255, 255, 0.1);
+    font-size: 24px;
+    color: var(--text-color-light);
     cursor: pointer;
     border-radius: 4px;
     padding: 4px 8px;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
 }
 
 .close-btn:hover {
-    background: rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.2);
+    color: var(--primary-color);
 }
 
 .modal-body {
     padding: 24px;
     max-height: calc(90vh - 150px);
     overflow-y: auto;
-    background: var(--muted-bg);
+    background: var(--panel-bg);
+    color: var(--text-color-light);
 }
 
 .modal-footer {
     padding: 16px 24px;
-    background: var(--panel-bg);
+    background: var(--muted-bg);
     border-top: 1px solid var(--panel-border);
     display: flex;
     justify-content: flex-end;

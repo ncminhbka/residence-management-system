@@ -49,7 +49,13 @@ window.switchTab = function(tabName) {
 // ==========================================
 async function loadData(type) {
     const tbody = document.getElementById(`tbody-${type}`);
-    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 20px;">⏳ Đang tải dữ liệu từ Server...</td></tr>';
+    // compute column count from table header to ensure correct colspan
+    let colCount = 6;
+    try {
+        const table = tbody.closest('table');
+        if (table) colCount = table.querySelectorAll('thead th').length || colCount;
+    } catch (e) {}
+    tbody.innerHTML = `<tr><td colspan="${colCount}" style="text-align:center; padding: 20px;">⏳ Đang tải dữ liệu từ Server...</td></tr>`;
 
     try {
         const response = await fetch(`${API_BASE}/${type}`);
@@ -60,11 +66,11 @@ async function loadData(type) {
             const mappedData = json.data.map(item => mapDataFromDB(type, item));
             renderTable(type, mappedData);
         } else {
-            tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:red">❌ ${json.message}</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="${colCount}" style="text-align:center; color:red">❌ ${json.message}</td></tr>`;
         }
     } catch (error) {
         console.error("Lỗi tải dữ liệu:", error);
-        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:red">❌ ${error.message || 'Lỗi kết nối'}</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="${colCount}" style="text-align:center; color:red">❌ ${error.message || 'Lỗi kết nối'}</td></tr>`;
     }
 }
 
@@ -72,22 +78,23 @@ async function loadData(type) {
 function mapDataFromDB(type, dbItem) {
     if (type === 'tamvang') {
         return {
-            idNhanKhau: dbItem.MANHANKHAU, 
+            idNhanKhau: dbItem.MANHANKHAU,
             hoTen: dbItem.HOTEN,
-            noiDen: dbItem.NOITAMTRU, // Database: NOITAMTRU -> Frontend: noiDen
+            maGiay: dbItem.MAGIAYTAMVANG,
             tuNgay: dbItem.NGAYBATDAU,
             denNgay: dbItem.NGAYKETTHUC,
+            noiDen: dbItem.NOITAMTRU,
             lyDo: dbItem.LYDO
         };
     } else {
         return {
+            idNhanKhau: dbItem.MANHANKHAU,
             hoTen: dbItem.HOTEN,
-            ngaysinh: dbItem.NGAYSINH,
-            cccd: dbItem.CCCD, // Lấy từ bảng NHAN_KHAU join sang
+            maGiay: dbItem.MAGIAYTAMTRU,
             diaChi: dbItem.DIACHITAMTRU,
             tuNgay: dbItem.NGAYBATDAU,
             denNgay: dbItem.NGAYKETTHUC,
-            lyDo: dbItem.GHICHU // Database: GHICHU -> Frontend: lyDo
+            lyDo: dbItem.GHICHU
         };
     }
 }
@@ -95,36 +102,39 @@ function mapDataFromDB(type, dbItem) {
 // --- Render Table ---
 function renderTable(type, data) {
     const tbody = document.getElementById(`tbody-${type}`);
-    
+    // If no data, show a friendly message. Determine colspan from table headers.
     if (!data || data.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 20px; color: #888;">Chưa có dữ liệu</td></tr>';
+        let colCount = 6;
+        try { const table = tbody.closest('table'); if (table) colCount = table.querySelectorAll('thead th').length || colCount; } catch (e) {}
+        tbody.innerHTML = `<tr><td colspan="${colCount}" style="text-align:center; padding: 20px; color: #888;">Chưa có dữ liệu</td></tr>`;
         return;
     }
 
     if (type === 'tamvang') {
+        // Tạm vắng: 8 columns - id, name, document code, start date, end date, destination, reason, action
         tbody.innerHTML = data.map(item => `
             <tr>
-                <td><span style="background:#eee; padding:2px 6px; border-radius:4px; font-weight:bold;">${item.idNhanKhau}</span></td>
-                <td><strong>${item.hoTen}</strong></td>
-                <td>${item.noiDen}</td>
-                <td>${formatDate(item.tuNgay)} <span style="color:#999">➝</span> ${formatDate(item.denNgay)}</td>
-                <td>${item.lyDo}</td>
-                <td>
-                    <button class="btn btn-sm btn-secondary" onclick='printPaper("tamvang", ${JSON.stringify(item)})'>🖨️ In giấy</button>
-                </td>
+                <td><span class="id-badge">${item.idNhanKhau || ''}</span></td>
+                <td><strong>${item.hoTen || ''}</strong></td>
+                <td>${item.maGiay || 'N/A'}</td>
+                <td>${formatDate(item.tuNgay)}</td>
+                <td>${formatDate(item.denNgay)}</td>
+                <td>${item.noiDen || ''}</td>
+                <td>${item.lyDo || ''}</td>
+                <td><button class="btn btn-sm btn-secondary" onclick='printPaper("tamvang", ${JSON.stringify(item)})'>🖨️ In giấy</button></td>
             </tr>
         `).join('');
     } else {
+        // Tạm trú: 7 columns - id, name, document code, address, time range, reason, action
         tbody.innerHTML = data.map(item => `
             <tr>
-                <td><strong>${item.hoTen}</strong><br><small style="color:#666">${formatDate(item.ngaysinh)}</small></td>
-                <td>${item.cccd || 'Chưa có'}</td>
-                <td>${item.diaChi}</td>
-                <td>${formatDate(item.tuNgay)} <br> <span style="color:#999">đến</span> ${formatDate(item.denNgay)}</td>
-                <td><span class="badge badge-success">Đang hiệu lực</span></td>
-                <td>
-                    <button class="btn btn-sm btn-secondary" onclick='printPaper("tamtru", ${JSON.stringify(item)})'>🖨️ In giấy</button>
-                </td>
+                <td><span class="id-badge">${item.idNhanKhau || ''}</span></td>
+                <td><strong>${item.hoTen || ''}</strong></td>
+                <td>${item.maGiay || 'N/A'}</td>
+                <td>${item.diaChi || ''}</td>
+                <td>${formatDate(item.tuNgay)} <span style="color:var(--text-color-faint)">➝</span> ${formatDate(item.denNgay)}</td>
+                <td>${item.lyDo || ''}</td>
+                <td><button class="btn btn-sm btn-secondary" onclick='printPaper("tamtru", ${JSON.stringify(item)})'>🖨️ In giấy</button></td>
             </tr>
         `).join('');
     }

@@ -20,56 +20,38 @@ body {
   --primary-color: #007bff;
   --primary-hover: #1e87f0;
 
-  /* Text */
-  --text-color-dark: #111827; /* dark text for light mode */
-  --text-color-light: #f8f9fa; /* light text for dark mode */
-  --text-color-faint: #6b7280;
+  /* Text (use light text by default so both modes show dark background + white text) */
+  --text-color-dark: #e6eef8; /* general content text (light) */
+  --text-color-light: #ffffff;
+  --text-color-faint: #9ca3af;
 
-  /* Background / Panels */
-  --background-content: #f6f8fb; /* page background (light mode) */
-  --panel-bg: #ffffff;           /* cards, containers (light mode) */
-  --panel-border: #e6e9ee;      /* subtle border in light mode */
-  --muted-bg: #f8f9fa;          /* muted surfaces */
-  --panel-header-bg: #f3f4f6;   /* table headers / panel headers */
-  --table-row-alt: #ffffff;
-  --table-row-hover: #f1f5f9;
+  /* Background / Panels (dark by default) */
+  --background-content: #0f1724; /* page background (dark) */
+  --panel-bg: #1e272e;           /* cards, containers (dark) */
+  --panel-border: rgba(255,255,255,0.06);
+  --muted-bg: #0b1220;          /* muted surfaces */
+  --panel-header-bg: #343a40;   /* table headers / panel headers */
+  --table-row-alt: #212529;
+  --table-row-hover: #495057;
 
   /* Inputs */
-  --input-bg: #ffffff;
-  --input-border: #d1d5db;
+  --input-bg: #343a40;
+  --input-border: #495057;
+
+  /* Navbar / Topbar */
+  --navbar-bg-dark: #0b1220;
+  --topbar-bg-light: #0b1220;
+  --topbar-bg-dark: #0b1220;
 
   /* Shadows / misc */
-  --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
-  --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.5);
+  --shadow-md: 0 6px 18px rgba(0,0,0,0.6);
 
   /* layout */
   --transition-speed: 0.25s ease-in-out;
   --header-height: 110px;
   --topbar-height: 45px;
   --total-offset: 105px;
-}
-
-/* Dark mode overrides */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --text-color-dark: #e6eef8; /* lighter text on dark */
-    --text-color-light: #ffffff;
-    --text-color-faint: #9ca3af;
-
-    --background-content: #0f1724; /* dark page background */
-    --panel-bg: #1e272e;           /* dark panels */
-    --panel-border: rgba(255,255,255,0.06);
-    --muted-bg: #0b1220;
-    --panel-header-bg: #343a40;
-    --table-row-alt: #212529;
-    --table-row-hover: #495057;
-
-    --input-bg: #343a40;
-    --input-border: #495057;
-
-    --shadow-sm: 0 1px 2px rgba(0,0,0,0.5);
-    --shadow-md: 0 6px 18px rgba(0,0,0,0.6);
-  }
 }
 
 /* ==================================== */
@@ -308,7 +290,7 @@ body {
   margin: 0;
   font-size: 18px;
   font-weight: 600;
-  color: var(--text-color-light);
+  color: #ffffff !important;
 }
 
 .account-form {
@@ -397,16 +379,18 @@ body {
 .data-table th,
 .data-table td {
   padding: 12px 15px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--panel-border);
+  color: var(--text-color-light);
 }
 
 .data-table tbody tr:nth-child(even) {
-  background-color: var(--table-row-alt);
+  background-color: transparent;
 }
 
+/* Disable hover color change so rows stay visually stable */
 .data-table tbody tr:hover {
-  background-color: var(--table-row-hover);
-  transition: background-color 0.15s;
+  background-color: transparent;
+  transition: none;
   cursor: default;
 }
 
@@ -459,4 +443,116 @@ body {
 body {
   background: var(--background-content);
   color: var(--text-color-dark);
+}
+
+/* ====================================
+   INPUT, TEXTAREA, SELECT - Dark Theme with Light Text
+   ==================================== */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="date"],
+input[type="time"],
+input[type="datetime-local"],
+input[type="tel"],
+input[type="url"],
+textarea,
+select,
+.form-control {
+  background-color: var(--input-bg) !important;
+  color: var(--text-color-light) !important;
+  border: 1px solid var(--input-border) !important;
+  border-radius: 4px;
+  padding: 8px 12px;
+  font-size: 14px;
+  font-family: inherit;
+  transition: all 0.2s ease;
+}
+
+input[type="text"]::placeholder,
+input[type="email"]::placeholder,
+input[type="password"]::placeholder,
+input[type="number"]::placeholder,
+input[type="date"]::placeholder,
+input[type="time"]::placeholder,
+input[type="datetime-local"]::placeholder,
+input[type="tel"]::placeholder,
+input[type="url"]::placeholder,
+textarea::placeholder {
+  color: var(--text-color-faint) !important;
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+input[type="number"]:focus,
+input[type="date"]:focus,
+input[type="time"]:focus,
+input[type="datetime-local"]:focus,
+input[type="tel"]:focus,
+input[type="url"]:focus,
+textarea:focus,
+select:focus,
+.form-control:focus {
+  outline: none;
+  border-color: var(--primary-color) !important;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+select {
+  cursor: pointer;
+}
+
+select option {
+  background-color: var(--input-bg);
+  color: var(--text-color-light);
+}
+
+textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+/* Labels and helper text */
+label {
+  color: var(--text-color-light);
+  font-weight: 500;
+  display: block;
+  margin-bottom: 6px;
+}
+
+small {
+  color: var(--text-color-faint);
+}
+
+/* Form groups */
+.form-group {
+  margin-bottom: 15px;
+}
+
+/* ====================================
+   MODAL/POPUP ĐÈ LÊN NAVBAR & SIDEBAR
+   ==================================== */
+.modal,
+.popup-table {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 9999; /* Lớn hơn navbar (1010) và sidebar */
+  background: #fff;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.6);
+  padding: 24px;
+  border-radius: 8px;
+  max-width: 90vw;
+  max-height: 90vh;
+  overflow: auto;
+}
+.modal-backdrop,
+.popup-backdrop {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 9998;
 }

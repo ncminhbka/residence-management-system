@@ -41,6 +41,19 @@
       .badge-warning { background: #fff3cd; color: #856404; }
       .badge-success { background: #d4edda; color: #155724; }
 
+      /* Uses global color variables so it adapts to light/dark mode */
+      .muted { color: var(--text-color-faint); }
+
+      .info-note {
+          background-color: var(--muted-bg);
+          padding: 12px;
+          margin-bottom: 15px;
+          border-radius: 4px;
+          font-size: 13px;
+          border-left: 4px solid var(--primary-color);
+          color: var(--text-color-dark);
+      }
+
       @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
   </style>
 </head>
@@ -52,8 +65,8 @@
     <aside id="sidebar"></aside>
 
     <section class="content">
-      <h2>📋 Quản lý Biến động Cư trú (Tạm trú / Tạm vắng)</h2>
-      <p style="color: #666; margin-bottom: 20px;">Quản lý công dân tạm vắng mặt tại địa phương và công dân từ nơi khác đến tạm trú.</p>
+    <h2 class="page-title"><i class="fas fa-id-card" aria-hidden="true"></i> Quản lý Biến động Cư trú (Tạm trú / Tạm vắng)</h2>
+    <p class="muted" style="margin-bottom:20px">Quản lý công dân tạm vắng mặt tại địa phương và công dân từ nơi khác đến tạm trú.</p>
 
       <div class="tabs">
         <button class="tab-btn active" onclick="switchTab('tamvang')">Quản lý Tạm vắng</button>
@@ -75,8 +88,10 @@
                     <tr>
                         <th>Mã NK</th>
                         <th>Họ tên</th>
-                        <th>Nơi đến</th>
-                        <th>Thời gian vắng</th>
+                        <th>Mã giấy tạm vắng</th>
+                        <th>Ngày bắt đầu</th>
+                        <th>Ngày kết thúc</th>
+                        <th>Nơi tạm trú</th>
                         <th>Lý do</th>
                         <th>Thao tác</th>
                     </tr>
@@ -100,11 +115,12 @@
             <table class="data-table">
                 <thead>
                     <tr>
+                        <th>Mã NK</th>
                         <th>Họ tên</th>
-                        <th>CCCD/CMND</th>
+                        <th>Mã giấy tạm trú</th>
                         <th>Địa chỉ tạm trú</th>
-                        <th>Thời hạn</th>
-                        <th>Trạng thái</th>
+                        <th>Thời gian</th>
+                        <th>Lý do</th>
                         <th>Thao tác</th>
                     </tr>
                 </thead>
@@ -127,7 +143,7 @@
             <div class="form-group">
                 <label>Mã Nhân Khẩu (Trong hệ thống) <span style="color:red">*</span></label>
                 <input type="number" id="tv-id" required placeholder="Nhập ID nhân khẩu (VD: 1, 2...)">
-                <small style="color:#666; font-size:12px;">Nhập ID để hệ thống tự lấy tên người dân.</small>
+                <small style="color:var(--text-color-faint); font-size:12px;">Nhập ID để hệ thống tự lấy tên người dân.</small>
             </div>
             <div class="form-group">
                 <label>Nơi đến tạm trú <span style="color:red">*</span></label>
@@ -164,7 +180,7 @@
       </div>
       <div class="modal-body">
         
-        <div style="background:#e3f2fd; padding:12px; margin-bottom:15px; border-radius:4px; font-size:13px; border-left: 4px solid #2196F3; color: #0d47a1;">
+        <div class="info-note">
             ℹ️ <strong>Lưu ý quan trọng:</strong><br>
             Người đăng ký tạm trú <strong>phải được thêm vào danh sách "Nhân khẩu" trước</strong>. <br>Sau đó hãy nhập Mã nhân khẩu (ID) của họ vào dưới đây.
         </div>

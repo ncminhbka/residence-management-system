@@ -21,7 +21,7 @@
         .pagination button {
             padding: 8px 12px;
             border: 1px solid #dee2e6;
-            background: white;
+            background: var(--panel-bg);
             cursor: pointer;
             border-radius: 4px;
             color: #007bff;
@@ -133,10 +133,11 @@
 
         /* ==== Table Styles ==== */
         .table-container {
-            background: white;
+            background: var(--panel-bg);
             border-radius: 8px;
             overflow: hidden;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--panel-border);
         }
 
         .data-table {
@@ -145,30 +146,30 @@
         }
 
         .data-table thead {
-            background: #f8f9fa;
-            border-bottom: 2px solid #dee2e6;
+            background: var(--panel-header-bg);
+            border-bottom: 2px solid var(--panel-border);
         }
 
         .data-table th {
             padding: 15px;
             text-align: left;
             font-weight: 600;
-            color: #495057;
+            color: var(--text-color-light);
             font-size: 14px;
         }
 
         .data-table tbody tr {
-            border-bottom: 1px solid #dee2e6;
+            border-bottom: 1px solid var(--panel-border);
             transition: background 0.2s;
         }
 
         .data-table tbody tr:hover {
-            background: #f8f9fa;
+            background: transparent;
         }
 
         .data-table td {
             padding: 15px;
-            color: #495057;
+            color: var(--text-color-light);
             font-size: 14px;
         }
 
@@ -180,39 +181,41 @@
 
         .btn-sm {
             padding: 6px 12px;
-            border: none;
-            border-radius: 4px;
+        }
+
+        /* Pagination (moved out of .btn-sm) */
+        .pagination {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            margin-top: 20px;
+        }
+
+        .pagination button {
+            padding: 8px 12px;
+            border: 1px solid var(--panel-border);
+            background: var(--panel-bg);
             cursor: pointer;
-            font-size: 13px;
-            font-weight: 500;
-            transition: all 0.2s;
+            border-radius: 4px;
+            color: var(--text-color-light);
+            font-size: 14px;
+            min-width: 35px;
         }
 
-        .btn-sm.btn-primary {
-            background: #007bff;
+        .pagination button:hover {
+            background-color: rgba(255,255,255,0.02);
+        }
+
+        .pagination button.active {
+            background: var(--primary-color);
             color: white;
+            border-color: var(--primary-color);
         }
 
-        .btn-sm.btn-primary:hover {
-            background: #0056b3;
-        }
-
-        .btn-sm.btn-success {
-            background: #28a745;
-            color: white;
-        }
-
-        .btn-sm.btn-success:hover {
-            background: #218838;
-        }
-
-        .btn-sm.btn-danger {
-            background: #dc3545;
-            color: white;
-        }
-
-        .btn-sm.btn-danger:hover {
-            background: #c82333;
+        .pagination button:disabled {
+            color: var(--text-color-faint);
+            cursor: not-allowed;
+            background: var(--panel-bg);
         }
 
         /* ==== Modal Styles ==== */
@@ -234,7 +237,7 @@
         }
 
         .modal-content {
-            background: white;
+            background: var(--panel-bg);
             border-radius: 8px;
             width: 90%;
             max-width: 900px;
@@ -297,25 +300,27 @@
             padding: 24px;
             max-height: calc(90vh - 150px);
             overflow-y: auto;
-            background: #f8f9fa;
+            background: var(--panel-bg);
+            color: var(--text-color-light);
         }
 
         /* ==== Info Section ==== */
         .info-section {
-            background: white;
+            background: var(--panel-bg);
             padding: 20px;
             border-radius: 6px;
             margin-bottom: 16px;
-            border: 1px solid #e9ecef;
+            border: 1px solid var(--panel-border);
+            color: var(--text-color-light);
         }
 
         .info-section h4 {
             margin: 0 0 16px 0;
             font-size: 15px;
             font-weight: 600;
-            color: #212529;
+            color: var(--text-color-light);
             padding-bottom: 10px;
-            border-bottom: 2px solid #007bff;
+            border-bottom: 2px solid var(--primary-color);
         }
 
         .info-grid {
@@ -351,7 +356,7 @@
         /* ==== Modal Footer ==== */
         .modal-footer {
             padding: 16px 24px;
-            background: white;
+            background: var(--panel-bg);
             border-top: 1px solid #dee2e6;
             display: flex;
             justify-content: flex-end;
@@ -763,7 +768,7 @@
                 <h3>Xác nhận xóa</h3>
                 <button class="close-btn" data-modal="delete-modal">&times;</button>
             </div>
-            <div class="modal-body" style="background: white;">
+            <div class="modal-body" style="background: var(--panel-bg);">
                 <p style="margin: 0; font-size: 14px; color: #495057;">
                     Bạn có chắc chắn muốn xóa nhân khẩu này không?
                 </p>

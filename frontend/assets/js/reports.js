@@ -81,7 +81,7 @@ function drawPieChart(labels, values, options = {}) {
   currentChart = new Chart(ctx, {
     type: 'pie',
     data: { labels, datasets: [{ data: values, backgroundColor: bg, borderColor: '#fff', borderWidth: 1 }] },
-    options: Object.assign({ responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' }, tooltip: { callbacks: { label: function(ctx) { const v = ctx.raw || 0; return `${ctx.label}: ${v}`; } } } } }, options)
+    options: Object.assign({ responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: '#ffffff', font: { size: 13, weight: 600 } } }, tooltip: { titleColor: '#ffffff', bodyColor: '#ffffff', callbacks: { label: function(ctx) { const v = ctx.raw || 0; return `${ctx.label}: ${v}`; } } } } }, options)
   });
 }
 
@@ -93,7 +93,7 @@ function drawBarChart(labels, values, options = {}) {
   currentChart = new Chart(ctx, {
     type: 'bar',
     data: { labels, datasets: [{ label: 'Số lượng', data: values, backgroundColor: bg, borderColor: '#fff', borderWidth: 1 }] },
-    options: Object.assign({ responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } }, plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false } } }, options)
+    options: Object.assign({ responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { color: '#ffffff' }, grid: { color: 'rgba(255,255,255,0.1)' } }, x: { ticks: { color: '#ffffff' }, grid: { color: 'rgba(255,255,255,0.1)' } } }, plugins: { legend: { display: false, labels: { color: '#ffffff' } }, tooltip: { titleColor: '#ffffff', bodyColor: '#ffffff', mode: 'index', intersect: false } } }, options)
   });
 }
 

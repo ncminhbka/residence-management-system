@@ -109,16 +109,19 @@
 .data-table td {
   padding: 12px 15px;
   text-align: left;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--panel-border);
+  color: var(--text-color-light);
 }
 
 .data-table th {
-  background-color: var(--muted-bg);
+  background-color: var(--panel-header-bg);
   font-weight: 600;
+  color: var(--text-color-light);
 }
 
+/* Keep rows stable on dark background */
 .data-table tbody tr:hover {
-  background-color: var(--muted-bg);
+  background-color: transparent;
 }
 
 .action-buttons {
@@ -158,11 +161,19 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(0, 0, 0, 0.7);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
+}
+
+.modal-overlay.hidden {
+  display: none !important;
+}
+
+.modal-overlay.show {
+  display: flex !important;
 }
 
 .modal-content {
@@ -176,7 +187,7 @@
   max-height: 90vh;
   overflow-y: auto;
   border: 1px solid var(--panel-border);
-  color: var(--text-color-dark);
+  color: var(--text-color-light);
 }
 
 .modal-content.large {
@@ -186,7 +197,7 @@
 .modal-content h3 {
   font-size: 20px;
   font-weight: 600;
-  color: var(--primary-color, #007bff);
+  color: var(--text-color-light);
   margin-top: 0;
   margin-bottom: 25px;
   display: flex;
@@ -196,12 +207,13 @@
 
 .modal-content h3 i {
   font-size: 22px;
+  color: var(--primary-color);
 }
 
 .modal-content h4 {
   font-size: 15px;
   font-weight: 600;
-  color: var(--text-color-dark);
+  color: var(--text-color-light);
   margin-top: 20px;
   margin-bottom: 15px;
   display: flex;
@@ -212,7 +224,7 @@
 }
 
 .modal-content h4 i {
-  color: var(--primary-color, #007bff);
+  color: var(--primary-color);
   font-size: 16px;
 }
 
@@ -223,15 +235,22 @@
   font-size: 28px;
   font-weight: bold;
   cursor: pointer;
-  color: var(--text-color-faint, #adb5bd);
-  background: none;
+  color: var(--text-color-light);
+  background: rgba(255, 255, 255, 0.1);
   border: none;
-  padding: 0;
+  padding: 4px 8px;
   line-height: 1;
-  transition: color var(--transition-speed, 0.25s);
+  transition: all 0.2s ease;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
 }
 .close-btn:hover {
-  color: var(--text-color-dark);
+  background: rgba(255, 255, 255, 0.2);
+  color: var(--primary-color);
 }
 
 /* Form trong Modal */
@@ -251,7 +270,7 @@
   margin-bottom: 8px;
   font-weight: 500;
   font-size: 14px;
-  color: var(--text-color-dark);
+  color: var(--text-color-light);
 }
 
 .required {
@@ -269,14 +288,14 @@
   border: 1px solid var(--input-border);
   border-radius: 6px;
   background-color: var(--input-bg);
-  color: var(--text-color-dark);
+  color: var(--text-color-light);
   font-size: 14px;
   transition: border-color var(--transition-speed, 0.25s), box-shadow var(--transition-speed, 0.25s);
 }
 
 #household-form input::placeholder,
 #split-form input::placeholder {
-  color: var(--text-color-faint, #adb5bd);
+  color: var(--text-color-faint);
 }
 
 #household-form input:focus,
@@ -284,7 +303,7 @@
 #owner-form select:focus,
 #split-form select:focus {
   outline: none;
-  border-color: var(--primary-color, #007bff);
+  border-color: var(--primary-color);
   box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2);
   background-color: var(--input-bg);
 }

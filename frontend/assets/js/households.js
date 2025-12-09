@@ -188,7 +188,7 @@ function openRemoveMemberModal(sohokhau, manhankhau, memberName) {
                     <h3>⚠️ Xác nhận xóa thành viên</h3>
                     <button class="close-btn" onclick="document.getElementById('remove-member-modal').remove()">&times;</button>
                 </div>
-                <div class="modal-body" style="background: white; padding: 20px;">
+                <div class="modal-body" style="background: var(--panel-bg); padding: 20px;">
                     <div style="background: #fff3cd; padding: 15px; border-radius: 6px; border-left: 4px solid #ffc107; margin-bottom: 15px;">
                         <p style="margin: 0; color: #856404;">
                             <strong>⚠️ Cảnh báo:</strong><br>
@@ -449,7 +449,7 @@ async function handleChangeOwner(sohokhau) {
                     <h3>🔄 Đổi chủ hộ</h3>
                     <button class="close-btn" onclick="document.getElementById('change-owner-modal').remove()">&times;</button>
                 </div>
-                <div class="modal-body" style="background: white; max-height: 70vh; overflow-y: auto;">
+                <div class="modal-body" style="background: var(--panel-bg); max-height: 70vh; overflow-y: auto;">
                     <div style="background: #e3f2fd; padding: 12px; border-radius: 6px; margin-bottom: 20px;">
                         <p style="margin: 0;"><strong>👤 Chủ hộ hiện tại:</strong> ${currentOwner ? currentOwner.HOTEN : 'N/A'}</p>
                     </div>
@@ -473,7 +473,7 @@ async function handleChangeOwner(sohokhau) {
                             </small>
                         </div>
                         
-                        <div class="form-group" style="background: white; padding: 15px; border-radius: 6px; margin-bottom: 12px; border: 1px solid #dee2e6;">
+                        <div class="form-group" style="background: var(--panel-bg); padding: 15px; border-radius: 6px; margin-bottom: 12px; border: 1px solid var(--panel-border);">
                             <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
                                 <span style="font-weight: 600; color: #dc3545;">👤 ${currentOwner ? currentOwner.HOTEN : ''}</span>
                                 <span style="background: #ffc107; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;">CHỦ HỘ CŨ</span>
@@ -530,7 +530,7 @@ function showRelationUpdateSection() {
     );
     
     otherMembersContainer.innerHTML = membersToUpdate.map(member => `
-        <div class="form-group" style="background: white; padding: 15px; border-radius: 6px; margin-bottom: 12px; border: 1px solid #dee2e6;">
+        <div class="form-group" style="background: var(--panel-bg); padding: 15px; border-radius: 6px; margin-bottom: 12px; border: 1px solid var(--panel-border);">
             <label style="font-weight: 600; color: #495057; margin-bottom: 8px; display: block;">
                 👤 ${member.HOTEN}
                 <span style="color: #6c757d; font-weight: 400; font-size: 13px;">
