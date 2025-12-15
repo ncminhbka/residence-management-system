@@ -22,7 +22,7 @@ h2.page-title i { margin-right: 10px; }
 .card:hover { transform: translateY(-2px); }
 .card-header { display: flex; align-items: center; padding: 15px 20px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
 .card-header i { color: var(--primary-color); font-size: 18px; margin-right: 10px; }
-.card-header h3 { margin: 0; font-size: 18px; font-weight: 600; color: #ffffff !important; }
+.card-header h3 { margin: 0; font-size: 18px; font-weight: 600; color: var(--text-color-dark) !important; }
 
 /* ==================================== */
 /* 3. FORM STYLING (QUẢN LÝ TÀI KHOẢN) */
@@ -101,14 +101,14 @@ h2.page-title i { margin-right: 10px; }
 /* 5. LOGIN PAGE STYLING (INDEX.HTML) */
 /* ==================================== */
 .login-body {
-    background-color: #0d1117; /* Nền tối đậm, chuyên nghiệp */
+    background-color: var(--background-content); /* switched to light page background */
     display: flex;
     justify-content: center;
     align-items: center;
     min-height: 100vh;
     margin: 0;
     /* Sử dụng text-color-light, cần đảm bảo biến được định nghĩa trong layout.css */
-    color: var(--text-color-light, #f8f9fa); 
+    color: var(--text-color-dark, #212529); 
 }
 
 .login-container {
@@ -131,7 +131,7 @@ h2.page-title i { margin-right: 10px; }
 
 /* Auth Card (Khung đăng nhập) */
 .auth-card {
-    background-color: #1e272e; 
+    background-color: var(--panel-bg);
     padding: 30px;
     border-radius: 10px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8); 
@@ -149,12 +149,12 @@ h2.page-title i { margin-right: 10px; }
 /* Form */
 .auth-form { text-align: left; }
 .auth-form .form-group { margin-bottom: 20px; display: flex; flex-direction: column; }
-.auth-form label { display: inline-flex; align-items: center; font-size: 14px; margin-bottom: 8px; color: var(--text-color-light, #f8f9fa); font-weight: 600; }
+.auth-form label { display: inline-flex; align-items: center; font-size: 14px; margin-bottom: 8px; color: var(--text-color-dark, #212529); font-weight: 600; }
 .auth-form label i { margin-right: 8px; color: var(--text-color-faint, #adb5bd); min-width: 16px; text-align: center; }
 
 .auth-form input[type="text"], .auth-form input[type="password"] {
-    width: 100%; padding: 12px 15px; background-color: #343a40; 
-    color: var(--text-color-light, #f8f9fa); border: 1px solid #495057; border-radius: 6px; 
+    width: 100%; padding: 12px 15px; background-color: var(--input-bg); 
+    color: var(--text-color-dark, #212529); border: 1px solid var(--input-border); border-radius: 6px; 
     font-size: 15px; transition: border-color var(--transition-speed, 0.25s), box-shadow var(--transition-speed, 0.25s);
 }
 
@@ -405,10 +405,10 @@ h2.page-title i { margin-right: 10px; }
 .filter-bar input,
 .filter-bar select {
     padding: 10px 14px;
-    border: 1px solid #495057;
+    border: 1px solid var(--input-border);
     border-radius: 6px;
-    background-color: #343a40;
-    color: var(--text-color-light, #f8f9fa);
+    background-color: var(--input-bg);
+    color: var(--text-color-dark, #212529);
     font-size: 14px;
     transition: border-color var(--transition-speed, 0.25s), box-shadow var(--transition-speed, 0.25s);
 }
@@ -467,7 +467,7 @@ h2.page-title i { margin-right: 10px; }
     outline: none;
     border-color: var(--primary-color, #007bff);
     box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2);
-    background-color: #3e444a;
+    background-color: var(--input-bg);
 }
 
 /* Stats Grid */
@@ -479,8 +479,8 @@ h2.page-title i { margin-right: 10px; }
 }
 
 .stat-card {
-    background: #1e272e;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: var(--panel-bg);
+    border: 1px solid var(--panel-border);
     border-radius: 10px;
     padding: 20px;
     display: flex;
@@ -771,16 +771,16 @@ h2.page-title i { margin-right: 10px; }
     color: var(--text-color-light);
 }
 
-/* Force white text for titles and labels inside report/filter cards (applies in all browser color schemes) */
+/* Adjust titles and labels to use dark text variable for light-theme */
 .filter-card .card-header h3,
 .report-card .card-header h3 {
-    color: #ffffff !important;
+    color: var(--text-color-dark) !important;
 }
 .filter-card .card-body label,
 .report-card .card-body label,
 .filter-card label,
 .report-card label {
-    color: #ffffff !important;
+    color: var(--text-color-dark) !important;
 }
 
 .chart-container {
