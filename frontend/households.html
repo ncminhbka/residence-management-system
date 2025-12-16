@@ -110,7 +110,7 @@
     <!-- Modal xác nhận xóa -->
     <div id="delete-modal" class="modal-overlay hidden">
         <div class="modal-content">
-            <span class="close-btn" data-modal="delete-modal" aria-label="Đóng">&times;</span>
+
             <h3><i class="fas fa-exclamation-triangle" aria-hidden="true"></i> Xác nhận xóa</h3>
             <p>Bạn có chắc chắn muốn xóa hộ khẩu này không?</p>
             <p class="warning-text"><i class="fas fa-warning" aria-hidden="true"></i> Lưu ý: Thao tác này sẽ đặt
@@ -119,7 +119,7 @@
                 <button id="confirm-delete-btn" class="btn btn-danger"><i class="fas fa-trash" aria-hidden="true"></i>
                     Xóa</button>
                 <button type="button" class="btn btn-secondary close-btn" data-modal="delete-modal"><i
-                        class="fas fa-times" aria-hidden="true"></i> Hủy</button>
+                        class="fas fa-times" aria-hidden="true"></i>
             </div>
         </div>
     </div>
@@ -127,7 +127,6 @@
     <!-- Modal tách hộ khẩu -->
     <div id="split-modal" class="modal-overlay hidden">
         <div class="modal-content large">
-            <span class="close-btn" data-modal="split-modal" aria-label="Đóng">&times;</span>
             <h3><i class="fas fa-object-group" aria-hidden="true"></i> Tách hộ khẩu</h3>
             <form id="split-form">
                 <input type="hidden" id="split-soHoKhauGoc" />
@@ -160,10 +159,12 @@
                 </div>
 
                 <div class="form-actions">
-                    <button type="submit" class="btn btn-primary"><i class="fas fa-check" aria-hidden="true"></i> Tách
-                        hộ</button>
-                    <button type="button" class="btn btn-secondary close-btn" data-modal="split-modal"><i
-                            class="fas fa-times" aria-hidden="true"></i> Hủy</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-check" aria-hidden="true"></i> Tách hộ
+                    </button>
+                    <button type="button" class="btn btn-secondary close-btn" data-modal="split-modal">
+                        <i class="fas fa-times" aria-hidden="true"> Hủy </i>
+                    </button>
                 </div>
             </form>
         </div>

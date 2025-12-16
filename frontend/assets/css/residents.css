@@ -1,6 +1,4 @@
-/* === residents.css (đã tối ưu) === */
-
-/* Tiêu đề trang (Header Title) */
+/* ==================== PAGE TITLE ==================== */
 h2.page-title {
     font-size: 26px;
     font-weight: 700;
@@ -16,7 +14,7 @@ h2.page-title i {
     margin-right: 10px;
 }
 
-/* Thanh công cụ (Header) */
+/* ==================== HEADER & SEARCH ==================== */
 .content-header {
     display: flex;
     justify-content: space-between;
@@ -56,7 +54,7 @@ h2.page-title i {
     background-color: #3e444a;
 }
 
-/* --- Buttons --- */
+/* ==================== BUTTONS ==================== */
 .btn {
     padding: 10px 16px;
     border: none;
@@ -109,6 +107,7 @@ h2.page-title i {
     font-size: 13px;
 }
 
+/* ==================== TABLE ==================== */
 .table-container {
     width: 100%;
     background: var(--panel-bg);
@@ -142,48 +141,76 @@ h2.page-title i {
     background-color: transparent;
 }
 
+/* Special row states */
+.row-dimmed {
+    background-color: #f8f9fa;
+    color: #adb5bd !important;
+}
+
+.row-dimmed td {
+    color: #adb5bd !important;
+}
+
+.row-dimmed strong {
+    color: #6c757d;
+}
+
 .action-buttons {
     display: flex;
     flex-wrap: wrap;
     gap: 6px;
 }
 
-/* --- Pagination --- */
+/* ==================== PAGINATION ==================== */
 .pagination {
-    margin-top: 20px;
     display: flex;
-    justify-content: center;
-    gap: 5px;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 20px;
 }
 
 .pagination button {
-    padding: 5px 10px;
-    border-radius: 4px;
+    padding: 8px 12px;
+    border: 1px solid var(--panel-border);
+    background: var(--panel-bg);
     cursor: pointer;
+    border-radius: 4px;
+    color: var(--text-color-light);
+    font-size: 14px;
+    min-width: 35px;
+    transition: all 0.2s;
+}
+
+.pagination button:hover {
+    background-color: rgba(255, 255, 255, 0.02);
 }
 
 .pagination button.active {
-    background-color: #007bff;
-    color: #fff;
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
 }
 
-/* --- Modal --- */
+.pagination button:disabled {
+    color: var(--text-color-faint);
+    cursor: not-allowed;
+    background: var(--panel-bg);
+    opacity: 0.5;
+}
+
+/* ==================== MODAL ==================== */
 .modal-overlay {
     display: none;
     position: fixed;
     inset: 0;
     background: rgba(0, 0, 0, 0.7);
-    z-index: 1000;
+    z-index: 9999;
     align-items: center;
     justify-content: center;
 }
 
 .modal-overlay.show {
     display: flex;
-}
-
-.modal-overlay.hidden {
-    display: none !important;
 }
 
 .modal-content {
@@ -193,7 +220,7 @@ h2.page-title i {
     max-width: 900px;
     max-height: 90vh;
     overflow: hidden;
-    box-shadow: var(--shadow-md);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
     animation: modalFadeIn 0.3s ease;
     border: 1px solid var(--panel-border);
 }
@@ -210,42 +237,53 @@ h2.page-title i {
     }
 }
 
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 .modal-header {
-    background: var(--panel-header-bg);
+    background: #007bff;
     padding: 16px 24px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    color: var(--text-color-light);
-    border-bottom: 1px solid var(--panel-border);
+    border-bottom: none;
 }
 
 .modal-header h3 {
     margin: 0;
     font-size: 18px;
-    color: var(--text-color-light);
     font-weight: 600;
+    color: white;
 }
 
-.close-btn {
+.modal-header .close-btn {
+    background: rgba(255, 255, 255, 0.2);
     border: none;
-    background: rgba(255, 255, 255, 0.1);
-    font-size: 24px;
-    color: var(--text-color-light);
+    font-size: 20px;
+    color: white;
     cursor: pointer;
-    border-radius: 4px;
-    padding: 4px 8px;
-    width: 32px;
-    height: 32px;
+    padding: 0;
+    width: 28px;
+    height: 28px;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.2s ease;
+    border-radius: 4px;
+    transition: all 0.2s;
+    line-height: 1;
 }
 
-.close-btn:hover {
-    background: rgba(255, 255, 255, 0.2);
-    color: var(--primary-color);
+.modal-header .close-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
 }
 
 .modal-body {
@@ -258,29 +296,51 @@ h2.page-title i {
 
 .modal-footer {
     padding: 16px 24px;
-    background: var(--muted-bg);
-    border-top: 1px solid var(--panel-border);
+    background: var(--panel-bg);
+    border-top: 1px solid #dee2e6;
     display: flex;
     justify-content: flex-end;
     gap: 10px;
 }
 
-/* --- Info Section --- */
+.modal-footer .btn {
+    padding: 10px 24px;
+    font-size: 14px;
+}
+
+.modal-footer .close-btn {
+    background: #6c757d;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 14px;
+    padding: 10px 24px;
+    font-weight: 500;
+}
+
+.modal-footer .close-btn:hover {
+    background: #5a6268;
+}
+
+/* ==================== INFO SECTION ==================== */
 .info-section {
     background: var(--panel-bg);
     padding: 20px;
     border-radius: 6px;
     margin-bottom: 16px;
     border: 1px solid var(--panel-border);
+    color: var(--text-color-light);
 }
 
 .info-section h4 {
-    margin-bottom: 16px;
+    margin: 0 0 16px 0;
     font-size: 15px;
     font-weight: 600;
-    color: var(--text-color-dark);
+    color: var(--text-color-light);
+    padding-bottom: 10px;
     border-bottom: 2px solid var(--primary-color);
-    padding-bottom: 8px;
 }
 
 .info-grid {
@@ -297,22 +357,23 @@ h2.page-title i {
 
 .info-label {
     font-size: 12px;
-    color: var(--text-color-faint);
+    color: #6c757d;
     font-weight: 500;
     text-transform: uppercase;
+    letter-spacing: 0.3px;
 }
 
 .info-value {
     font-size: 14px;
-    color: var(--text-color-dark);
+    color: #212529;
     font-weight: 600;
     padding: 8px 12px;
-    background: var(--muted-bg);
+    background: #f8f9fa;
     border-radius: 4px;
-    border-left: 3px solid var(--primary-color);
+    border-left: 3px solid #007bff;
 }
 
-/* --- Form --- */
+/* ==================== FORM ==================== */
 .form-group {
     display: flex;
     flex-direction: column;
@@ -322,13 +383,13 @@ h2.page-title i {
 .form-group label {
     font-size: 13px;
     font-weight: 600;
-    color: var(--text-color-dark);
+    color: #495057;
 }
 
 .form-group input,
 .form-group select {
     padding: 10px 12px;
-    border: 1px solid var(--input-border);
+    border: 1px solid #ced4da;
     border-radius: 4px;
     font-size: 14px;
     transition: all 0.2s;
@@ -339,7 +400,7 @@ h2.page-title i {
 .form-group input:focus,
 .form-group select:focus {
     outline: none;
-    border-color: var(--primary-color);
+    border-color: #007bff;
     box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
 }
 
@@ -348,11 +409,38 @@ h2.page-title i {
     background-color: #fffbf0;
 }
 
-/* --- Utilities --- */
+#resident-form .modal-footer {
+    margin-top: 20px;
+    padding: 16px 0 0;
+    border-top: 1px solid #dee2e6;
+}
+
+/* ==================== UTILITIES ==================== */
 .hidden {
     display: none !important;
 }
 
+.hidden-section {
+    display: none;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
 .required {
     color: red;
+}
+
+/* ==================== RESPONSIVE ==================== */
+@media (max-width: 768px) {
+    .content-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .search-bar {
+        flex-direction: column;
+    }
+
+    .info-grid {
+        grid-template-columns: 1fr;
+    }
 }

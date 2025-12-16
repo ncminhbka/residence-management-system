@@ -5,7 +5,7 @@ let isEditMode = false;
 
 // [CẤU HÌNH PHÂN TRANG]
 let currentPage = 1;
-const itemsPerPage = 10;
+const itemsPerPage = 8;
 
 // Khởi tạo khi trang load
 document.addEventListener('DOMContentLoaded', () => {
@@ -53,6 +53,11 @@ function renderResidents(residents) {
                 <td>${resident.CCCD || '<span class="text-muted">Chưa có</span>'}</td> 
                 <td>${resident.DIACHI_HK || '-'}</td>
                 <td>${resident.SOHOKHAU || 'Chưa có hộ'}</td>
+                <td>
+                    <span class="badge ${resident.TRANGTHAI === 'ThuongTru' ? 'badge-success' : 'badge-warning'}">
+                        ${resident.TRANGTHAI || '-'}
+                    </span>
+                </td>
                 <td>
                     <div class="action-buttons">
                         <button class="btn btn-sm btn-primary" onclick="viewDetails(${resident.MANHANKHAU})">Xem</button>
@@ -263,12 +268,12 @@ function getAuthToken() { return localStorage.getItem('token'); }
 
 function showLoadingState() {
     const tbody = document.getElementById('residents-table-body');
-    if (tbody) tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 40px;">Đang tải dữ liệu...</td></tr>';
+    if (tbody) tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 40px;">Đang tải dữ liệu...</td></tr>';
 }
 
 function showEmptyDataState() {
     const tbody = document.getElementById('residents-table-body');
-    if (tbody) tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 40px;">Không tìm thấy nhân khẩu nào.</td></tr>';
+    if (tbody) tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 40px;">Không tìm thấy nhân khẩu nào.</td></tr>';
 }
 
 async function loadResidents() {

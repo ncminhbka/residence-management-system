@@ -1,6 +1,20 @@
-/* assets/css/households.css */
+/* ============================================
+   BIẾN CSS VÀ THIẾT LẬP CHUNG
+   ============================================ */
+:root {
+  --modal-backdrop: rgba(0, 0, 0, 0.75);
+  --modal-max-height: 85vh;
+  --modal-padding: 30px;
+  --form-gap: 18px;
+  --border-radius-sm: 6px;
+  --border-radius-md: 8px;
+  --border-radius-lg: 10px;
+  --transition-base: all 0.25s ease;
+}
 
-/* Thanh công cụ (Header) */
+/* ============================================
+   THANH CÔNG CỤ HEADER
+   ============================================ */
 .content-header {
   display: flex;
   justify-content: space-between;
@@ -16,17 +30,18 @@
   align-items: center;
   flex: 1;
   min-width: 300px;
+  max-width: 600px;
 }
 
 .search-bar input {
   padding: 10px 14px;
   border: 1px solid var(--input-border);
-  border-radius: 6px;
+  border-radius: var(--border-radius-sm);
   width: 100%;
   background-color: var(--input-bg);
   color: var(--text-color-dark);
   font-size: 14px;
-  transition: border-color var(--transition-speed, 0.25s), box-shadow var(--transition-speed, 0.25s);
+  transition: var(--transition-base);
 }
 
 .search-bar input::placeholder {
@@ -40,11 +55,13 @@
   background-color: #3e444a;
 }
 
-/* Nút chung */
+/* ============================================
+   NÚT BẤM
+   ============================================ */
 .btn {
   padding: 10px 16px;
   border: none;
-  border-radius: 6px;
+  border-radius: var(--border-radius-sm);
   cursor: pointer;
   font-weight: 500;
   font-size: 14px;
@@ -52,24 +69,54 @@
   align-items: center;
   gap: 8px;
   white-space: nowrap;
-  transition: all var(--transition-speed, 0.25s);
+  transition: var(--transition-base);
+  line-height: 1.4;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .btn-primary {
   background-color: #007bff;
   color: white;
 }
-.btn-primary:hover {
+
+.btn-primary:hover:not(:disabled) {
   background-color: #0056b3;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+}
+
+.btn-success {
+  background-color: #28a745;
+  color: white;
+}
+
+.btn-success:hover:not(:disabled) {
+  background-color: #218838;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+}
+
+.btn-info {
+  background-color: #17a2b8;
+  color: white;
+}
+
+.btn-info:hover:not(:disabled) {
+  background-color: #138496;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(23, 162, 184, 0.3);
 }
 
 .btn-danger {
   background-color: #dc3545;
   color: white;
 }
-.btn-danger:hover {
+
+.btn-danger:hover:not(:disabled) {
   background-color: #c82333;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
@@ -79,7 +126,8 @@
   background-color: #6c757d;
   color: white;
 }
-.btn-secondary:hover {
+
+.btn-secondary:hover:not(:disabled) {
   background-color: #5a6268;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
@@ -90,12 +138,14 @@
   font-size: 12px;
 }
 
-/* Bảng dữ liệu */
+/* ============================================
+   BẢNG DỮ LIỆU
+   ============================================ */
 .table-container {
   width: 100%;
   overflow-x: auto;
   background: var(--panel-bg);
-  border-radius: 8px;
+  border-radius: var(--border-radius-md);
   box-shadow: var(--shadow-sm);
   border: 1px solid var(--panel-border);
 }
@@ -117,89 +167,135 @@
   background-color: var(--panel-header-bg);
   font-weight: 600;
   color: var(--text-color-light);
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
-/* Keep rows stable on dark background */
-.data-table tbody tr:hover {
-  background-color: transparent;
+.data-table tbody tr {
+  transition: background-color 0.2s ease;
+}
+
+.data-table.small th,
+.data-table.small td {
+  padding: 8px 10px;
+  font-size: 13px;
 }
 
 .action-buttons {
   display: flex;
-  flex-wrap: wrap; /* Cho phép xuống dòng nếu không đủ chỗ */
-  gap: 5px;
+  flex-wrap: wrap;
+  gap: 6px;
 }
 
-/* Phân trang */
+/* ============================================
+   PHÂN TRANG
+   ============================================ */
 .pagination {
   margin-top: 20px;
   display: flex;
   justify-content: center;
-  gap: 5px;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
-.pagination button {
-  padding: 5px 10px;
+.pagination button,
+.page-btn {
+  padding: 8px 12px;
   cursor: pointer;
+  border: 1px solid var(--input-border);
+  background-color: var(--panel-bg);
+  color: var(--text-color-light);
+  border-radius: var(--border-radius-sm);
+  transition: var(--transition-base);
+  min-width: 40px;
 }
 
-.pagination button.active {
+.pagination button:hover,
+.page-btn:hover {
+  background-color: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+}
+
+.pagination button.active,
+.page-btn.active {
   background-color: #007bff;
   color: white;
   border-color: #007bff;
+  font-weight: 600;
 }
 
-
-/* --- MODAL STYLES --- */
-.hidden {
-  display: none !important;
-}
-
+/* ============================================
+   MODAL - OVERLAY & CONTAINER
+   ============================================ */
 .modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.7);
+  background: var(--modal-backdrop);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: 9999;
+  padding: 20px;
+  overflow-y: auto;
 }
 
 .modal-overlay.hidden {
   display: none !important;
 }
 
-.modal-overlay.show {
-  display: flex !important;
-}
-
 .modal-content {
   background: var(--panel-bg);
-  padding: 30px;
-  border-radius: 10px;
-  width: 90%;
-  max-width: 500px;
+  padding: var(--modal-padding);
+  border-radius: var(--border-radius-lg);
+  width: 100%;
+  max-width: 520px;
   position: relative;
-  box-shadow: var(--shadow-md);
-  max-height: 90vh;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+  max-height: var(--modal-max-height);
   overflow-y: auto;
   border: 1px solid var(--panel-border);
   color: var(--text-color-light);
+  animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .modal-content.large {
-  max-width: 800px;
+  max-width: 900px;
+}
+
+/* ============================================
+   MODAL - HEADER & CLOSE BUTTON
+   ============================================ */
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid var(--panel-border);
 }
 
 .modal-content h3 {
   font-size: 20px;
   font-weight: 600;
   color: var(--text-color-light);
-  margin-top: 0;
-  margin-bottom: 25px;
+  margin: 0;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -211,11 +307,10 @@
 }
 
 .modal-content h4 {
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 600;
   color: var(--text-color-light);
-  margin-top: 20px;
-  margin-bottom: 15px;
+  margin: 25px 0 15px 0;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -230,41 +325,50 @@
 
 .close-btn {
   position: absolute;
-  top: 15px;
-  right: 20px;
-  font-size: 28px;
-  font-weight: bold;
-  cursor: pointer;
-  color: var(--text-color-light);
+  top: 16px;
+  right: 16px;
+
   background: rgba(255, 255, 255, 0.1);
   border: none;
-  padding: 4px 8px;
-  line-height: 1;
-  transition: all 0.2s ease;
   width: 32px;
   height: 32px;
+
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 4px;
-}
-.close-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
-  color: var(--primary-color);
+
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+  color: var(--text-color-light);
+  font-size: 22px;
+  font-weight: bold;
+  line-height: 1;
+
+  transition: var(--transition-base);
+  z-index: 10;
 }
 
-/* Form trong Modal */
-#household-form .form-group,
-#split-form .form-group,
-#owner-form .form-group {
-  margin-bottom: 18px;
+
+.close-btn:hover {
+  background: rgba(220, 53, 69, 0.8);
+  color: white;
+  transform: rotate(90deg);
+}
+
+/* ============================================
+   FORM TRONG MODAL
+   ============================================ */
+.modal-body {
+  padding: 20px 0;
+}
+
+.form-group {
+  margin-bottom: var(--form-gap);
   display: flex;
   flex-direction: column;
 }
 
-#household-form label,
-#split-form label,
-#owner-form label {
+.form-group label {
   display: inline-flex;
   align-items: center;
   margin-bottom: 8px;
@@ -273,39 +377,42 @@
   color: var(--text-color-light);
 }
 
-.required {
+.form-group .required {
   color: #dc3545;
   margin-left: 4px;
 }
 
-#household-form input,
-#split-form input,
-#owner-form select,
-#split-form select {
+.form-group input,
+.form-group select,
+.form-group textarea {
   width: 100%;
   padding: 10px 12px;
   box-sizing: border-box;
   border: 1px solid var(--input-border);
-  border-radius: 6px;
+  border-radius: var(--border-radius-sm);
   background-color: var(--input-bg);
   color: var(--text-color-light);
   font-size: 14px;
-  transition: border-color var(--transition-speed, 0.25s), box-shadow var(--transition-speed, 0.25s);
+  transition: var(--transition-base);
+  font-family: inherit;
 }
 
-#household-form input::placeholder,
-#split-form input::placeholder {
+.form-group input::placeholder,
+.form-group textarea::placeholder {
   color: var(--text-color-faint);
 }
 
-#household-form input:focus,
-#split-form input:focus,
-#owner-form select:focus,
-#split-form select:focus {
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
   outline: none;
   border-color: var(--primary-color);
   box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2);
-  background-color: var(--input-bg);
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 80px;
 }
 
 .form-hint {
@@ -313,6 +420,12 @@
   color: var(--text-color-faint, #adb5bd);
   margin-top: 4px;
   font-style: italic;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
 }
 
 .form-actions {
@@ -324,34 +437,100 @@
   border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-/* Modal chi tiết */
-#detail-content h4 {
-  margin-top: 15px;
-  border-bottom: 1px solid #eee;
-  padding-bottom: 5px;
-}
-#detail-content p {
-  margin: 5px 0;
-}
-#detail-content ul {
-  list-style-type: disc;
-  padding-left: 20px;
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid var(--panel-border);
 }
 
-/* Modal Tách hộ */
-.members-list {
-  max-height: 200px;
+/* ============================================
+   DANH SÁCH THÀNH VIÊN (CHECKBOX)
+   ============================================ */
+.members-checklist {
+  max-height: 350px;
   overflow-y: auto;
   border: 1px solid var(--input-border);
-  padding: 12px;
-  border-radius: 6px;
-  margin-bottom: 15px;
+  border-radius: var(--border-radius-sm);
   background-color: var(--input-bg);
+  margin-bottom: 15px;
 }
 
-.members-list label {
+.member-item {
+  padding: 12px 15px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  transition: background-color 0.2s ease;
+}
+
+.member-item:last-child {
+  border-bottom: none;
+}
+
+.member-item:hover {
+  background-color: rgba(255, 255, 255, 0.03);
+}
+
+.member-item label {
+  display: flex;
+  align-items: flex-start;
+  cursor: pointer;
+  color: var(--text-color-light);
+  font-size: 14px;
+  gap: 12px;
+  margin: 0;
+}
+
+.member-item input[type="checkbox"] {
+  cursor: pointer;
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  accent-color: var(--primary-color, #007bff);
+  flex-shrink: 0;
+}
+
+.member-item .form-control {
+  margin-top: 8px;
+  margin-left: 30px;
+}
+
+/* ============================================
+   SECTION TRONG MODAL
+   ============================================ */
+.section {
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: var(--border-radius-md);
+  border: 1px solid var(--panel-border);
+  margin-bottom: 20px;
+}
+
+/* ============================================
+   INFO GRID & WARNING
+   ============================================ */
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.info-grid p {
+  margin: 8px 0;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: var(--border-radius-sm);
+  border-left: 3px solid var(--primary-color);
+}
+
+.info-grid p strong {
+  color: var(--primary-color);
   display: block;
-  margin-bottom: 8px;
+  margin-bottom: 4px;
+  font-size: 12px;
+  text-transform: uppercase;
 }
 
 .warning-text {
@@ -360,54 +539,84 @@
   display: flex;
   align-items: flex-start;
   gap: 8px;
-  padding: 12px;
-  background-color: rgba(220, 53, 69, 0.1);
-  border-left: 3px solid #dc3545;
-  border-radius: 4px;
-  margin-bottom: 15px;
+  padding: 12px 15px;
+  background-color: rgba(220, 53, 69, 0.15);
+  border-left: 4px solid #dc3545;
+  border-radius: var(--border-radius-sm);
+  margin: 15px 0;
+  line-height: 1.5;
 }
 
 .warning-text i {
   flex-shrink: 0;
   margin-top: 2px;
+  font-size: 16px;
 }
 
-.members-checklist {
-  max-height: 300px;
-  overflow-y: auto;
-  border: 1px solid var(--input-border);
-  border-radius: 6px;
-  background-color: var(--input-bg);
-  margin-bottom: 15px;
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+@media (max-width: 768px) {
+  .content-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .search-bar {
+    min-width: 100%;
+    max-width: 100%;
+  }
+
+  .modal-content {
+    padding: 20px;
+    max-height: 90vh;
+  }
+
+  .modal-content.large {
+    max-width: 100%;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .action-buttons {
+    justify-content: center;
+  }
+
+  .form-actions,
+  .modal-footer {
+    flex-direction: column-reverse;
+  }
+
+  .form-actions .btn,
+  .modal-footer .btn {
+    width: 100%;
+    justify-content: center;
+  }
 }
 
-.member-checkbox-item {
-  padding: 12px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+/* ============================================
+   SCROLLBAR STYLING
+   ============================================ */
+.modal-content::-webkit-scrollbar,
+.members-checklist::-webkit-scrollbar {
+  width: 8px;
 }
 
-.member-checkbox-item:last-child {
-  border-bottom: none;
+.modal-content::-webkit-scrollbar-track,
+.members-checklist::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
 }
 
-.member-checkbox-item label {
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-  color: var(--text-color-dark);
-  font-size: 14px;
-  gap: 10px;
+.modal-content::-webkit-scrollbar-thumb,
+.members-checklist::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
 }
 
-.member-checkbox-item input[type="checkbox"] {
-  cursor: pointer;
-  width: 18px;
-  height: 18px;
-  accent-color: var(--primary-color, #007bff);
-}
-
-.info-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 15px;
+.modal-content::-webkit-scrollbar-thumb:hover,
+.members-checklist::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
 }

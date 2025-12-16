@@ -37,12 +37,16 @@ function setupEventListeners() {
     document.getElementById('confirm-delete-btn').addEventListener('click', confirmDelete);
 
     // Đóng modal chung (Click vào nút X hoặc nút Đóng)
-    document.body.addEventListener('click', (e) => {
-        if (e.target.classList.contains('close-btn')) {
-            const modalId = e.target.getAttribute('data-modal');
-            if (modalId) closeModal(modalId);
+    document.body.addEventListener('click', function (e) {
+        const closeBtn = e.target.closest('.close-btn');
+        if (!closeBtn) return;
+
+        const modalId = closeBtn.dataset.modal;
+        if (modalId) {
+            closeModal(modalId);
         }
     });
+
 
     // Event delegation cho các nút trong bảng (Xem, Sửa, Xóa)
     document.getElementById('household-table-body').addEventListener('click', (e) => {
@@ -100,7 +104,7 @@ async function openAddMemberModal(sohokhau) {
                 <div class="modal-content" style="max-width: 600px;">
                     <div class="modal-header">
                         <h3>Thêm thành viên vào hộ khẩu</h3>
-                        <button class="close-btn" onclick="document.getElementById('add-member-modal').remove()">&times;</button>
+                        
                     </div>
                     <div class="modal-body" style="background: white;">
                         <div class="form-group">
@@ -447,7 +451,6 @@ async function handleChangeOwner(sohokhau) {
             <div class="modal-content" style="max-width: 800px;">
                 <div class="modal-header">
                     <h3>🔄 Đổi chủ hộ</h3>
-                    <button class="close-btn" onclick="document.getElementById('change-owner-modal').remove()">&times;</button>
                 </div>
                 <div class="modal-body" style="background: var(--panel-bg); max-height: 70vh; overflow-y: auto;">
                     <div style="background: #e3f2fd; padding: 12px; border-radius: 6px; margin-bottom: 20px;">
@@ -812,7 +815,7 @@ function renderDetailModal(household, members) {
             <button class="btn btn-success" onclick="openAddMemberModal(${household.SOHOKHAU})">➕ Thêm thành viên</button>
             <button class="btn btn-info" onclick="handleChangeOwner(${household.SOHOKHAU})">🔄 Đổi chủ hộ</button>
             <button class="btn btn-primary" onclick="handleSplitRequest(${household.SOHOKHAU})">✂️ Tách hộ</button>
-            <button class="btn btn-secondary close-btn" data-modal="detail-modal">❌ Đóng</button>
+            <button class="btn btn-secondary close-btn" data-modal="detail-modal"></button>
         </div>
     `;
 }
