@@ -21,27 +21,27 @@ body {
   --primary-hover: #1e87f0;
 
   /* Text (use light text by default so both modes show dark background + white text) */
-  --text-color-dark: #e6eef8; /* general content text (light) */
-  --text-color-light: #ffffff;
-  --text-color-faint: #9ca3af;
+  --text-color-dark: #212529; /* primary text on light background */
+  --text-color-light: #212529; /* used by components that previously expected light text */
+  --text-color-faint: #6c757d;
 
   /* Background / Panels (dark by default) */
-  --background-content: #0f1724; /* page background (dark) */
-  --panel-bg: #1e272e;           /* cards, containers (dark) */
-  --panel-border: rgba(255,255,255,0.06);
-  --muted-bg: #0b1220;          /* muted surfaces */
-  --panel-header-bg: #343a40;   /* table headers / panel headers */
-  --table-row-alt: #212529;
-  --table-row-hover: #495057;
+  --background-content: #f8f9fb; /* page background (light) */
+  --panel-bg: #ffffff;           /* cards, containers (light) */
+  --panel-border: rgba(0,0,0,0.08);
+  --muted-bg: #f1f3f5;          /* muted surfaces */
+  --panel-header-bg: #f1f3f5;   /* table headers / panel headers */
+  --table-row-alt: #f8f9fb;
+  --table-row-hover: #e9ecef;
 
   /* Inputs */
-  --input-bg: #343a40;
-  --input-border: #495057;
+  --input-bg: #ffffff;
+  --input-border: #ced4da;
 
   /* Navbar / Topbar */
-  --navbar-bg-dark: #0b1220;
-  --topbar-bg-light: #0b1220;
-  --topbar-bg-dark: #0b1220;
+  --navbar-bg-dark: #ffffff;
+  --topbar-bg-light: #ffffff;
+  --topbar-bg-dark: #ffffff;
 
   /* Shadows / misc */
   --shadow-sm: 0 1px 2px rgba(0,0,0,0.5);
@@ -290,7 +290,7 @@ body {
   margin: 0;
   font-size: 18px;
   font-weight: 600;
-  color: #ffffff !important;
+  color: var(--text-color-dark) !important;
 }
 
 .account-form {
