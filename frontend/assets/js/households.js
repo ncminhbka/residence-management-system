@@ -5,7 +5,7 @@ const rowsPerPage = 10;
 
 // State cho tách hộ
 let splitHouseholdMembers = [];
-let memberRelations = {}; 
+let memberRelations = {};
 
 // ============================================
 // KHỞI TẠO
@@ -65,7 +65,7 @@ function setupEventListeners() {
 function openAddModal() {
     document.getElementById('household-form').reset();
     const title = document.getElementById('modal-title') || document.getElementById('household-form-title');
-    if(title) title.textContent = 'Thêm Hộ Khẩu Mới';
+    if (title) title.textContent = 'Thêm Hộ Khẩu Mới';
 
     document.getElementById('soHoKhau').value = ''; // Reset ID
     document.getElementById('maNhanKhauChuHo').disabled = false; // Cho phép nhập chủ hộ
@@ -78,23 +78,23 @@ async function openAddMemberModal(sohokhau) {
         // Lấy danh sách nhân khẩu chưa thuộc hộ nào
         const response = await fetch(`/api/v1/residents`, { credentials: 'include' });
         const result = await response.json();
-        
+
         if (!result.success) throw new Error('Không thể tải danh sách nhân khẩu');
-        
+
         // Lọc những nhân khẩu chưa có hộ (SOHOKHAU = null hoặc undefined)
-        const availableResidents = result.data.filter(r => 
+        const availableResidents = result.data.filter(r =>
             !r.SOHOKHAU && r.TRANGTHAI !== 'DaQuaDoi' && r.TRANGTHAI !== 'ChuyenDi'
         );
-        
+
         if (availableResidents.length === 0) {
             showAlert('Không có nhân khẩu nào chưa thuộc hộ khẩu', 'info');
             return;
         }
-        
+
         // Xóa modal cũ nếu tồn tại
         const oldModal = document.getElementById('add-member-modal');
         if (oldModal) oldModal.remove();
-        
+
         const html = `
             <div class="modal-overlay" id="add-member-modal" style="display: flex;">
                 <div class="modal-content" style="max-width: 600px;">
@@ -107,9 +107,9 @@ async function openAddMemberModal(sohokhau) {
                             <label>Chọn nhân khẩu:</label>
                             <select id="select-member" class="form-control" style="width: 100%; padding: 8px;">
                                 <option value="">-- Chọn nhân khẩu --</option>
-                                ${availableResidents.map(r => 
-                                    `<option value="${r.MANHANKHAU}">${r.HOTEN} - ${r.NGAYSINH ? formatDate(r.NGAYSINH) : 'N/A'} (ID: ${r.MANHANKHAU})</option>`
-                                ).join('')}
+                                ${availableResidents.map(r =>
+            `<option value="${r.MANHANKHAU}">${r.HOTEN} - ${r.NGAYSINH ? formatDate(r.NGAYSINH) : 'N/A'} (ID: ${r.MANHANKHAU})</option>`
+        ).join('')}
                             </select>
                         </div>
                         <div class="form-group">
@@ -148,10 +148,10 @@ async function openAddMemberModal(sohokhau) {
 async function confirmAddMember(sohokhau) {
     const manhankhau = document.getElementById('select-member').value;
     const quanhechuho = document.getElementById('select-relation').value;
-    
+
     if (!manhankhau) return showAlert('Vui lòng chọn nhân khẩu', 'warning');
     if (!quanhechuho) return showAlert('Vui lòng chọn quan hệ với chủ hộ', 'warning');
-    
+
     try {
         const response = await fetch(`${API_BASE_URL}/${sohokhau}/add-member`, {
             method: 'POST',
@@ -159,7 +159,7 @@ async function confirmAddMember(sohokhau) {
             credentials: 'include',
             body: JSON.stringify({ manhankhau: parseInt(manhankhau), quanhechuho })
         });
-        
+
         const result = await response.json();
         if (result.success) {
             showAlert(result.message, 'success');
@@ -180,7 +180,7 @@ async function confirmAddMember(sohokhau) {
 function openRemoveMemberModal(sohokhau, manhankhau, memberName) {
     const oldModal = document.getElementById('remove-member-modal');
     if (oldModal) oldModal.remove();
-    
+
     const html = `
         <div class="modal-overlay" id="remove-member-modal" style="display: flex;">
             <div class="modal-content" style="max-width: 500px;">
@@ -226,7 +226,7 @@ function openRemoveMemberModal(sohokhau, manhankhau, memberName) {
 
 async function confirmRemoveMember(sohokhau, manhankhau) {
     const reason = document.getElementById('remove-reason').value.trim() || 'Không rõ lý do';
-    
+
     try {
         const response = await fetch(`${API_BASE_URL}/${sohokhau}/remove-member`, {
             method: 'DELETE',
@@ -234,9 +234,9 @@ async function confirmRemoveMember(sohokhau, manhankhau) {
             credentials: 'include',
             body: JSON.stringify({ manhankhau, lydo: reason })
         });
-        
+
         const result = await response.json();
-        
+
         if (result.success) {
             showAlert('✅ ' + result.message, 'success');
             document.getElementById('remove-member-modal').remove();
@@ -256,7 +256,7 @@ async function handleEdit(id) {
         const response = await fetch(`${API_BASE_URL}/${id}/details`, {
             credentials: 'include'
         });
-        
+
         if (!response.ok) throw new Error('Không thể tải thông tin hộ khẩu');
 
         const result = await response.json();
@@ -266,10 +266,10 @@ async function handleEdit(id) {
 
         // Reset và điền form
         document.getElementById('household-form').reset();
-        
+
         const title = document.getElementById('modal-title') || document.getElementById('household-form-title');
-        if(title) title.textContent = 'Sửa Hộ Khẩu';
-        
+        if (title) title.textContent = 'Sửa Hộ Khẩu';
+
         // Điền dữ liệu
         document.getElementById('soHoKhau').value = household.SOHOKHAU;
         document.getElementById('maNhanKhauChuHo').value = household.MACHUHO || household.MANHANKHAU; // Tùy API trả về
@@ -432,7 +432,7 @@ async function handleChangeOwner(sohokhau) {
     if (!members || members.length === 0) return showAlert('Hộ không có thành viên', 'error');
 
     // [QUAN TRỌNG] Lưu danh sách thành viên vào biến toàn cục để dùng ở hàm khác
-    window.currentHouseholdMembers = members; 
+    window.currentHouseholdMembers = members;
 
     const currentOwner = members.find(m => m.LA_CHU_HO);
     const otherMembers = members.filter(m => !m.LA_CHU_HO);
@@ -514,21 +514,21 @@ function showRelationUpdateSection() {
     const section = document.getElementById('relation-update-section');
     const newOwnerIdStr = document.getElementById('new-owner-select').value;
     const otherMembersContainer = document.getElementById('other-members-relations');
-    
+
     if (!newOwnerIdStr) {
         section.style.display = 'none';
         return;
     }
-    
+
     const newOwnerId = parseInt(newOwnerIdStr);
     // Lấy dữ liệu từ biến toàn cục đã gán ở bước 1
     const allMembers = window.currentHouseholdMembers || [];
-    
+
     // Lọc ra danh sách thành viên cần cập nhật (trừ chủ hộ mới và trừ chủ hộ cũ vì đã có input riêng)
-    const membersToUpdate = allMembers.filter(m => 
+    const membersToUpdate = allMembers.filter(m =>
         m.MANHANKHAU !== newOwnerId && !m.LA_CHU_HO
     );
-    
+
     otherMembersContainer.innerHTML = membersToUpdate.map(member => `
         <div class="form-group" style="background: var(--panel-bg); padding: 15px; border-radius: 6px; margin-bottom: 12px; border: 1px solid var(--panel-border);">
             <label style="font-weight: 600; color: #495057; margin-bottom: 8px; display: block;">
@@ -554,17 +554,17 @@ function showRelationUpdateSection() {
             </select>
         </div>
     `).join('');
-    
+
     section.style.display = 'block';
 }
 
 async function confirmChangeOwnerWithRelations(sohokhau, oldOwnerId) {
     const newOwnerIdStr = document.getElementById('new-owner-select').value;
     if (!newOwnerIdStr) return showAlert('Vui lòng chọn chủ hộ mới', 'warning');
-    
+
     const newOwnerId = parseInt(newOwnerIdStr);
     const oldOwnerNewRelation = document.getElementById('old-owner-relation').value;
-    
+
     // Kiểm tra xem đã chọn quan hệ cho chủ hộ cũ chưa
     if (oldOwnerId && !oldOwnerNewRelation) {
         return showAlert('Vui lòng chọn quan hệ mới cho Chủ hộ cũ', 'warning');
@@ -572,7 +572,7 @@ async function confirmChangeOwnerWithRelations(sohokhau, oldOwnerId) {
 
     try {
         const members = window.currentHouseholdMembers || [];
-        
+
         // --- BƯỚC 1: Đổi chủ hộ ---
         const changeOwnerResponse = await fetch(`${API_BASE_URL}/${sohokhau}/change-owner`, {
             method: 'PUT',
@@ -580,27 +580,27 @@ async function confirmChangeOwnerWithRelations(sohokhau, oldOwnerId) {
             credentials: 'include',
             body: JSON.stringify({ newOwnerId })
         });
-        
+
         const changeOwnerResult = await changeOwnerResponse.json();
         if (!changeOwnerResult.success) throw new Error(changeOwnerResult.error);
-        
+
         // --- BƯỚC 2: Cập nhật quan hệ chủ hộ cũ ---
         if (oldOwnerNewRelation && oldOwnerId) {
             await fetch(`${API_BASE_URL}/${sohokhau}/update-relation`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
-                body: JSON.stringify({ 
-                    memberId: oldOwnerId, 
-                    newRelation: oldOwnerNewRelation 
+                body: JSON.stringify({
+                    memberId: oldOwnerId,
+                    newRelation: oldOwnerNewRelation
                 })
             });
         }
-        
+
         // --- BƯỚC 3: Cập nhật quan hệ các thành viên khác ---
         // Lấy danh sách những người cần cập nhật (trừ chủ hộ mới và cũ)
         const otherMembers = members.filter(m => m.MANHANKHAU !== newOwnerId && !m.LA_CHU_HO);
-        
+
         // Duyệt qua từng thành viên và gửi API update
         for (const member of otherMembers) {
             const selectElement = document.getElementById(`member-relation-${member.MANHANKHAU}`);
@@ -610,19 +610,19 @@ async function confirmChangeOwnerWithRelations(sohokhau, oldOwnerId) {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     credentials: 'include',
-                    body: JSON.stringify({ 
-                        memberId: member.MANHANKHAU, 
-                        newRelation: selectElement.value 
+                    body: JSON.stringify({
+                        memberId: member.MANHANKHAU,
+                        newRelation: selectElement.value
                     })
                 });
             }
         }
-        
+
         showAlert('✅ Đổi chủ hộ và cập nhật quan hệ thành công!', 'success');
         document.getElementById('change-owner-modal').remove();
         closeModal('detail-modal');
         fetchHouseholds();
-        
+
     } catch (error) {
         console.error('Error:', error);
         showAlert('❌ Lỗi: ' + error.message, 'error');
@@ -639,11 +639,11 @@ async function handleSplitRequest(soHoKhauGoc) {
         if (result.success) {
             splitHouseholdMembers = result.data2;
             if (splitHouseholdMembers.length === 0) return showAlert('Không có thành viên để tách', 'warning');
-            
+
             memberRelations = {}; // Reset quan hệ
             document.getElementById('split-form').reset();
             document.getElementById('split-soHoKhauGoc').value = soHoKhauGoc;
-            
+
             renderSplitMembersListWithRelations(splitHouseholdMembers);
             closeModal('detail-modal');
             openModal('split-modal');
@@ -680,7 +680,7 @@ function renderSplitMembersListWithRelations(members) {
 
 function handleMemberCheckChange(checkbox, memberId) {
     const el = document.getElementById(`relation-${memberId}`);
-    if(el) el.style.display = checkbox.checked ? 'block' : 'none';
+    if (el) el.style.display = checkbox.checked ? 'block' : 'none';
     if (!checkbox.checked) delete memberRelations[memberId];
 }
 
@@ -766,8 +766,8 @@ function renderHouseholdTable(households, startIndex) {
 // ============================================
 function renderDetailModal(household, members) {
     const content = document.getElementById('detail-content');
-    
-    const membersHtml = members && members.length 
+
+    const membersHtml = members && members.length
         ? members.map(m => `
             <tr>
                 <td>${m.MANHANKHAU}</td>
@@ -779,13 +779,13 @@ function renderDetailModal(household, members) {
                 <td>${formatDate(m.NGAYSINH)}</td>
                 <td>${m.QUANHECHUHO || ''}</td>
                 <td>
-                    ${!m.LA_CHU_HO 
-                        ? `<button class="btn btn-sm btn-danger" onclick="openRemoveMemberModal(${household.SOHOKHAU}, ${m.MANHANKHAU}, '${m.HOTEN}')">🗑️ Xóa</button>` 
-                        : '<span style="color: #6c757d; font-size: 12px;">Không thể xóa</span>'
-                    }
+                    ${!m.LA_CHU_HO
+                ? `<button class="btn btn-sm btn-danger" onclick="openRemoveMemberModal(${household.SOHOKHAU}, ${m.MANHANKHAU}, '${m.HOTEN}')">🗑️ Xóa</button>`
+                : '<span style="color: #6c757d; font-size: 12px;">Không thể xóa</span>'
+            }
                 </td>
             </tr>
-        `).join('') 
+        `).join('')
         : '<tr><td colspan="6">Trống</td></tr>';
 
     content.innerHTML = `
@@ -836,7 +836,7 @@ function showLoading() {
 function showAlert(msg, type = 'info') { alert(`${type.toUpperCase()}: ${msg}`); }
 function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
 function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
-function renderPagination() { /* Logic phân trang giữ nguyên */ 
+function renderPagination() { /* Logic phân trang giữ nguyên */
     const paginationControls = document.getElementById('pagination-controls');
     paginationControls.innerHTML = '';
     const pageCount = Math.ceil(allHouseholds.length / rowsPerPage);

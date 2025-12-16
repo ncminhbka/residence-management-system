@@ -1,11 +1,14 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Quản lý Hộ khẩu - Hệ thống quản trị dân cư</title>
     <!-- Font Awesome for icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-pY1l2xkQf1qv6b6f0Z+Y2m1kq2xQqD1eFf9Gf3mFfV3y5z1k6a7QzG1r2A1b6h3Z4Y5x6Y7Z8X9a0b1c2d3e4==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+        integrity="sha512-pY1l2xkQf1qv6b6f0Z+Y2m1kq2xQqD1eFf9Gf3mFfV3y5z1k6a7QzG1r2A1b6h3Z4Y5x6Y7Z8X9a0b1c2d3e4=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
     <!-- Layout variables + base typography -->
     <link rel="stylesheet" href="assets/css/layout.css" />
     <!-- Page-specific styles -->
@@ -24,11 +27,15 @@
 
             <div class="content-header">
                 <div class="search-bar">
-                    <input id="search-input" type="text" placeholder="Tìm theo tên chủ hộ hoặc số hộ khẩu..." aria-label="Tìm kiếm hộ khẩu" />
-                    <button id="search-btn" class="btn btn-primary"><i class="fas fa-search" aria-hidden="true"></i> Tìm kiếm</button>
-                    <button id="clear-search-btn" class="btn btn-secondary"><i class="fas fa-times" aria-hidden="true"></i> Xóa tìm kiếm</button>
+                    <input id="search-input" type="text" placeholder="Tìm theo tên chủ hộ hoặc số hộ khẩu..."
+                        aria-label="Tìm kiếm hộ khẩu" />
+                    <button id="search-btn" class="btn btn-primary"><i class="fas fa-search" aria-hidden="true"></i> Tìm
+                        kiếm</button>
+                    <button id="clear-search-btn" class="btn btn-secondary"><i class="fas fa-times"
+                            aria-hidden="true"></i> Xóa tìm kiếm</button>
                 </div>
-                <button id="add-household-btn" class="btn btn-primary"><i class="fas fa-plus" aria-hidden="true"></i> Thêm hộ khẩu</button>
+                <button id="add-household-btn" class="btn btn-primary"><i class="fas fa-plus" aria-hidden="true"></i>
+                    Thêm hộ khẩu</button>
             </div>
 
             <div class="table-container">
@@ -43,7 +50,9 @@
                         </tr>
                     </thead>
                     <tbody id="household-table-body">
-                        <tr><td colspan="5" style="text-align: center; padding: 20px;">Đang tải dữ liệu...</td></tr>
+                        <tr>
+                            <td colspan="5" style="text-align: center; padding: 20px;">Đang tải dữ liệu...</td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
@@ -81,8 +90,9 @@
                     <input type="number" id="toSo" required aria-label="Tổ số" />
                 </div>
                 <div class="form-actions">
-                    <button type="submit" class="btn btn-primary"><i class="fas fa-save" aria-hidden="true"></i> Lưu</button>
-                    <button type="button" class="btn btn-secondary close-btn" data-modal="household-modal"><i class="fas fa-times" aria-hidden="true"></i> Hủy</button>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-save" aria-hidden="true"></i>
+                        Lưu</button>
+
                 </div>
             </form>
         </div>
@@ -103,10 +113,13 @@
             <span class="close-btn" data-modal="delete-modal" aria-label="Đóng">&times;</span>
             <h3><i class="fas fa-exclamation-triangle" aria-hidden="true"></i> Xác nhận xóa</h3>
             <p>Bạn có chắc chắn muốn xóa hộ khẩu này không?</p>
-            <p class="warning-text"><i class="fas fa-warning" aria-hidden="true"></i> Lưu ý: Thao tác này sẽ đặt SOHOKHAU của tất cả nhân khẩu trong hộ về NULL.</p>
+            <p class="warning-text"><i class="fas fa-warning" aria-hidden="true"></i> Lưu ý: Thao tác này sẽ đặt
+                SOHOKHAU của tất cả nhân khẩu trong hộ về NULL.</p>
             <div class="form-actions">
-                <button id="confirm-delete-btn" class="btn btn-danger"><i class="fas fa-trash" aria-hidden="true"></i> Xóa</button>
-                <button type="button" class="btn btn-secondary close-btn" data-modal="delete-modal"><i class="fas fa-times" aria-hidden="true"></i> Hủy</button>
+                <button id="confirm-delete-btn" class="btn btn-danger"><i class="fas fa-trash" aria-hidden="true"></i>
+                    Xóa</button>
+                <button type="button" class="btn btn-secondary close-btn" data-modal="delete-modal"><i
+                        class="fas fa-times" aria-hidden="true"></i> Hủy</button>
             </div>
         </div>
     </div>
@@ -118,7 +131,7 @@
             <h3><i class="fas fa-object-group" aria-hidden="true"></i> Tách hộ khẩu</h3>
             <form id="split-form">
                 <input type="hidden" id="split-soHoKhauGoc" />
-                
+
                 <h4><i class="fas fa-file-alt" aria-hidden="true"></i> Thông tin hộ khẩu mới</h4>
                 <div class="form-group">
                     <label for="split-maChuHoMoi">Mã nhân khẩu chủ hộ mới <span class="required">*</span></label>
@@ -147,8 +160,10 @@
                 </div>
 
                 <div class="form-actions">
-                    <button type="submit" class="btn btn-primary"><i class="fas fa-check" aria-hidden="true"></i> Tách hộ</button>
-                    <button type="button" class="btn btn-secondary close-btn" data-modal="split-modal"><i class="fas fa-times" aria-hidden="true"></i> Hủy</button>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-check" aria-hidden="true"></i> Tách
+                        hộ</button>
+                    <button type="button" class="btn btn-secondary close-btn" data-modal="split-modal"><i
+                            class="fas fa-times" aria-hidden="true"></i> Hủy</button>
                 </div>
             </form>
         </div>
@@ -157,4 +172,5 @@
     <script src="assets/js/layout.js"></script>
     <script src="assets/js/households.js"></script>
 </body>
+
 </html>

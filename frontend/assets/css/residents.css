@@ -18,20 +18,20 @@ h2.page-title i {
 
 /* Thanh công cụ (Header) */
 .content-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 20px;
-  margin-bottom: 25px;
-  flex-wrap: wrap;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 25px;
+    flex-wrap: wrap;
 }
 
 .search-bar {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  flex: 1;
-  min-width: 300px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex: 1;
+    min-width: 300px;
 }
 
 .search-bar input {
@@ -46,14 +46,14 @@ h2.page-title i {
 }
 
 .search-bar input::placeholder {
-  color: var(--text-color-faint, #adb5bd);
+    color: var(--text-color-faint, #adb5bd);
 }
 
 .search-bar input:focus {
-  outline: none;
-  border-color: var(--primary-color, #007bff);
-  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2);
-  background-color: #3e444a;
+    outline: none;
+    border-color: var(--primary-color, #007bff);
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2);
+    background-color: #3e444a;
 }
 
 /* --- Buttons --- */
