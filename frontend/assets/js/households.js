@@ -190,7 +190,7 @@ function openRemoveMemberModal(sohokhau, manhankhau, memberName) {
             <div class="modal-content" style="max-width: 500px;">
                 <div class="modal-header" style="background: #dc3545;">
                     <h3>⚠️ Xác nhận xóa thành viên</h3>
-                    <button class="close-btn" onclick="document.getElementById('remove-member-modal').remove()">&times;</button>
+                    
                 </div>
                 <div class="modal-body" style="background: var(--panel-bg); padding: 20px;">
                     <div style="background: #fff3cd; padding: 15px; border-radius: 6px; border-left: 4px solid #ffc107; margin-bottom: 15px;">
