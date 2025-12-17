@@ -78,8 +78,10 @@ async function loadData(type) {
 function mapDataFromDB(type, dbItem) {
     if (type === 'tamvang') {
         return {
+            rowId: dbItem.ID,
             idNhanKhau: dbItem.MANHANKHAU,
             hoTen: dbItem.HOTEN,
+            cccd: dbItem.CCCD,
             maGiay: dbItem.MAGIAYTAMVANG,
             tuNgay: dbItem.NGAYBATDAU,
             denNgay: dbItem.NGAYKETTHUC,
@@ -88,8 +90,10 @@ function mapDataFromDB(type, dbItem) {
         };
     } else {
         return {
+            rowId: dbItem.ID,
             idNhanKhau: dbItem.MANHANKHAU,
             hoTen: dbItem.HOTEN,
+            cccd: dbItem.CCCD,
             maGiay: dbItem.MAGIAYTAMTRU,
             diaChi: dbItem.DIACHITAMTRU,
             tuNgay: dbItem.NGAYBATDAU,
@@ -102,41 +106,83 @@ function mapDataFromDB(type, dbItem) {
 // --- Render Table ---
 function renderTable(type, data) {
     const tbody = document.getElementById(`tbody-${type}`);
-    // If no data, show a friendly message. Determine colspan from table headers.
+    let colCount = 8; 
+    
     if (!data || data.length === 0) {
-        let colCount = 6;
-        try { const table = tbody.closest('table'); if (table) colCount = table.querySelectorAll('thead th').length || colCount; } catch (e) {}
         tbody.innerHTML = `<tr><td colspan="${colCount}" style="text-align:center; padding: 20px; color: #888;">Chưa có dữ liệu</td></tr>`;
         return;
     }
 
+    const renderActions = (item) => `
+        <button class="btn btn-sm btn-warning" onclick='prepareEdit("${type}", ${JSON.stringify(item)})' style="margin-right:5px">✏️ Sửa</button>
+        <button class="btn btn-sm btn-secondary" onclick='printPaper("${type}", ${JSON.stringify(item)})'>🖨️ In</button>
+    `;
+
     if (type === 'tamvang') {
-        // Tạm vắng: 8 columns - id, name, document code, start date, end date, destination, reason, action
         tbody.innerHTML = data.map(item => `
             <tr>
-                <td><span class="id-badge">${item.idNhanKhau || ''}</span></td>
-                <td><strong>${item.hoTen || ''}</strong></td>
-                <td>${item.maGiay || 'N/A'}</td>
+                <td>${item.idNhanKhau}</td>
+                <td><strong>${item.hoTen}</strong></td>
+                <td>${item.cccd || ''}</td>
+                <td>${item.maGiay || ''}</td>
                 <td>${formatDate(item.tuNgay)}</td>
                 <td>${formatDate(item.denNgay)}</td>
-                <td>${item.noiDen || ''}</td>
-                <td>${item.lyDo || ''}</td>
-                <td><button class="btn btn-sm btn-secondary" onclick='printPaper("tamvang", ${JSON.stringify(item)})'>🖨️ In giấy</button></td>
+                <td>${item.noiDen}</td>
+                <td>${item.lyDo}</td>
+                <td style="white-space:nowrap">${renderActions(item)}</td>
             </tr>
         `).join('');
     } else {
-        // Tạm trú: 7 columns - id, name, document code, address, time range, reason, action
         tbody.innerHTML = data.map(item => `
             <tr>
-                <td><span class="id-badge">${item.idNhanKhau || ''}</span></td>
-                <td><strong>${item.hoTen || ''}</strong></td>
-                <td>${item.maGiay || 'N/A'}</td>
-                <td>${item.diaChi || ''}</td>
-                <td>${formatDate(item.tuNgay)} <span style="color:var(--text-color-faint)">➝</span> ${formatDate(item.denNgay)}</td>
-                <td>${item.lyDo || ''}</td>
-                <td><button class="btn btn-sm btn-secondary" onclick='printPaper("tamtru", ${JSON.stringify(item)})'>🖨️ In giấy</button></td>
+                <td>${item.idNhanKhau}</td>
+                <td><strong>${item.hoTen}</strong></td>
+                <td>${item.cccd || ''}</td>
+                <td>${item.maGiay || ''}</td>
+                <td>${item.diaChi}</td>
+                <td>${formatDate(item.tuNgay)} ➝ ${formatDate(item.denNgay)}</td>
+                <td>${item.lyDo}</td>
+                <td style="white-space:nowrap">${renderActions(item)}</td>
             </tr>
         `).join('');
+    }
+}
+
+window.prepareEdit = function(type, item) {
+    if (type === 'tamvang') {
+        document.getElementById('modal-title-tv').textContent = 'Cập nhật Tạm vắng';
+        document.getElementById('tv-row-id').value = item.rowId; // ID bản ghi
+        document.getElementById('tv-id').value = item.idNhanKhau;
+        document.getElementById('tv-noiden').value = item.noiDen;
+        document.getElementById('tv-tungay').value = item.tuNgay ? item.tuNgay.split('T')[0] : '';
+        document.getElementById('tv-denngay').value = item.denNgay ? item.denNgay.split('T')[0] : '';
+        document.getElementById('tv-lydo').value = item.lyDo;
+        // Mở modal
+        openModal('modal-tamvang');
+    } else {
+        document.getElementById('modal-title-tt').textContent = 'Cập nhật Tạm trú';
+        document.getElementById('tt-row-id').value = item.rowId; // ID bản ghi
+        document.getElementById('tt-manhankhau').value = item.idNhanKhau;
+        document.getElementById('tt-diachi').value = item.diaChi;
+        document.getElementById('tt-tungay').value = item.tuNgay ? item.tuNgay.split('T')[0] : '';
+        document.getElementById('tt-denngay').value = item.denNgay ? item.denNgay.split('T')[0] : '';
+        document.getElementById('tt-lydo').value = item.lyDo;
+        // Mở modal
+        openModal('modal-tamtru');
+    }
+}
+
+window.resetForm = function(type) {
+    if (type === 'tamvang') {
+        document.getElementById('form-tamvang').reset();
+        document.getElementById('tv-row-id').value = ''; // Xóa ID
+        document.getElementById('modal-title-tv').textContent = 'Khai báo Tạm vắng';
+        openModal('modal-tamvang');
+    } else {
+        document.getElementById('form-tamtru').reset();
+        document.getElementById('tt-row-id').value = ''; // Xóa ID
+        document.getElementById('modal-title-tt').textContent = 'Đăng ký Tạm trú';
+        openModal('modal-tamtru');
     }
 }
 
@@ -148,6 +194,7 @@ function setupForms() {
     document.getElementById('form-tamvang').addEventListener('submit', async (e) => {
         e.preventDefault();
         const payload = {
+            rowId: document.getElementById('tv-row-id').value, // Lấy ID nếu có
             manhankhau: document.getElementById('tv-id').value,
             noiden: document.getElementById('tv-noiden').value,
             tungay: document.getElementById('tv-tungay').value,
@@ -161,7 +208,8 @@ function setupForms() {
     document.getElementById('form-tamtru').addEventListener('submit', async (e) => {
         e.preventDefault();
         const payload = {
-            manhankhau: document.getElementById('tt-manhankhau').value, // DB yêu cầu Mã Nhân Khẩu
+            rowId: document.getElementById('tt-row-id').value, // Lấy ID nếu có
+            manhankhau: document.getElementById('tt-manhankhau').value,
             diachi: document.getElementById('tt-diachi').value,
             tungay: document.getElementById('tt-tungay').value,
             denngay: document.getElementById('tt-denngay').value,
@@ -172,9 +220,18 @@ function setupForms() {
 }
 
 async function handleSave(type, data, modalId) {
+    // Kiểm tra xem có ID bản ghi không -> Có thì là Sửa (PUT), Không thì là Thêm (POST)
+    let method = 'POST';
+    let url = `${API_BASE}/${type}`;
+
+    if (data.rowId) {
+        method = 'PUT';
+        url = `${API_BASE}/${type}/${data.rowId}`;
+    }
+
     try {
-        const response = await fetch(`${API_BASE}/${type}`, {
-            method: 'POST',
+        const response = await fetch(url, {
+            method: method,
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)
         });
@@ -184,7 +241,7 @@ async function handleSave(type, data, modalId) {
         if (response.ok && json.success) {
             alert('✅ ' + json.message);
             closeModal(modalId);
-            loadData(type); // Tải lại bảng để thấy dữ liệu mới
+            loadData(type);
         } else {
             alert('❌ Thất bại: ' + (json.message || 'Lỗi không xác định'));
         }
@@ -199,10 +256,9 @@ window.handleSearch = function(type) {
     const inputId = type === 'tamvang' ? 'search-tv' : 'search-tt';
     const query = document.getElementById(inputId).value.toLowerCase();
     
-    // Lưu ý: Đây là tìm kiếm tạm thời trên giao diện. 
-    // Nếu dữ liệu lớn, bạn nên viết thêm API search ở Backend.
     const rows = document.querySelectorAll(`#tbody-${type} tr`);
     rows.forEach(row => {
+        // Lấy nội dung text của cả hàng (bao gồm ID, Tên, CCCD...)
         const text = row.innerText.toLowerCase();
         row.style.display = text.includes(query) ? '' : 'none';
     });

@@ -14,10 +14,12 @@ if (!controller) {
 // API Tạm Vắng
 router.get('/tamvang', controller.getTamVang);
 router.post('/tamvang', controller.createTamVang);
+router.put('/tamvang/:id', controller.updateTamVang);
 
 // API Tạm Trú
 router.get('/tamtru', controller.getTamTru);
 router.post('/tamtru', controller.createTamTru);
+router.put('/tamtru/:id', controller.updateTamTru);
 
 // API Thống kê
 router.get('/stats', controller.getStats);

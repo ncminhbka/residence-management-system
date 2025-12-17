@@ -500,7 +500,7 @@ async function renderTamTruTamVangReport(start, end) {
 }
 
 // ==========================================
-// HÀM XUẤT EXCEL
+// 1. HÀM XUẤT EXCEL (Đã cập nhật logic thời gian)
 // ==========================================
 async function onExportExcel() {
   const type = document.getElementById('reportType').value;
@@ -509,11 +509,17 @@ async function onExportExcel() {
   const end = document.getElementById('endDate').value;
   const year = document.getElementById('yearReport').value;
 
-  // 1. Xác định chuỗi thời gian để in vào Excel
+  // --- SỬA LOGIC HIỂN THỊ THỜI GIAN ---
   let timeString = '';
-  if (type === 'dansotheothang') {
+  const nowStr = formatDateTime(new Date()); // Lấy thời gian thực (Ngày + Giờ)
+
+  if (type === 'gioitinh' || type === 'dotuoi') {
+      // Yêu cầu: Giới tính & Độ tuổi -> "Tính đến ngày + Giờ hiện tại"
+      timeString = `Tính đến ngày: ${nowStr}`;
+  } else if (type === 'dansotheothang') {
       timeString = `Năm báo cáo: ${year}`;
   } else if (start && end) {
+      // Các báo cáo khác (Biến động, Tạm trú...) -> Hiển thị khoảng thời gian
       timeString = `Khoảng thời gian: ${formatDate(start)} - ${formatDate(end)}`;
   } else {
       timeString = `Ngày xuất báo cáo: ${formatDate(new Date())}`;
@@ -525,25 +531,20 @@ async function onExportExcel() {
     return;
   }
 
-  // ---------------------------------------------------------
-  // TRƯỜNG HỢP 1: Báo cáo Tạm trú / Tạm vắng (Dữ liệu chi tiết)
-  // ---------------------------------------------------------
+  // ... (Phần xử lý Tạm trú/Tạm vắng GIỮ NGUYÊN) ...
   if (type === 'tamtru_tamvang') {
+    // Copy lại y nguyên nội dung cũ của phần này
     const btn = document.getElementById('btnExportExcel');
     const originalText = btn.innerHTML;
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xử lý...';
-
     try {
       const [ttRes, tvRes, resRes] = await Promise.all([
         fetch(`${API_ROOT}/residencechanges/tamtru`),
         fetch(`${API_ROOT}/residencechanges/tamvang`),
         fetch(`${API_ROOT}/residents`)
       ]);
-
       if (!ttRes.ok || !tvRes.ok || !resRes.ok) throw new Error('Lỗi tải dữ liệu');
       const [ttJson, tvJson, resJson] = await Promise.all([ttRes.json(), tvRes.json(), resRes.json()]);
-      
-      // ... (Logic lọc dữ liệu giữ nguyên như cũ) ...
       const ttData = ttJson.data || [];
       const tvData = tvJson.data || [];
       const residents = Array.isArray(resJson) ? resJson : (resJson.data || []);
@@ -566,52 +567,28 @@ async function onExportExcel() {
       }
       const ttList = uniqueById(ttData.filter(filterFn));
       const tvList = uniqueById(tvData.filter(filterFn));
-
-      // Chuẩn bị dữ liệu dòng
       const mapToExcelRow = (item, type) => ({
         "Họ và tên": item.HOTEN,
         "Mã NK": item.MANHANKHAU,
-        "CCCD": item.CCCD,
+        "CCCD": item.CCCD || "Chưa có",
         "Địa chỉ / Nơi đến": item.DIACHITAMTRU || item.NOITAMTRU,
         "Từ ngày": formatDate(item.NGAYBATDAU || item.NGAY_BIEN_DONG),
         "Đến ngày": formatDate(item.NGAYKETTHUC),
         "Lý do": item.LYDO || item.GHICHU,
         "Trạng thái": computeRealTimeStatus(item, type)
       });
-
       const sheet1Data = ttList.map(item => mapToExcelRow(item, 'tamtru'));
       const sheet2Data = tvList.map(item => mapToExcelRow(item, 'tamvang'));
-
-      // --- TẠO EXCEL VỚI HEADER ---
       const wb = XLSX.utils.book_new();
-      
-      // > Sheet 1: Tạm trú
-      // Tạo tiêu đề (Header) thủ công
-      const headerRows1 = [
-          [title.toUpperCase()],        // A1: Tiêu đề to
-          [timeString],                 // A2: Thời gian
-          [`Tổng số: ${ttList.length}`],// A3: Tổng số
-          []                            // A4: Dòng trống
-      ];
-      // Tạo sheet từ Header trước
+      const headerRows1 = [[title.toUpperCase()], [timeString], [`Tổng số: ${ttList.length}`], []];
       const ws1 = XLSX.utils.aoa_to_sheet(headerRows1);
-      // Chèn dữ liệu chính bắt đầu từ dòng A5
       XLSX.utils.sheet_add_json(ws1, sheet1Data, { origin: "A5" });
       XLSX.utils.book_append_sheet(wb, ws1, "DS Tạm trú");
-
-      // > Sheet 2: Tạm vắng (Làm tương tự)
-      const headerRows2 = [
-          [title.toUpperCase() + " (TẠM VẮNG)"],
-          [timeString],
-          [`Tổng số: ${tvList.length}`],
-          []
-      ];
+      const headerRows2 = [[title.toUpperCase() + " (TẠM VẮNG)"], [timeString], [`Tổng số: ${tvList.length}`], []];
       const ws2 = XLSX.utils.aoa_to_sheet(headerRows2);
       XLSX.utils.sheet_add_json(ws2, sheet2Data, { origin: "A5" });
       XLSX.utils.book_append_sheet(wb, ws2, "DS Tạm vắng");
-
       XLSX.writeFile(wb, `BaoCao_TamTru_TamVang_${formatDate(new Date()).replace(/\//g,'-')}.xlsx`);
-
     } catch (err) {
       alert('Lỗi xuất Excel: ' + err.message);
     } finally {
@@ -620,77 +597,69 @@ async function onExportExcel() {
     return;
   }
 
-  // ---------------------------------------------------------
-  // TRƯỜNG HỢP 2: Các báo cáo tổng hợp (Lấy bảng trên màn hình)
-  // ---------------------------------------------------------
+  // --- TRƯỜNG HỢP 2: CÁC BÁO CÁO KHÁC (GIỚI TÍNH, ĐỘ TUỔI...) ---
   const table = document.getElementById('detailedReportTable');
   if (!table || table.rows.length <= 1) {
     alert('Không có dữ liệu để xuất!');
     return;
   }
-
   const wb = XLSX.utils.book_new();
-
-  // Tạo Header
-  const headerRows = [
-      [title.toUpperCase()],  // Dòng 1
-      [timeString],           // Dòng 2
-      []                      // Dòng 3 (Trống)
-  ];
-  
-  // Tạo sheet từ Header
+  const headerRows = [[title.toUpperCase()], [timeString], []];
   const ws = XLSX.utils.aoa_to_sheet(headerRows);
-
-  // Chèn bảng HTML vào bắt đầu từ dòng A4
   XLSX.utils.sheet_add_dom(ws, table, { origin: "A4" });
 
-  // Đặt tên file
   let fileName = 'BaoCao_ThongKe.xlsx';
-  if (type === 'dansotheothang') {
-      fileName = `DanSo_TheoThang_Nam${year}.xlsx`;
-  } else {
-      fileName = `BaoCao_${type}.xlsx`;
-  }
+  if (type === 'dansotheothang') fileName = `DanSo_TheoThang_Nam${year}.xlsx`;
+  else fileName = `BaoCao_${type}.xlsx`;
 
   XLSX.utils.book_append_sheet(wb, ws, "Số liệu");
   XLSX.writeFile(wb, fileName);
 }
 
+
 // ==========================================
-// HÀM XUẤT PDF (ĐÃ NÂNG CẤP)
+// 2. HÀM XUẤT PDF (Đã cập nhật logic thời gian)
 // ==========================================
 async function onExportPdf() {
   const type = document.getElementById('reportType').value;
   const title = document.getElementById('currentReportTitle').textContent;
   const start = document.getElementById('startDate').value;
   const end = document.getElementById('endDate').value;
-  const year = document.getElementById('yearReport').value; // Lấy năm nếu là báo cáo tháng
+  const year = document.getElementById('yearReport').value;
 
-  // TRƯỜNG HỢP 1: Báo cáo Tạm trú / Tạm vắng (Cần tải dữ liệu chi tiết để in danh sách dài)
+  // --- SỬA LOGIC HIỂN THỊ THỜI GIAN CHO PDF ---
+  const nowStr = formatDateTime(new Date());
+  let timeRangeStr = '';
+
+  if (type === 'gioitinh' || type === 'dotuoi') {
+      // Yêu cầu: Giới tính & Độ tuổi -> "Tính đến ngày + Giờ hiện tại"
+      timeRangeStr = `Tính đến ngày: ${nowStr}`;
+  } else if (type === 'dansotheothang') {
+      timeRangeStr = `Năm báo cáo: ${year}`;
+  } else if (start && end) {
+      timeRangeStr = `Thời gian: ${formatDate(start)} - ${formatDate(end)}`;
+  } else {
+      timeRangeStr = `Tính đến ngày: ${nowStr}`;
+  }
+
+  // ... (Phần xử lý Tạm trú/Tạm vắng GIỮ NGUYÊN) ...
   if (type === 'tamtru_tamvang') {
-    // Hiển thị thông báo đang xử lý
     const btn = document.getElementById('btnExportPdf');
     const originalText = btn.innerHTML;
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang tạo PDF...';
-
     try {
       const [ttRes, tvRes, resRes] = await Promise.all([
         fetch(`${API_ROOT}/residencechanges/tamtru`),
         fetch(`${API_ROOT}/residencechanges/tamvang`),
         fetch(`${API_ROOT}/residents`)
       ]);
-
       if (!ttRes.ok || !tvRes.ok || !resRes.ok) throw new Error('Không thể tải dữ liệu chi tiết');
-      
       const [ttJson, tvJson, resJson] = await Promise.all([ttRes.json(), tvRes.json(), resRes.json()]);
       const ttData = ttJson.data || [];
       const tvData = tvJson.data || [];
       const residents = Array.isArray(resJson) ? resJson : (resJson.data || []);
-
       const qStart = _parseDate(start) || new Date('1970-01-01');
       const qEnd = _parseDate(end) || new Date('9999-12-31');
-
-      // Helper lọc dữ liệu theo thời gian
       function overlaps(r) {
         const rs = r.NGAYBATDAU || r.NGAY_BAT_DAU || r.NGAY_BIEN_DONG || null;
         const re = r.NGAYKETTHUC || r.NGAY_KET_THUC || null;
@@ -698,15 +667,10 @@ async function onExportPdf() {
         const e = _parseDate(re) || new Date('9999-12-31');
         return s && !(s > qEnd || e < qStart);
       }
-
-      // Helper lấy trạng thái nhân khẩu (để loại bỏ người đã mất/chuyển đi)
       const statusById = new Map();
       residents.forEach(r => statusById.set(String(r.MANHANKHAU), (r.TRANGTHAI || r.trangthai || '').toString()));
-
       const ttFiltered = ttData.filter(r => overlaps(r) && !['DaQuaDoi', 'ChuyenDi'].includes(statusById.get(String(r.MANHANKHAU))));
       const tvFiltered = tvData.filter(r => overlaps(r) && !['DaQuaDoi', 'ChuyenDi'].includes(statusById.get(String(r.MANHANKHAU))));
-
-      // Loại bỏ trùng lặp (nếu có)
       function uniqueById(arr) {
         const m = new Map();
         arr.forEach(r => { const id = String(r.MANHANKHAU || ''); if (id && !m.has(id)) m.set(id, r); });
@@ -714,35 +678,30 @@ async function onExportPdf() {
       }
       const ttList = uniqueById(ttFiltered);
       const tvList = uniqueById(tvFiltered);
-
-      // --- TẠO HTML ĐỂ IN ---
       const headerHtml = `
         <div class="header">
             <h1>CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</h1>
             <p>Độc lập - Tự do - Hạnh phúc</p>
             <hr style="width:150px; margin: 10px auto;">
             <h2 style="margin-top:20px">${escapeHtml(title).toUpperCase()}</h2>
-            <p><em>Thời gian: ${formatDate(start)} - ${formatDate(end)}</em></p>
-            <p style="text-align:left; margin-top:20px">
+            <p><em>${timeRangeStr}</em></p> <p style="text-align:left; margin-top:20px">
                 <strong>Tổng số Tạm trú:</strong> ${ttList.length} người &nbsp;&nbsp;|&nbsp;&nbsp; 
                 <strong>Tổng số Tạm vắng:</strong> ${tvList.length} người
             </p>
         </div>
       `;
-
       function buildTableHtml(list, title, type) {
         if (!list || list.length === 0) return '';
         const rows = list.map((e, idx) => `
           <tr>
             <td style="text-align:center">${idx + 1}</td>
             <td>${escapeHtml(e.HOTEN)}<br><small>Mã: ${e.MANHANKHAU}</small></td>
-            <td>${escapeHtml(e.CCCD || '')}</td>
+            <td>${escapeHtml(e.CCCD || 'Chưa có')}</td> 
             <td>${escapeHtml(e.DIACHITAMTRU || e.NOITAMTRU || '')}</td>
             <td>${formatDate(e.NGAYBATDAU || e.NGAY_BIEN_DONG)} - ${formatDate(e.NGAYKETTHUC)}</td>
             <td>${escapeHtml(e.LYDO || e.GHICHU || '')}</td>
           </tr>
         `).join('');
-        
         return `
           <h3 style="margin-top:20px; border-bottom: 2px solid #333; padding-bottom: 5px;">${title}</h3>
           <table>
@@ -753,13 +712,11 @@ async function onExportPdf() {
           </table>
         `;
       }
-
       openPrintWindow(
         headerHtml + 
         buildTableHtml(ttList, 'DANH SÁCH ĐĂNG KÝ TẠM TRÚ', 'tamtru') + 
         buildTableHtml(tvList, 'DANH SÁCH KHAI BÁO TẠM VẮNG', 'tamvang')
       );
-
     } catch (err) {
       alert('Lỗi xuất PDF: ' + err.message);
     } finally {
@@ -768,13 +725,10 @@ async function onExportPdf() {
     return;
   }
 
-  // TRƯỜNG HỢP 2: Các báo cáo có Biểu đồ (Giới tính, Độ tuổi, Biến động, Dân số theo tháng)
-  // Logic: Chụp hình biểu đồ + Lấy bảng số liệu hiện tại
-  
+  // --- TRƯỜNG HỢP 2: CÁC BÁO CÁO BIỂU ĐỒ KHÁC ---
   const canvas = document.getElementById('reportChart');
   let chartImg = '';
   if (canvas) {
-    // Tạo nền trắng cho biểu đồ để khi in không bị đen nền
     const ctx = canvas.getContext('2d');
     ctx.save();
     ctx.globalCompositeOperation = 'destination-over';
@@ -784,19 +738,7 @@ async function onExportPdf() {
     chartImg = canvas.toDataURL('image/png');
   }
 
-  // Lấy HTML của bảng dữ liệu đang hiển thị
   const tableHtml = document.querySelector('.report-table-data').outerHTML;
-  const nowStr = formatDateTime(new Date());
-  
-  // Xác định thời gian hiển thị trong tiêu đề
-  let timeRangeStr = '';
-  if (type === 'dansotheothang') {
-      timeRangeStr = `Năm báo cáo: ${year}`;
-  } else if (start && end) {
-      timeRangeStr = `Thời gian: ${formatDate(start)} - ${formatDate(end)}`;
-  } else {
-      timeRangeStr = `Tính đến ngày: ${nowStr}`;
-  }
 
   const contentHtml = `
     <div class="header">
@@ -825,7 +767,6 @@ async function onExportPdf() {
   openPrintWindow(contentHtml);
 }
 
-// --- HÀM HỖ TRỢ MỞ CỬA SỔ IN (ĐÃ STYLE CHUẨN A4) ---
 function openPrintWindow(content) {
   const w = window.open('', '_blank', 'width=900,height=800');
   w.document.write(`

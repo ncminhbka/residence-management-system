@@ -53,3 +53,29 @@ exports.getStats = async (req, res) => {
     res.status(500).json({ success: false, message: err.message });
   }
 };
+
+// [MỚI] Sửa Tạm Vắng
+exports.updateTamVang = async (req, res) => {
+    try {
+        const id = req.params.id;
+        const data = req.body;
+        await Model.updateTamVang(id, data);
+        res.json({ success: true, message: 'Cập nhật tạm vắng thành công!' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, message: 'Lỗi server: ' + err.message });
+    }
+};
+
+// [MỚI] Sửa Tạm Trú
+exports.updateTamTru = async (req, res) => {
+    try {
+        const id = req.params.id;
+        const data = req.body;
+        await Model.updateTamTru(id, data);
+        res.json({ success: true, message: 'Cập nhật tạm trú thành công!' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, message: 'Lỗi server: ' + err.message });
+    }
+};

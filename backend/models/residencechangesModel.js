@@ -47,6 +47,34 @@ const ResidenceChangesModel = {
 
   },
 
+  // [MỚI] Update Tạm Vắng
+  updateTamVang: async (id, data) => {
+    const sql = `
+      UPDATE TAM_VANG 
+      SET MANHANKHAU = ?, NOITAMTRU = ?, NGAYBATDAU = ?, NGAYKETTHUC = ?, LYDO = ?
+      WHERE ID = ?
+    `;
+    // Lưu ý: Đảm bảo bảng TAM_VANG có cột khóa chính tên là ID
+    return db.execute(sql, [
+      data.manhankhau, data.noiden, data.tungay, data.denngay, data.lydo, id
+    ]);
+  },
+
+  // ... (các hàm cũ addTamTru, getAllTamTru...) ...
+
+  // [MỚI] Update Tạm Trú
+  updateTamTru: async (id, data) => {
+    const sql = `
+      UPDATE TAM_TRU 
+      SET MANHANKHAU = ?, DIACHITAMTRU = ?, NGAYBATDAU = ?, NGAYKETTHUC = ?, GHICHU = ?
+      WHERE ID = ?
+    `;
+    // Lưu ý: Đảm bảo bảng TAM_TRU có cột khóa chính tên là ID
+    return db.execute(sql, [
+      data.manhankhau, data.diachi, data.tungay, data.denngay, data.lydo, id
+    ]);
+  },
+
   // --- Thống kê ---
   getStats: async () => {
     // Tạm trú đang hoạt động
