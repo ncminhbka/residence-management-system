@@ -1,19 +1,30 @@
 // frontend/assets/js/facilities.js
 const API_URL = 'http://localhost:3000/api/v1/facilities';
 
+let allEvents = []; // Store all events for filtering
+let allAssets = []; // Store all assets for filtering
+
 document.addEventListener('DOMContentLoaded', () => {
     loadAssets();
     loadEvents();
     setupForms();
+    setupAssetSearch();
+    setupEventSearch();
 });
 
 // --- LOGIC TÀI SẢN ---
 async function loadAssets() {
     const res = await fetch(`${API_URL}/assets`);
     const json = await res.json();
+    allAssets = json.data || [];
+    displayAssets(allAssets);
+}
+
+// --- Hàm hiển thị danh sách tài sản ---
+function displayAssets(assets) {
     const tbody = document.getElementById('tbody-assets');
     
-    tbody.innerHTML = json.data.map(item => `
+    tbody.innerHTML = assets.map(item => `
         <tr>
             <td>${item.MATAISAN}</td>
             <td><strong>${item.TENTAISAN}</strong></td>
@@ -48,9 +59,15 @@ async function deleteAsset(id) {
 async function loadEvents() {
     const res = await fetch(`${API_URL}/events`);
     const json = await res.json();
-    const tbody = document.getElementById('tbody-events');
+    allEvents = json.data || [];
+    displayEvents(allEvents);
+}
 
-    tbody.innerHTML = json.data.map(evt => {
+// --- Hàm hiển thị danh sách sự kiện ---
+function displayEvents(events) {
+    const tbody = document.getElementById('tbody-events');
+    
+    tbody.innerHTML = events.map(evt => {
         let badgeClass = 'badge-pending';
         let statusText = 'Chờ duyệt';
         let actions = '';
@@ -153,6 +170,59 @@ function setupForms() {
         } else {
             alert(json.message);
         }
+    });
+}
+
+// --- SETUP EVENT SEARCH ---
+function setupEventSearch() {
+    const searchInput = document.getElementById('eventSearchInput');
+    const typeFilter = document.getElementById('eventTypeFilter');
+
+    if (!searchInput || !typeFilter) {
+        console.warn('⚠️ Không tìm thấy các phần tử tìm kiếm sự kiện');
+        return;
+    }
+
+    function filterEvents() {
+        const searchTerm = searchInput.value.toLowerCase().trim();
+        const typeValue = typeFilter.value;
+
+        const filtered = allEvents.filter(evt => {
+            const matchesSearch =
+                evt.TENSUKIEN.toLowerCase().includes(searchTerm) ||
+                (evt.MO_TA && evt.MO_TA.toLowerCase().includes(searchTerm));
+
+            const matchesType =
+                typeValue === "" || evt.LOAISUKIEN === typeValue;
+
+            return matchesSearch && matchesType;
+        });
+
+        displayEvents(filtered);
+    }
+
+    searchInput.addEventListener('input', filterEvents);
+    typeFilter.addEventListener('change', filterEvents);
+}
+
+// --- SETUP ASSET SEARCH ---
+function setupAssetSearch() {
+    const searchInput = document.getElementById('assetSearchInput');
+
+    if (!searchInput) {
+        console.warn('⚠️ Không tìm thấy phần tử tìm kiếm tài sản');
+        return;
+    }
+
+    searchInput.addEventListener('input', () => {
+        const searchTerm = searchInput.value.toLowerCase().trim();
+
+        const filtered = allAssets.filter(asset => {
+            return asset.TENTAISAN.toLowerCase().includes(searchTerm) ||
+                   asset.MATAISAN.toString().includes(searchTerm);
+        });
+
+        displayAssets(filtered);
     });
 }
 

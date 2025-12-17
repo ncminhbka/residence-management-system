@@ -35,6 +35,17 @@
         <div class="content-header">
             <button class="btn btn-primary" onclick="openAssetModal()">+ Thêm Tài Sản</button>
         </div>
+        <div class="search-container">
+            <div class="search-input-wrapper">
+                <i class="fas fa-search"></i>
+                <input 
+                    type="text" 
+                    id="assetSearchInput" 
+                    class="search-input"
+                    placeholder="Tìm kiếm tài sản theo tên hoặc mã..." 
+                />
+            </div>
+        </div>
         <div class="table-container">
             <table class="data-table">
                 <thead>
@@ -56,6 +67,26 @@
       <div id="tab-events" class="tab-content">
         <div class="content-header">
             <button class="btn btn-primary" onclick="openEventModal()">+ Đăng ký / Tạo lịch</button>
+        </div>
+        
+        <div class="search-container">
+            <div class="search-input-wrapper">
+                <i class="fas fa-search"></i>
+                <input 
+                    type="text" 
+                    id="eventSearchInput" 
+                    class="search-input"
+                    placeholder="Tìm kiếm sự kiện theo tên..." 
+                />
+            </div>
+            <div class="search-filters">
+                <select id="eventTypeFilter" class="filter-select">
+                    <option value="">-- Tất cả loại --</option>
+                    <option value="HopToDanPho">Họp tổ dân phố</option>
+                    <option value="VeSinhMoiTruong">Vệ sinh/Tuyên truyền</option>
+                    <option value="VanHoaGiaiTri">Sự kiện/Đám cưới</option>
+                </select>
+            </div>
         </div>
         
         <div class="table-container">
@@ -107,8 +138,8 @@
                 <label>Loại hoạt động</label>
                 <select id="evt-type" onchange="toggleFeeInput()">
                     <option value="HopToDanPho">Họp tổ dân phố (Miễn phí)</option>
-                    <option value="VeSinhMoiTruong">Vệ sinh / Tuyên truyền (Miễn phí)</option>
-                    <option value="VanHoaGiaiTri">Thuê tổ chức sự kiện/Đám cưới (Có phí)</option>
+                    <option value="VeSinhMoiTruong">Vệ sinh/Tuyên truyền (Miễn phí)</option>
+                    <option value="VanHoaGiaiTri">Thuê tổ chức sự kiện(Có phí)</option>
                 </select>
             </div>
             <div class="form-group"><label>Tên hoạt động</label><input type="text" id="evt-name" required placeholder="VD: Đám cưới nhà ông A..."></div>
