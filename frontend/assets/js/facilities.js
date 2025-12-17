@@ -254,9 +254,15 @@ window.switchTab = function(id) {
 window.openModal = (id) => { 
     document.getElementById(id).classList.remove('hidden'); 
     document.getElementById(id).classList.add('show');
-    if(id === 'modal-asset') document.getElementById('form-asset').reset(); 
+    // Only reset form if creating new (asset-id is empty)
+    if(id === 'modal-asset' && !document.getElementById('asset-id').value) {
+        document.getElementById('form-asset').reset();
+    }
     if(id === 'modal-event') document.getElementById('form-event').reset(); 
 };
 window.closeModal = (id) => { document.getElementById(id).classList.add('hidden'); document.getElementById(id).classList.remove('show'); };
-window.openAssetModal = () => openModal('modal-asset');
+window.openAssetModal = () => {
+    document.getElementById('asset-id').value = ''; // Clear ID for new asset
+    openModal('modal-asset');
+};
 window.openEventModal = () => openModal('modal-event');
