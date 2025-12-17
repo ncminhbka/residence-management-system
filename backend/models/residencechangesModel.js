@@ -47,29 +47,27 @@ const ResidenceChangesModel = {
 
   },
 
-  // [MỚI] Update Tạm Vắng
+  // [SỬA] Update Tạm Vắng (Tìm theo MAGIAYTAMVANG)
   updateTamVang: async (id, data) => {
+    // id ở đây chính là mã giấy (VD: TV_123456) được gửi từ frontend
     const sql = `
       UPDATE TAM_VANG 
       SET MANHANKHAU = ?, NOITAMTRU = ?, NGAYBATDAU = ?, NGAYKETTHUC = ?, LYDO = ?
-      WHERE ID = ?
+      WHERE MAGIAYTAMVANG = ?
     `;
-    // Lưu ý: Đảm bảo bảng TAM_VANG có cột khóa chính tên là ID
     return db.execute(sql, [
       data.manhankhau, data.noiden, data.tungay, data.denngay, data.lydo, id
     ]);
   },
 
-  // ... (các hàm cũ addTamTru, getAllTamTru...) ...
-
-  // [MỚI] Update Tạm Trú
+  // [SỬA] Update Tạm Trú (Tìm theo MAGIAYTAMTRU)
   updateTamTru: async (id, data) => {
+    // id ở đây là mã giấy (VD: TT_123456)
     const sql = `
       UPDATE TAM_TRU 
       SET MANHANKHAU = ?, DIACHITAMTRU = ?, NGAYBATDAU = ?, NGAYKETTHUC = ?, GHICHU = ?
-      WHERE ID = ?
+      WHERE MAGIAYTAMTRU = ?
     `;
-    // Lưu ý: Đảm bảo bảng TAM_TRU có cột khóa chính tên là ID
     return db.execute(sql, [
       data.manhankhau, data.diachi, data.tungay, data.denngay, data.lydo, id
     ]);

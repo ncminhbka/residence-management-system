@@ -78,7 +78,7 @@ async function loadData(type) {
 function mapDataFromDB(type, dbItem) {
     if (type === 'tamvang') {
         return {
-            rowId: dbItem.ID,
+            rowId: dbItem.MAGIAYTAMVANG,
             idNhanKhau: dbItem.MANHANKHAU,
             hoTen: dbItem.HOTEN,
             cccd: dbItem.CCCD,
@@ -90,7 +90,7 @@ function mapDataFromDB(type, dbItem) {
         };
     } else {
         return {
-            rowId: dbItem.ID,
+            rowId: dbItem.MAGIAYTAMTRU,
             idNhanKhau: dbItem.MANHANKHAU,
             hoTen: dbItem.HOTEN,
             cccd: dbItem.CCCD,
