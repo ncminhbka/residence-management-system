@@ -39,22 +39,33 @@
                         <div class="form-grid-filter">
                             <div class="form-group select-group">
                                 <label for="reportType">Loại báo cáo:</label>
-                                <select id="reportType">
+                                <select id="reportType" style="padding: 8px; border-radius: 4px; border: 1px solid #ccc; width: 100%;">
                                     <option value="gioitinh">Thống kê theo Giới tính</option>
                                     <option value="dotuoi">Thống kê theo Độ tuổi</option>
                                     <option value="biendong">Thống kê Biến động Dân cư</option>
                                     <option value="tamtru_tamvang">Thống kê Tạm trú/Tạm vắng</option>
+                                    <option value="dansotheothang">Biểu đồ Dân số theo tháng</option>
                                 </select>
                             </div>
-                            <div class="form-group">
-                                <label for="startDate">Từ ngày:</label>
-                                <input type="date" id="startDate" value="2025-01-01" />
+
+                            <div id="dateRangeContainer" style="display: contents;">
+                                <div class="form-group">
+                                    <label for="startDate">Từ ngày:</label>
+                                    <input type="date" id="startDate" value="2025-01-01" />
+                                </div>
+                                <div class="form-group">
+                                    <label for="endDate">Đến ngày:</label>
+                                    <input type="date" id="endDate" value="2025-12-31" />
+                                </div>
                             </div>
-                            <div class="form-group">
-                                <label for="endDate">Đến ngày:</label>
-                                <input type="date" id="endDate" value="2025-12-31" />
+
+                            <div id="yearInputContainer" class="form-group" style="display: none;">
+                                <label for="yearReport">Chọn Năm:</label>
+                                <input type="number" id="yearReport" value="2025" min="2000" max="2100" 
+                                    style="padding: 10px; border: 1px solid #ccc; border-radius: 6px; width: 100%;">
                             </div>
                         </div>
+
                         <div class="button-group">
                             <button type="button" id="btnViewReport" class="btn btn-primary">
                                 <i class="fas fa-eye"></i> Xem báo cáo
