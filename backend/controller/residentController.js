@@ -177,6 +177,31 @@ exports.updateResident = async (req, res) => {
             return res.status(400).json({ success: false, error: 'Không có dữ liệu hợp lệ để cập nhật' });
         }
 
+        
+        if (updatedData.TRANGTHAI === 'DaQuaDoi') {
+         
+            const birthStr = updatedData.NGAYSINH;
+            const deathStr = updatedData.NGAYCHUYENDI;
+
+            if (!deathStr) {
+                return res.status(400).json({ success: false, error: 'Thiếu ngày qua đời' });
+            }
+
+            const birthDate = birthStr ? new Date(birthStr) : null;
+            const deathDate = new Date(deathStr);
+
+            if (isNaN(deathDate.getTime())) {
+                return res.status(400).json({ success: false, error: 'Ngày qua đời không hợp lệ' });
+            }
+            if (birthDate && isNaN(birthDate.getTime())) {
+                return res.status(400).json({ success: false, error: 'Ngày sinh không hợp lệ' });
+            }
+
+            if (birthDate && deathDate <= birthDate) {
+                return res.status(400).json({ success: false, error: 'Ngày qua đời phải sau ngày sinh' });
+            }
+        }
+
         const result = await Resident.updateResident(manhankhau, updatedData);
 
         if (result.affectedRows === 0) {

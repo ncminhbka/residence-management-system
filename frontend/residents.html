@@ -356,6 +356,24 @@
         </div>
     </div>
 
+    <!-- Modal Xác nhận chỉnh sửa cho DaQuaDoi / ChuyenDi -->
+    <div id="edit-warning-modal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 400px;">
+            <div class="modal-header">
+                <h3>Xác nhận chỉnh sửa</h3>
+                <button class="close-btn" data-modal="edit-warning-modal">&times;</button>
+            </div>
+
+            <div class="modal-body" style="background: var(--panel-bg);">
+                <p id="edit-warning-message" style="margin:0; font-size:14px; color:#495057;"></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="cancel-edit-btn">Hủy</button>
+                <button type="button" class="btn btn-primary" id="confirm-edit-btn">Tiếp tục</button>
+            </div>
+        </div>
+    </div>
+
     <script src="assets/js/layout.js"></script>
     <script src="assets/js/residents.js"></script>
 </body>

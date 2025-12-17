@@ -440,7 +440,7 @@ const getHouseholdDetails = async (sohokhau) => {
       hknk.NGAY_VAO_HO
     FROM HO_KHAU_NHAN_KHAU hknk
     JOIN NHAN_KHAU nk ON hknk.MANHANKHAU = nk.MANHANKHAU
-    WHERE hknk.SOHOKHAU = ? AND hknk.TRANGTHAI = 'DangO'
+    WHERE hknk.SOHOKHAU = ? AND hknk.TRANGTHAI = 'DangO' AND nk.TRANGTHAI != 'ChuyenDi' AND nk.TRANGTHAI != 'DaQuaDoi'
     ORDER BY hknk.LA_CHU_HO DESC, nk.NGAYSINH ASC
   `, [sohokhau]);
   

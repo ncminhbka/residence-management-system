@@ -356,8 +356,17 @@ async function editResident(id) {
         const data = await response.json();
 
         if (data.success && data.data) {
-            isEditMode = true;
             const resident = Array.isArray(data.data) ? data.data[0] : data.data;
+
+            // Nếu người này đã chuyển đi hoặc đã qua đời, yêu cầu xác nhận trước khi sửa
+            const status = resident.TRANGTHAI;
+            if (status === 'DaQuaDoi' || status === 'ChuyenDi') {
+                const label = status === 'DaQuaDoi' ? 'đã qua đời' : 'đã chuyển đi';
+                const proceed = await showEditWarning(`Người này ${label}. Bạn có chắc chắn muốn sửa thông tin không?`);
+                if (!proceed) return;
+            }
+
+            isEditMode = true;
 
             // ✅ LẤY THÔNG TIN BIẾN ĐỘNG TỪ LỊCH SỬ
             const history = await getResidentHistory(id);
@@ -382,6 +391,41 @@ async function editResident(id) {
         console.error('Edit error:', error);
         showNotification('Lỗi khi tải dữ liệu: ' + error.message, 'error');
     }
+}
+
+// Hiển thị modal xác nhận chỉnh sửa, trả về Promise<boolean>
+function showEditWarning(message) {
+    return new Promise((resolve) => {
+        const modal = document.getElementById('edit-warning-modal');
+        const msgEl = document.getElementById('edit-warning-message');
+        const confirmBtn = document.getElementById('confirm-edit-btn');
+        const cancelBtn = document.getElementById('cancel-edit-btn');
+
+        if (!modal || !msgEl || !confirmBtn || !cancelBtn) {
+            // Fallback to native confirm nếu modal không tồn tại
+            resolve(window.confirm(message));
+            return;
+        }
+
+        msgEl.textContent = message;
+        modal.classList.add('show');
+
+        const cleanup = () => {
+            modal.classList.remove('show');
+            confirmBtn.removeEventListener('click', onConfirm);
+            cancelBtn.removeEventListener('click', onCancel);
+            closeBtn && closeBtn.removeEventListener('click', onCancel);
+        };
+
+        const onConfirm = () => { cleanup(); resolve(true); };
+        const onCancel = () => { cleanup(); resolve(false); };
+
+        confirmBtn.addEventListener('click', onConfirm);
+        cancelBtn.addEventListener('click', onCancel);
+
+        const closeBtn = Array.from(document.querySelectorAll('.close-btn')).find(b => b.dataset.modal === 'edit-warning-modal');
+        if (closeBtn) closeBtn.addEventListener('click', onCancel);
+    });
 }
 
 function fillFormWithResident(resident) {
