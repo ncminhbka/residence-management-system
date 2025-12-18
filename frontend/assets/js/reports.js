@@ -162,9 +162,10 @@ function drawBarChart(labels, values, options = {}) {
   const bg = generateColors(values.length);
   currentChart = new Chart(ctx, {
     type: 'bar',
-    data: { labels, datasets: [{ label: 'Số lượng', data: values, backgroundColor: bg, borderColor: '#fff', borderWidth: 1 }] },
+    data: { labels, datasets: [{ label: 'Số lượng (Đơn vị: người)', data: values, backgroundColor: bg, borderColor: '#fff', borderWidth: 1 }] },
     options: Object.assign({ responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true }, x: { } }, plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false } } }, options)
   });
+
 }
 
 function generateColors(n) {
@@ -286,7 +287,7 @@ async function renderBiendongReport(start, end) {
       data: {
         labels: labels,
         datasets: [{
-          label: 'Số lượng hồ sơ',
+          label: 'Số lượng hồ sơ (Đơn vị: người)',
           data: values,
           backgroundColor: bgColors,
           borderWidth: 1
@@ -580,13 +581,13 @@ async function onExportExcel() {
       const sheet1Data = ttList.map(item => mapToExcelRow(item, 'tamtru'));
       const sheet2Data = tvList.map(item => mapToExcelRow(item, 'tamvang'));
       const wb = XLSX.utils.book_new();
-      const headerRows1 = [[title.toUpperCase()], [timeString], [`Tổng số: ${ttList.length}`], []];
+      const headerRows1 = [[title.toUpperCase()], [timeString], ['(Đơn vị: người)'], [`Tổng số: ${ttList.length}`], []];
       const ws1 = XLSX.utils.aoa_to_sheet(headerRows1);
-      XLSX.utils.sheet_add_json(ws1, sheet1Data, { origin: "A5" });
+      XLSX.utils.sheet_add_json(ws1, sheet1Data, { origin: "A6" });
       XLSX.utils.book_append_sheet(wb, ws1, "DS Tạm trú");
-      const headerRows2 = [[title.toUpperCase() + " (TẠM VẮNG)"], [timeString], [`Tổng số: ${tvList.length}`], []];
+      const headerRows2 = [[title.toUpperCase() + " (TẠM VẮNG)"], [timeString], ['(Đơn vị: người)'], [`Tổng số: ${tvList.length}`], []];
       const ws2 = XLSX.utils.aoa_to_sheet(headerRows2);
-      XLSX.utils.sheet_add_json(ws2, sheet2Data, { origin: "A5" });
+      XLSX.utils.sheet_add_json(ws2, sheet2Data, { origin: "A6" });
       XLSX.utils.book_append_sheet(wb, ws2, "DS Tạm vắng");
       XLSX.writeFile(wb, `BaoCao_TamTru_TamVang_${formatDate(new Date()).replace(/\//g,'-')}.xlsx`);
     } catch (err) {
@@ -604,9 +605,9 @@ async function onExportExcel() {
     return;
   }
   const wb = XLSX.utils.book_new();
-  const headerRows = [[title.toUpperCase()], [timeString], []];
+  const headerRows = [[title.toUpperCase()], [timeString], ['(Đơn vị: người)'], []];
   const ws = XLSX.utils.aoa_to_sheet(headerRows);
-  XLSX.utils.sheet_add_dom(ws, table, { origin: "A4" });
+  XLSX.utils.sheet_add_dom(ws, table, { origin: "A5" });
 
   let fileName = 'BaoCao_ThongKe.xlsx';
   if (type === 'dansotheothang') fileName = `DanSo_TheoThang_Nam${year}.xlsx`;
@@ -684,7 +685,9 @@ async function onExportPdf() {
             <p>Độc lập - Tự do - Hạnh phúc</p>
             <hr style="width:150px; margin: 10px auto;">
             <h2 style="margin-top:20px">${escapeHtml(title).toUpperCase()}</h2>
-            <p><em>${timeRangeStr}</em></p> <p style="text-align:left; margin-top:20px">
+            <p><em>${timeRangeStr}</em></p>
+            <p><em>(Đơn vị: người)</em></p>
+            <p style="text-align:left; margin-top:20px">
                 <strong>Tổng số Tạm trú:</strong> ${ttList.length} người &nbsp;&nbsp;|&nbsp;&nbsp; 
                 <strong>Tổng số Tạm vắng:</strong> ${tvList.length} người
             </p>
@@ -745,6 +748,7 @@ async function onExportPdf() {
         <h1>BÁO CÁO THỐNG KÊ DÂN CƯ</h1>
         <h2>${escapeHtml(title).toUpperCase()}</h2>
         <p>${timeRangeStr}</p>
+        <p><em>(Đơn vị: người)</em></p>
     </div>
     
     <div style="text-align:center; margin: 30px 0;">
