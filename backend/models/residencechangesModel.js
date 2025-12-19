@@ -1,17 +1,50 @@
 // backend/models/residencechangesModel.js
-const db = require('../db'); // Trỏ đúng về file db.js của bạn
+const db = require('../db'); 
 
 const ResidenceChangesModel = {
-  // --- TẠM VẮNG ---
+  // --- TẠM VẮNG (ĐÃ SỬA: Cập nhật trạng thái nhân khẩu) ---
   addTamVang: async (data) => {
     const maGiay = `TV_${Date.now()}`;
-    const sql = `
-      INSERT INTO TAM_VANG (MANHANKHAU, MAGIAYTAMVANG, NOITAMTRU, NGAYBATDAU, NGAYKETTHUC, LYDO, TRANGTHAI)
-      VALUES (?, ?, ?, ?, ?, ?, 'DangTamVang')
-    `;
-    return db.execute(sql, [
-      data.manhankhau, maGiay, data.noiden, data.tungay, data.denngay, data.lydo
-    ]);
+    
+    // 1. Lấy kết nối từ Pool để dùng Transaction
+    const connection = await db.getConnection();
+
+    try {
+      // Bắt đầu giao dịch
+      await connection.beginTransaction();
+
+      // Bước 1: Thêm giấy tạm vắng
+      const sqlInsert = `
+        INSERT INTO TAM_VANG (MANHANKHAU, MAGIAYTAMVANG, NOITAMTRU, NGAYBATDAU, NGAYKETTHUC, LYDO, TRANGTHAI)
+        VALUES (?, ?, ?, ?, ?, ?, 'DangTamVang')
+      `;
+      await connection.query(sqlInsert, [
+        data.manhankhau, maGiay, data.noiden, data.tungay, data.denngay, data.lydo
+      ]);
+
+      // Bước 2: Cập nhật trạng thái nhân khẩu thành 'TamVang'
+      const sqlUpdateStatus = `
+        UPDATE NHAN_KHAU 
+        SET TRANGTHAI = 'TamVang' 
+        WHERE MANHANKHAU = ?
+      `;
+      await connection.query(sqlUpdateStatus, [data.manhankhau]);
+
+      // Nếu muốn ghi lịch sử biến động tự động (Optional)
+      // Bạn có thể thêm câu lệnh INSERT INTO LICH_SU_NHAN_KHAU tại đây nếu cần
+
+      // Xác nhận giao dịch thành công
+      await connection.commit();
+      return { success: true, message: "Khai báo thành công" };
+
+    } catch (error) {
+      // Nếu có lỗi, hoàn tác tất cả
+      await connection.rollback();
+      throw error;
+    } finally {
+      // Trả kết nối về pool
+      connection.release();
+    }
   },
 
   getAllTamVang: async () => {
@@ -24,7 +57,7 @@ const ResidenceChangesModel = {
     return db.execute(sql);
   },
 
-  // --- TẠM TRÚ ---
+  // --- TẠM TRÚ (Giữ nguyên) ---
   addTamTru: async (data) => {
     const maGiay = `TT_${Date.now()}`;
     const sql = `
@@ -44,12 +77,10 @@ const ResidenceChangesModel = {
       ORDER BY tt.CREATED_AT DESC
     `;
     return db.execute(sql);
-
   },
 
-  // [SỬA] Update Tạm Vắng (Tìm theo MAGIAYTAMVANG)
+  // [SỬA] Update Tạm Vắng
   updateTamVang: async (id, data) => {
-    // id ở đây chính là mã giấy (VD: TV_123456) được gửi từ frontend
     const sql = `
       UPDATE TAM_VANG 
       SET MANHANKHAU = ?, NOITAMTRU = ?, NGAYBATDAU = ?, NGAYKETTHUC = ?, LYDO = ?
@@ -60,9 +91,8 @@ const ResidenceChangesModel = {
     ]);
   },
 
-  // [SỬA] Update Tạm Trú (Tìm theo MAGIAYTAMTRU)
+  // [SỬA] Update Tạm Trú
   updateTamTru: async (id, data) => {
-    // id ở đây là mã giấy (VD: TT_123456)
     const sql = `
       UPDATE TAM_TRU 
       SET MANHANKHAU = ?, DIACHITAMTRU = ?, NGAYBATDAU = ?, NGAYKETTHUC = ?, GHICHU = ?
@@ -75,13 +105,9 @@ const ResidenceChangesModel = {
 
   // --- Thống kê ---
   getStats: async () => {
-    // Tạm trú đang hoạt động
     const [tamTruActive] = await db.execute(`SELECT COUNT(*) as count FROM TAM_TRU WHERE TRANGTHAI = 'DangHieuLuc'`);
-    // Tạm trú sắp hết hạn (trong 7 ngày tới)
     const [tamTruExpiring] = await db.execute(`SELECT COUNT(*) as count FROM TAM_TRU WHERE TRANGTHAI = 'DangHieuLuc' AND NGAYKETTHUC BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 7 DAY)`);
-    // Tạm vắng đang hoạt động
     const [tamVangActive] = await db.execute(`SELECT COUNT(*) as count FROM TAM_VANG WHERE TRANGTHAI = 'DangTamVang'`);
-    // Tạm vắng đã trở về
     const [tamVangReturned] = await db.execute(`SELECT COUNT(*) as count FROM TAM_VANG WHERE TRANGTHAI = 'DaTroVe'`);
     return {
       tamTruActive: tamTruActive[0]?.count || 0,
