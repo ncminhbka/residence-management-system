@@ -77,7 +77,7 @@
                                 <th>Tên đăng nhập</th>
                                 <th>Chức vụ</th>
                                 <th>Trạng thái</th>
-                                <th class="actions-col">Chỉnh sửa</th>
+                                <th class="actions-col">Hành động</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -85,10 +85,48 @@
                     </table>
                 </div>
             </div>
+
+            <!-- Modal Chỉnh sửa tài khoản (sử dụng cùng style với các modal khác) -->
+            
         </section>
     </main>
 
     <script src="assets/js/layout.js"></script>
     <script src="assets/js/accounts.js"></script>
 </body>
+<div id="account-modal" class="modal-overlay">
+                <div class="modal-content" style="max-width:500px;">
+                    <div class="modal-header">
+                        <h3 id="account-modal-title">Chỉnh sửa tài khoản</h3>
+                        <button class="close-btn" data-modal="account-modal">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <label>Họ tên</label>
+                        <input id="acc-hoten" type="text" />
+
+                        <label>Tên đăng nhập</label>
+                        <input id="acc-tendangnhap" type="text" />
+
+                        <label>Mật khẩu mới (để trống nếu không đổi)</label>
+                        <input id="acc-matkhau" type="password" />
+
+                        <label>Chức vụ</label>
+                        <select id="acc-chucvu">
+                            <option value="TO_TRUONG">Tổ trưởng</option>
+                            <option value="TO_PHO">Tổ phó</option>
+                            <option value="CAN_BO_NGHIEP_VU">Cán bộ nghiệp vụ</option>
+                        </select>
+
+                        <label>Trạng thái</label>
+                        <select id="acc-trangthai">
+                            <option value="true">🟢 Kích hoạt</option>
+                            <option value="false">🔴 Vô hiệu</option>
+                        </select>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" id="acc-cancel">Hủy</button>
+                        <button type="button" class="btn btn-primary" id="acc-save">Lưu</button>
+                    </div>
+                </div>
+            </div>
 </html>

@@ -15,6 +15,7 @@ async function initAccountsPage() {
   async function loadAccounts() {
     NProgress.start();
     tableBody.innerHTML = "<tr><td colspan='6'>Đang tải...</td></tr>";
+    accountsMap.clear();
 
     try {
       const res = await fetch("/api/v1/accounts/", { credentials: "include" });
@@ -27,6 +28,9 @@ async function initAccountsPage() {
         : "<tr><td colspan='6'>Chưa có tài khoản nào</td></tr>";
 
       accounts.forEach(acc => {
+        // Lưu vào cache để dùng khi bấm Sửa
+        accountsMap.set(String(acc.MATAIKHOAN), acc);
+
         const tr = document.createElement("tr");
         tr.innerHTML = `
           <td>${acc.MATAIKHOAN}</td>
@@ -35,15 +39,8 @@ async function initAccountsPage() {
           <td>${acc.CHUCVU}</td>
           <td>${acc.TRANGTHAI ? "🟢 Kích hoạt" : "🔴 Vô hiệu"}</td>
           <td>
-            <button class="btn-edit" 
-                    data-id="${acc.MATAIKHOAN}"
-                    data-hoten="${acc.HOTEN}"
-                    data-tendangnhap="${acc.TENDANGNHAP}"
-                    data-chucvu="${acc.CHUCVU}"
-                    data-trangthai="${acc.TRANGTHAI}">
-              ✏️
-            </button>
-            <button class="btn-delete" data-id="${acc.MATAIKHOAN}">🗑️</button>
+            <button class="btn btn-sm btn-success" onclick="editAccount(${acc.MATAIKHOAN})">Sửa</button>
+            <button class="btn btn-sm btn-danger" onclick="deleteAccount(${acc.MATAIKHOAN})">Xóa</button>
           </td>
         `;
         tableBody.appendChild(tr);
@@ -58,9 +55,12 @@ async function initAccountsPage() {
     }
   }
 
+  // Cache hiện tại các tài khoản để dùng nhanh khi chỉnh sửa
+  const accountsMap = new Map();
+
   // === Gắn sự kiện cho nút sửa / xoá ===
   function bindRowEvents() {
-    document.querySelectorAll(".btn-delete").forEach(btn => {
+    document.querySelectorAll(".delete-btn").forEach(btn => {
       btn.addEventListener("click", async e => {
         const id = e.currentTarget.dataset.id;
         if (confirm("Bạn có chắc muốn xóa tài khoản này?")) {
@@ -69,18 +69,21 @@ async function initAccountsPage() {
       });
     });
 
-    document.querySelectorAll(".btn-edit").forEach(btn => {
+    document.querySelectorAll(".edit-btn").forEach(btn => {
       btn.addEventListener("click", e => {
-        const b = e.currentTarget;
-        openEditPopup({
-          id: b.dataset.id,
-          hoten: b.dataset.hoten,
-          tendangnhap: b.dataset.tendangnhap,
-          chucvu: b.dataset.chucvu,
-          trangthai: b.dataset.trangthai === "true", // chuyển về boolean
-        });
+        const id = e.currentTarget.dataset.id;
+        const acc = accountsMap.get(String(id));
+        if (acc) showAccountModal(acc);
+        else alert('Không tìm thấy thông tin tài khoản');
       });
     });
+
+    // Global wrapper to allow onclick handlers (keeps API similar to residents.js)
+    window.editAccount = function(id) {
+      const acc = accountsMap.get(String(id));
+      if (acc) showAccountModal(acc);
+      else alert('Không tìm thấy thông tin tài khoản');
+    };
   }
 
   // === Xử lý form thêm mới ===
@@ -140,112 +143,79 @@ async function initAccountsPage() {
     }
   }
 
-  // === Popup sửa tài khoản (giữa màn hình) ===
-  function openEditPopup(account) {
-    const oldPopup = document.querySelector(".popup-overlay");
-    if (oldPopup) oldPopup.remove();
+  // --- Global wrapper so onclick="deleteAccount(id)" works from DOM ---
+  window.deleteAccount = async function(id) {
+    // Confirm and call inner function
+    if (!confirm('Bạn có chắc muốn xóa tài khoản này?')) return;
+    await deleteAccount(id);
+  };
 
-    const overlay = document.createElement("div");
-    overlay.className = "popup-overlay";
-    overlay.innerHTML = `
-      <div class="popup-card">
-        <h3>📝 Cập nhật tài khoản</h3>
+  // === Modal sửa tài khoản (sử dụng modal DOM trong accounts.html) ===
+  function showAccountModal(account) {
+    const modal = document.getElementById('account-modal');
+    if (!modal) return alert('Modal chỉnh sửa không tồn tại');
 
-        <label>Họ tên:</label>
-        <input id="edit-hoten" value="${account.hoten}" />
+    document.getElementById('acc-hoten').value = account.HOTEN || '';
+    document.getElementById('acc-tendangnhap').value = account.TENDANGNHAP || '';
+    document.getElementById('acc-matkhau').value = '';
+    document.getElementById('acc-chucvu').value = account.CHUCVU || 'CAN_BO_NGHIEP_VU';
+    document.getElementById('acc-trangthai').value = account.TRANGTHAI ? 'true' : 'false';
 
-        <label>Tên đăng nhập:</label>
-        <input id="edit-tendangnhap" value="${account.tendangnhap}" />
+    modal.dataset.editId = account.MATAIKHOAN;
+    modal.classList.add('show');
 
-        <label>Mật khẩu mới (nếu muốn đổi):</label>
-        <input id="edit-matkhau" type="password" placeholder="Để trống nếu không đổi" />
-
-        <label>Chức vụ:</label>
-        <select id="edit-chucvu">
-          <option value="TO_TRUONG" ${account.chucvu === "TO_TRUONG" ? "selected" : ""}>Tổ trưởng</option>
-          <option value="TO_PHO" ${account.chucvu === "TO_PHO" ? "selected" : ""}>Tổ phó</option>
-          <option value="CAN_BO_NGHIEP_VU" ${account.chucvu === "CAN_BO_NGHIEP_VU" ? "selected" : ""}>Cán bộ nghiệp vụ</option>
-        </select>
-
-        <label>Trạng thái:</label>
-        <select id="edit-trangthai">
-          <option value="true" ${account.trangthai ? "selected" : ""}>🟢 Kích hoạt</option>
-          <option value="false" ${!account.trangthai ? "selected" : ""}>🔴 Vô hiệu</option>
-        </select>
-
-        <div class="popup-btns">
-          <button id="saveEdit">💾 Lưu</button>
-          <button id="cancelEdit">❌ Hủy</button>
-        </div>
-      </div>
-    `;
-    document.body.appendChild(overlay);
-
-    // Style popup giữa màn hình
-    const card = overlay.querySelector(".popup-card");
-    Object.assign(card.style, {
-      position: "fixed",
-      top: "50%",
-      left: "50%",
-      transform: "translate(-50%, -50%)",
-      zIndex: 1001,
-      background: "#fff",
-      padding: "20px",
-      borderRadius: "12px",
-      boxShadow: "0 4px 12px rgba(0,0,0,0.3)"
-    });
-    Object.assign(overlay.style, {
-      position: "fixed",
-      top: 0,
-      left: 0,
-      width: "100%",
-      height: "100%",
-      background: "rgba(0,0,0,0.5)",
-      zIndex: 1000,
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center"
-    });
-
-    document.getElementById("cancelEdit").onclick = () => overlay.remove();
-    document.getElementById("saveEdit").onclick = async () => {
-      const hoten = document.getElementById("edit-hoten").value.trim();
-      const tendangnhap = document.getElementById("edit-tendangnhap").value.trim();
-      const matkhau = document.getElementById("edit-matkhau").value.trim();
-      const chucvu = document.getElementById("edit-chucvu").value;
-      const trangthai = document.getElementById("edit-trangthai").value === "true";
+    document.getElementById('acc-cancel').onclick = () => hideAccountModal();
+    document.getElementById('acc-save').onclick = async () => {
+      const hoten = document.getElementById('acc-hoten').value.trim();
+      const tendangnhap = document.getElementById('acc-tendangnhap').value.trim();
+      const matkhau = document.getElementById('acc-matkhau').value.trim();
+      const chucvu = document.getElementById('acc-chucvu').value;
+      const trangthai = document.getElementById('acc-trangthai').value === 'true';
+      const id = modal.dataset.editId;
 
       if (!hoten || !tendangnhap || !chucvu) {
-        alert("⚠️ Vui lòng nhập đầy đủ thông tin bắt buộc!");
+        alert('⚠️ Vui lòng nhập đầy đủ thông tin bắt buộc!');
         return;
       }
 
       NProgress.start();
       try {
-        const res = await fetch(`/api/v1/accounts/${account.id}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify({ hoten, tendangnhap, matkhau, chucvu, trangthai }),
+        const res = await fetch(`/api/v1/accounts/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ hoten, tendangnhap, matkhau, chucvu, trangthai })
         });
-
         const data = await res.json();
-        if (!res.ok) throw new Error(data.error || data.message || "Cập nhật thất bại");
+        if (!res.ok) throw new Error(data.error || data.message || 'Cập nhật thất bại');
 
         if (data.forceLogout) {
-          alert("✅ Cập nhật thành công. Vui lòng đăng nhập lại!");
-          window.location.href = "index.html";
-        } else {
-          alert("✅ Cập nhật thành công!");
-          overlay.remove();
-          await loadAccounts();
+          alert('✅ Cập nhật thành công. Vui lòng đăng nhập lại!');
+          window.location.href = 'index.html';
+          return;
         }
+
+        alert('✅ Cập nhật thành công!');
+        hideAccountModal();
+        await loadAccounts();
       } catch (err) {
-        alert("❌ " + err.message);
+        alert('❌ ' + err.message);
       } finally {
         NProgress.done();
       }
     };
+
+    // Close button (x)
+    const closeBtn = modal.querySelector('.close-btn');
+    if (closeBtn) closeBtn.onclick = () => hideAccountModal();
+  }
+
+  function hideAccountModal() {
+    const modal = document.getElementById('account-modal');
+    if (!modal) return;
+    modal.classList.remove('show');
+    modal.dataset.editId = '';
+    document.getElementById('acc-matkhau').value = '';
   }
 
   // === Gọi lần đầu ===
