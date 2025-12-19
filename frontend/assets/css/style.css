@@ -778,7 +778,7 @@ h2.page-title i { margin-right: 10px; }
 /* Adjust titles and labels to use dark text variable for light-theme */
 .filter-card .card-header h3,
 .report-card .card-header h3 {
-    color: var(--text-color-dark) !important;
+    color: #007bff !important;
 }
 .filter-card .card-body label,
 .report-card .card-body label,

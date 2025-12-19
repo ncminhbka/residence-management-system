@@ -298,7 +298,7 @@ body {
   margin: 0;
   font-size: 18px;
   font-weight: 600;
-  color: var(--text-color-dark) !important;
+  color: #007bff !important;
 }
 
 .account-form {
