@@ -1,0 +1,92 @@
+.tabs {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 25px;
+    border-bottom: 2px solid #e9ecef;
+}
+
+.tab-btn {
+    padding: 12px 25px;
+    cursor: pointer;
+    border: none;
+    background: none;
+    font-weight: 600;
+    color: #6c757d;
+    font-size: 15px;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.tab-btn:hover {
+    color: #007bff;
+    background: rgba(0, 123, 255, 0.05);
+    border-radius: 5px 5px 0 0;
+}
+
+.tab-btn.active {
+    color: #007bff;
+}
+
+.tab-btn.active::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: #007bff;
+}
+
+.tab-content {
+    display: none;
+    animation: fadeIn 0.4s ease;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+/* Badge trạng thái */
+.badge {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.badge-warning {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.badge-success {
+    background: #d4edda;
+    color: #155724;
+}
+
+/* Uses global color variables so it adapts to light/dark mode */
+.muted {
+    color: var(--text-color-faint);
+}
+
+.info-note {
+    background-color: var(--muted-bg);
+    padding: 12px;
+    margin-bottom: 15px;
+    border-radius: 4px;
+    font-size: 13px;
+    border-left: 4px solid var(--primary-color);
+    color: var(--text-color-dark);
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

@@ -22,42 +22,57 @@
     <main class="dashboard">
         <aside id="sidebar"></aside>
 
-        <section class="content">
+        <section class="content-section">
             <h2 class="page-title"><i class="fas fa-home" aria-hidden="true"></i> Quản lý Hộ khẩu</h2>
 
-            <div class="content-header">
-                <div class="search-bar">
-                    <input id="search-input" type="text" placeholder="Tìm theo tên chủ hộ hoặc số hộ khẩu..."
-                        aria-label="Tìm kiếm hộ khẩu" />
-                    <button id="search-btn" class="btn btn-primary"><i class="fas fa-search" aria-hidden="true"></i> Tìm
-                        kiếm</button>
-                    <button id="clear-search-btn" class="btn btn-secondary"><i class="fas fa-times"
-                            aria-hidden="true"></i> Xóa tìm kiếm</button>
+            <div class="card content-card form-card">
+                <div class="card-header">
+                    <i class="fas fa-filter"></i>
+                    <h3>Tìm kiếm hộ khẩu</h3>
                 </div>
-                <button id="add-household-btn" class="btn btn-primary"><i class="fas fa-plus" aria-hidden="true"></i>
-                    Thêm hộ khẩu</button>
+                <div class="card-body">
+                    <div class="content-header">
+                        <div class="search-bar">
+                            <input id="search-input" type="text" placeholder="Tìm theo tên chủ hộ hoặc số hộ khẩu..."
+                                aria-label="Tìm kiếm hộ khẩu" />
+                            <button id="search-btn" class="btn btn-primary"><i class="fas fa-search" aria-hidden="true"></i>
+                                Tìm kiếm</button>
+                            <button id="clear-search-btn" class="btn btn-secondary"><i class="fas fa-times"
+                                    aria-hidden="true"></i> Xóa tìm kiếm</button>
+                        </div>
+                        <button id="add-household-btn" class="btn btn-primary"><i class="fas fa-plus" aria-hidden="true"></i>
+                            Thêm hộ khẩu</button>
+                    </div>
+                </div>
             </div>
 
-            <div class="table-container">
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>STT</th>
-                            <th>Số hộ khẩu</th>
-                            <th>Tên chủ hộ</th>
-                            <th>Địa chỉ</th>
-                            <th>Hành động</th>
-                        </tr>
-                    </thead>
-                    <tbody id="household-table-body">
-                        <tr>
-                            <td colspan="5" style="text-align: center; padding: 20px;">Đang tải dữ liệu...</td>
-                        </tr>
-                    </tbody>
-                </table>
+            <div class="card content-card table-card">
+                <div class="card-header">
+                    <i class="fas fa-list-alt"></i>
+                    <h3>Danh sách hộ khẩu</h3>
+                </div>
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>STT</th>
+                                <th>Số hộ khẩu</th>
+                                <th>Tên chủ hộ</th>
+                                <th>Địa chỉ</th>
+                                <th>Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody id="household-table-body">
+                            <tr>
+                                <td colspan="5" style="text-align: center; padding: 20px;">Đang tải dữ liệu...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="table-footer">
+                    <div id="pagination-controls" class="pagination"></div>
+                </div>
             </div>
-
-            <div id="pagination-controls" class="pagination"></div>
         </section>
     </main>
 
@@ -65,7 +80,7 @@
     <div id="household-modal" class="modal-overlay hidden">
         <div class="modal-content">
             <span class="close-btn" data-modal="household-modal" aria-label="Đóng">&times;</span>
-            <h3 id="modal-title"><i class="fas fa-edit" aria-hidden="true"></i> Thêm hộ khẩu</h3>
+            <h3 id="modal-title"><i class="fas fa-edit" aria-hidden="true"></i> + Thêm hộ khẩu</h3>
             <form id="household-form">
                 <input type="hidden" id="soHoKhau" />
                 <div class="form-group">

@@ -16,48 +16,60 @@
     <main class="dashboard">
         <aside id="sidebar"></aside>
 
-        <section class="content">
+        <section class="content-section">
             <h2 class="page-title"><i class="fas fa-users" aria-hidden="true"></i> Quản lý Nhân khẩu</h2>
 
-            <div class="content-header">
-                <div class="search-bar">
-                    <input id="search-input" type="text" placeholder="Tìm theo họ tên hoặc số CCCD" />
-                    <button id="search-btn" class="btn btn-primary">Tìm kiếm</button>
-                    <button id="clear-search-btn" class="btn btn-secondary">Xóa</button>
+            <div class="card content-card form-card">
+                <div class="card-header">
+                    <i class="fas fa-filter"></i>
+                    <h3>Tìm kiếm nhân khẩu</h3>
                 </div>
+                <div class="card-body">
+                    <div class="content-header">
+                        <div class="search-bar">
+                            <input id="search-input" type="text" placeholder="Tìm theo họ tên hoặc số CCCD" />
+                            <button id="search-btn" class="btn btn-primary">Tìm kiếm</button>
+                            <button id="clear-search-btn" class="btn btn-secondary">Xóa</button>
+                        </div>
 
-                <button id="add-resident-btn" class="btn btn-primary">
-                    + Thêm nhân khẩu
-                </button>
+                        <button id="add-resident-btn" class="btn btn-primary">
+                            + Thêm nhân khẩu
+                        </button>
+                    </div>
+                </div>
             </div>
 
             <!-- Bảng dữ liệu -->
-            <div class="table-container">
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th style="width: 80px;">Mã NK</th>
-                            <th style="width: 200px;">Họ tên</th>
-                            <th style="width: 120px;">Ngày sinh</th>
-                            <th style="width: 150px;">CCCD</th>
-                            <th style="width: 350px;">Địa chỉ</th>
-                            <th>Hộ khẩu</th>
-                            <th style="width: 180px;">Trạng thái</th>
-                            <th style="width: 240px;">Hành động</th>
-                        </tr>
-                    </thead>
-                    <tbody id="residents-table-body">
-                        <tr>
-                            <td colspan="6" style="text-align: center; padding: 40px; color: #6c757d;">
-                                Đang tải dữ liệu...
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+            <div class="card content-card table-card">
+                <div class="card-header">
+                    <i class="fas fa-list-alt"></i>
+                    <h3>Danh sách nhân khẩu</h3>
+                </div>
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 80px;">Mã NK</th>
+                                <th style="width: 200px;">Họ tên</th>
+                                <th style="width: 120px;">Ngày sinh</th>
+                                <th style="width: 150px;">CCCD</th>
+                                <th style="width: 350px;">Địa chỉ</th>
+                                <th>Hộ khẩu</th>
+                                <th style="width: 180px;">Trạng thái</th>
+                                <th style="width: 240px;">Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody id="residents-table-body">
+                            <tr>
+                                <td colspan="8" style="text-align: center; padding: 40px; color: #6c757d;">Đang tải dữ liệu...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="table-footer">
+                    <div id="pagination-controls" class="pagination"></div>
+                </div>
             </div>
-
-            <!-- Vùng chứa nút phân trang -->
-            <div id="pagination-controls" class="pagination"></div>
         </section>
     </main>
 

@@ -1,0 +1,146 @@
+/* CSS cho Tabs (Giữ nguyên) */
+.tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #ddd;
+}
+
+.tab-btn {
+    padding: 10px 20px;
+    cursor: pointer;
+    border: none;
+    background: none;
+    font-weight: 600;
+    color: #666;
+}
+
+.tab-btn.active {
+    color: #007bff;
+    border-bottom: 3px solid #007bff;
+    margin-bottom: -2px;
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+    animation: fadeIn 0.3s;
+}
+
+/* --- PHẦN CHỈNH SỬA CĂN CHỈNH NGANG HÀNG --- */
+
+/* 1. Thiết lập Flexbox cho container cha để các phần tử con nằm ngang */
+.content-header {
+    display: flex !important;
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 0 !important;
+    flex-wrap: nowrap;
+    /* Không cho xuống dòng trên desktop */
+}
+
+/* 2. Reset style của .search-container (đang bị style.css làm dày lên) */
+.content-header .search-container {
+    padding: 0 !important;
+    /* Xóa padding đệm */
+    margin: 0 !important;
+    /* Xóa margin thừa */
+    border: none !important;
+    /* Bỏ viền khung */
+    background: transparent !important;
+    /* Bỏ nền xám */
+    box-shadow: none !important;
+    /* Bỏ đổ bóng */
+    flex: 1;
+    /* Chiếm hết khoảng trống còn lại */
+    display: flex;
+    /* Để input và select bên trong nằm ngang */
+    gap: 10px;
+    /* Khoảng cách giữa Input và Select */
+}
+
+/* 3. Đồng bộ chiều cao 40px cho tất cả: Input, Select, Button */
+.content-header .search-input-wrapper,
+.content-header .search-input,
+.content-header .filter-select,
+.content-header .action-btn {
+    height: 40px !important;
+    box-sizing: border-box;
+}
+
+/* đảm bảo chữ nằm chính giữa: padding và line-height cho input/select */
+.content-header .search-input,
+.content-header .filter-select {
+    padding: 0 12px !important;
+    line-height: 40px !important;
+    font-size: 14px;
+}
+
+/* Căn chỉnh Input */
+.content-header .search-input-wrapper {
+    flex-grow: 1;
+    /* Input tự giãn dài ra */
+    display: flex;
+    align-items: center;
+    position: relative;
+}
+
+.content-header .search-input {
+    width: 100%;
+    padding-left: 35px;
+    /* Chừa chỗ cho icon search */
+    border-radius: 4px;
+}
+
+.content-header .search-input-wrapper i {
+    position: absolute;
+    left: 10px;
+    z-index: 1;
+    color: #888;
+}
+
+/* Căn chỉnh Button */
+.content-header .action-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 20px;
+    white-space: nowrap;
+    /* Giữ chữ không bị xuống dòng */
+}
+
+/* --- RESPONSIVE: Màn hình nhỏ thì mới cho xuống dòng --- */
+@media (max-width: 768px) {
+    .content-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .content-header .search-container {
+        flex-direction: column;
+    }
+
+    .content-header .action-btn {
+        width: 100%;
+        margin-top: 10px;
+    }
+}
+
+/* Ensure select aligns vertically with input/button */
+.content-header .search-filters { display:flex; align-items:center; }
+.content-header .filter-select {
+    height: 40px !important;
+    padding: 0 12px !important;
+    line-height: 40px !important;
+    vertical-align: middle !important;
+    box-sizing: border-box;
+    -webkit-appearance: none; /* consistent appearance */
+    -moz-appearance: none;
+    appearance: none;
+}
+
+/* If a clear button had been used, hide it for simplicity */
+.content-header .filter-clear { display:none !important; }

@@ -9,101 +9,8 @@
     <link rel="stylesheet" href="assets/css/layout.css" />
     <link rel="stylesheet" href="assets/css/style.css" />
     <link rel="stylesheet" href="assets/css/residents.css" />
+    <link rel="stylesheet" href="assets/css/residencechanges.css" />
 
-    <style>
-        .tabs {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 25px;
-            border-bottom: 2px solid #e9ecef;
-        }
-
-        .tab-btn {
-            padding: 12px 25px;
-            cursor: pointer;
-            border: none;
-            background: none;
-            font-weight: 600;
-            color: #6c757d;
-            font-size: 15px;
-            transition: all 0.3s ease;
-            position: relative;
-        }
-
-        .tab-btn:hover {
-            color: #007bff;
-            background: rgba(0, 123, 255, 0.05);
-            border-radius: 5px 5px 0 0;
-        }
-
-        .tab-btn.active {
-            color: #007bff;
-        }
-
-        .tab-btn.active::after {
-            content: '';
-            position: absolute;
-            bottom: -2px;
-            left: 0;
-            width: 100%;
-            height: 3px;
-            background: #007bff;
-        }
-
-        .tab-content {
-            display: none;
-            animation: fadeIn 0.4s ease;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
-        /* Badge trạng thái */
-        .badge {
-            padding: 4px 8px;
-            border-radius: 12px;
-            font-size: 0.8rem;
-            font-weight: 600;
-        }
-
-        .badge-warning {
-            background: #fff3cd;
-            color: #856404;
-        }
-
-        .badge-success {
-            background: #d4edda;
-            color: #155724;
-        }
-
-        /* Uses global color variables so it adapts to light/dark mode */
-        .muted {
-            color: var(--text-color-faint);
-        }
-
-        .info-note {
-            background-color: var(--muted-bg);
-            padding: 12px;
-            margin-bottom: 15px;
-            border-radius: 4px;
-            font-size: 13px;
-            border-left: 4px solid var(--primary-color);
-            color: var(--text-color-dark);
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-    </style>
 </head>
 
 <body>
@@ -112,7 +19,7 @@
     <main class="dashboard">
         <aside id="sidebar"></aside>
 
-        <section class="content">
+        <section class="content-section">
             <h2 class="page-title"><i class="fas fa-id-card" aria-hidden="true"></i> Quản lý Biến động Cư trú (Tạm trú /
                 Tạm vắng)</h2>
             <p class="muted" style="margin-bottom:20px">Quản lý công dân tạm vắng mặt tại địa phương và công dân từ nơi
@@ -124,61 +31,101 @@
             </div>
 
             <div id="tab-tamvang" class="tab-content active">
-                <div class="content-header">
-                    <div class="search-bar">
-                        <input id="search-tv" type="text" placeholder="Tìm theo tên hoặc mã nhân khẩu..."
-                            onkeyup="handleSearch('tamvang')" />
-                        <button class="btn btn-primary" onclick="handleSearch('tamvang')">Tìm kiếm</button>
+                <div class="card content-card form-card">
+                    <div class="card-header">
+                        <i class="fas fa-filter"></i>
+                        <h3>Công cụ & Tìm kiếm</h3>
                     </div>
-                    <button class="btn btn-primary" onclick="resetForm('tamvang')">+ Khai báo Tạm vắng</button>
+                    <div class="card-body">
+                        <div class="content-header" style="margin-bottom:0">
+                            <div class="search-bar">
+                                <input id="search-tv" type="text" placeholder="Tìm theo tên hoặc mã nhân khẩu..."
+                                    onkeyup="handleSearch('tamvang')" />
+                                <button class="btn btn-primary" onclick="handleSearch('tamvang')">Tìm kiếm</button>
+                            </div>
+                            <button class="btn btn-primary" onclick="resetForm('tamvang')">+ Khai báo Tạm vắng</button>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="table-container">
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>Mã NK</th>
-                                <th>Họ tên</th>
-                                <th>CCCD</th> <th>Mã giấy tạm vắng</th>
-                                <th>Ngày bắt đầu</th>
-                                <th>Ngày kết thúc</th>
-                                <th>Nơi tạm trú</th>
-                                <th>Lý do</th>
-                                <th>Thao tác</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tbody-tamvang">
-                        </tbody>
-                    </table>
+                <div class="card content-card table-card">
+                    <div class="card-header">
+                        <i class="fas fa-list-alt"></i>
+                        <h3>Danh sách Tạm vắng</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Mã NK</th>
+                                        <th>Họ tên</th>
+                                        <th>CCCD</th>
+                                        <th>Mã giấy tạm vắng</th>
+                                        <th>Ngày bắt đầu</th>
+                                        <th>Ngày kết thúc</th>
+                                        <th>Nơi tạm trú</th>
+                                        <th>Lý do</th>
+                                        <th>Thao tác</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbody-tamvang">
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="table-footer">
+                            <!-- pagination placeholder -->
+                        </div>
+                    </div>
                 </div>
             </div>
 
             <div id="tab-tamtru" class="tab-content">
-                <div class="content-header">
-                    <div class="search-bar">
-                        <input id="search-tt" type="text" placeholder="Tìm người tạm trú..."
-                            onkeyup="handleSearch('tamtru')" />
-                        <button class="btn btn-primary" onclick="handleSearch('tamtru')">Tìm kiếm</button>
+                <div class="card content-card form-card">
+                    <div class="card-header">
+                        <i class="fas fa-filter"></i>
+                        <h3>Công cụ & Tìm kiếm</h3>
                     </div>
-                    <button class="btn btn-primary" onclick="resetForm('tamtru')">+ Đăng ký Tạm trú</button>
+                    <div class="card-body">
+                        <div class="content-header" style="margin-bottom:0">
+                            <div class="search-bar">
+                                <input id="search-tt" type="text" placeholder="Tìm người tạm trú..."
+                                    onkeyup="handleSearch('tamtru')" />
+                                <button class="btn btn-primary" onclick="handleSearch('tamtru')">Tìm kiếm</button>
+                            </div>
+                            <button class="btn btn-primary" onclick="resetForm('tamtru')">+ Đăng ký Tạm trú</button>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="table-container">
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>Mã NK</th>
-                                <th>Họ tên</th>
-                                <th>CCCD</th> <th>Mã giấy tạm trú</th>
-                                <th>Địa chỉ tạm trú</th>
-                                <th>Thời gian</th>
-                                <th>Lý do</th>
-                                <th>Thao tác</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tbody-tamtru">
-                        </tbody>
-                    </table>
+                <div class="card content-card table-card">
+                    <div class="card-header">
+                        <i class="fas fa-list-alt"></i>
+                        <h3>Danh sách Tạm trú</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Mã NK</th>
+                                        <th>Họ tên</th>
+                                        <th>CCCD</th>
+                                        <th>Mã giấy tạm trú</th>
+                                        <th>Địa chỉ tạm trú</th>
+                                        <th>Thời gian</th>
+                                        <th>Lý do</th>
+                                        <th>Thao tác</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbody-tamtru">
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="table-footer">
+                            <!-- pagination placeholder -->
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
