@@ -4,13 +4,34 @@ const API_URL = 'http://localhost:3000/api/v1/facilities';
 let allEvents = []; // Store all events for filtering
 let allAssets = []; // Store all assets for filtering
 
+const currentUserRole = localStorage.getItem("userRole"); 
+const isCanBo = currentUserRole === "CAN_BO_NGHIEP_VU";
+const isLanhDao = ["TO_TRUONG", "TO_PHO"].includes(currentUserRole);
+
 document.addEventListener('DOMContentLoaded', () => {
+    setupRoleUI();
     loadAssets();
     loadEvents();
     setupForms();
     setupAssetSearch();
     setupEventSearch();
 });
+
+// --- HÀM MỚI: XỬ LÝ ẨN HIỆN NÚT CHỨC NĂNG ---
+function setupRoleUI() {
+    const btnAddAsset = document.getElementById('btnAddAsset');
+    const btnAddEvent = document.getElementById('btnAddEvent');
+
+    // Chỉ CÁN BỘ NGHIỆP VỤ mới thấy nút Thêm/Đăng ký
+    if (isCanBo) {
+        if(btnAddAsset) btnAddAsset.style.display = 'inline-flex';
+        if(btnAddEvent) btnAddEvent.style.display = 'inline-flex';
+    } else {
+        // Tổ trưởng/Tổ phó hoặc người khác thì ẩn
+        if(btnAddAsset) btnAddAsset.style.display = 'none';
+        if(btnAddEvent) btnAddEvent.style.display = 'none';
+    }
+}
 
 // --- LOGIC TÀI SẢN ---
 async function loadAssets() {
@@ -69,22 +90,29 @@ function displayEvents(events) {
     
     tbody.innerHTML = events.map(evt => {
         let badgeClass = 'badge-pending';
-        let statusText = 'Chờ duyệt';
+        let statusText = 'Đang chờ duyệt'; // Sửa text mặc định cho khớp yêu cầu
         let actions = '';
 
         if(evt.TRANGTHAI_DUYET === 'DaDuyet') {
-            badgeClass = 'badge-approved'; statusText = 'Đã duyệt';
+            badgeClass = 'badge-approved'; 
+            statusText = '<i class="fas fa-check-circle"></i>Đã duyệt';
         } else if(evt.TRANGTHAI_DUYET === 'TuChoi') {
-            badgeClass = 'badge-rejected'; statusText = 'Từ chối';
+            badgeClass = 'badge-rejected'; 
+            statusText = '<i class="fas fa-check-circle"></i>Từ chối';
+        } else {
+             // Status mặc định là ChoDuyet
+             badgeClass = 'badge-pending'; statusText = 'Đang chờ duyệt';
         }
 
-        // Logic nút duyệt (Chỉ hiện nếu đang chờ)
-        if(evt.TRANGTHAI_DUYET === 'ChoDuyet') {
+        // --- PHÂN QUYỀN NÚT DUYỆT ---
+        // Chỉ hiện nút Duyệt/Từ chối nếu là TỔ TRƯỞNG/TỔ PHÓ và trạng thái là Chờ duyệt
+        if(evt.TRANGTHAI_DUYET === 'ChoDuyet' && isLanhDao) {
             actions = `
                 <button class="btn btn-sm btn-success" onclick="approveEvent(${evt.MASUKIEN}, 'DaDuyet')">✔ Duyệt</button>
                 <button class="btn btn-sm btn-danger" onclick="approveEvent(${evt.MASUKIEN}, 'TuChoi')">✖ Từ chối</button>
             `;
         }
+        // Cán bộ nghiệp vụ sẽ không thấy biến actions này (vì isLanhDao = false)
 
         return `
         <tr>
@@ -102,21 +130,21 @@ function displayEvents(events) {
 }
 
 async function approveEvent(id, status) {
-    let fee = 0;
-    if(status === 'DaDuyet') {
-        const feeInput = prompt("Nhập số tiền thu phí (VNĐ) nếu có:", "0");
-        if(feeInput === null) return;
-        fee = parseInt(feeInput) || 0;
-    }
+    const event = allEvents.find(e => e.MASUKIEN === id);
+    const currentFee = event ? event.PHI_SU_DUNG : 0; 
 
+    // 2. Gửi request kèm theo phí cũ (currentFee)
     const res = await fetch(`${API_URL}/events/${id}/approve`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status, phi: fee })
+        body: JSON.stringify({ status, phi: currentFee }) 
     });
     
-    if(res.ok) { alert('Thao tác thành công'); loadEvents(); }
-    else alert('Lỗi xảy ra');
+    if(res.ok) { 
+        loadEvents(); 
+    } else {
+        alert('Lỗi xảy ra khi duyệt sự kiện');
+    }
 }
 
 // --- XỬ LÝ FORM ---

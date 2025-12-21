@@ -22,6 +22,7 @@ async function checkAuth() {
     if (!res.ok) throw new Error();
 
     const user = await res.json();
+    localStorage.setItem("userRole", user.role);
     const usernameEl = document.getElementById("username");
     const roleEl = document.getElementById("role");
 

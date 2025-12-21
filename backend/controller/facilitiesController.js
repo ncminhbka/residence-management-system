@@ -50,13 +50,12 @@ exports.registerEvent = async (req, res) => {
         }
 
         // 2. Xác định trạng thái ban đầu
-        // Nếu là hoạt động công cộng (Họp, Vệ sinh) -> Tự động duyệt
-        // Nếu là cá nhân (Đám cưới, Thuê sân) -> Chờ duyệt
-        const isPublic = ['HopToDanPho', 'VeSinhMoiTruong', 'TuyenTruyen'].includes(loai);
-        const trangthai = isPublic ? 'DaDuyet' : 'ChoDuyet';
+        // THEO YÊU CẦU: Cán bộ đăng ký -> Luôn là "Đang chờ duyệt" để Tổ trưởng duyệt.
+        const trangthai = 'ChoDuyet'; 
 
         await Model.addEvent({ ten, mota, start, end, loai, phi, trangthai, nguoitao });
-        res.json({ success: true, message: isPublic ? 'Đã tạo lịch hoạt động chung' : 'Đã gửi yêu cầu thuê, vui lòng chờ duyệt' });
+        
+        res.json({ success: true, message: 'Đăng ký thành công, vui lòng chờ Tổ trưởng duyệt.' });
 
     } catch (err) { 
         console.error(err);
