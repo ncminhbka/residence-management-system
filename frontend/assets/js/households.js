@@ -812,9 +812,12 @@ function renderDetailModal(household, members) {
             <tbody>${membersHtml}</tbody>
         </table>
         <div class="form-actions" style="margin-top:20px;">
-            <button class="btn btn-success" onclick="openAddMemberModal(${household.SOHOKHAU})">➕ Thêm thành viên</button>
-            <button class="btn btn-info" onclick="handleChangeOwner(${household.SOHOKHAU})">🔄 Đổi chủ hộ</button>
-            <button class="btn btn-primary" onclick="handleSplitRequest(${household.SOHOKHAU})">✂️ Tách hộ</button>
+            <button class="btn btn-info" onclick="handleViewHistory(${household.SOHOKHAU})">
+                <i class="fas fa-history"></i> Xem lịch sử
+            </button>
+            <button class="btn btn-success" onclick="openAddMemberModal(${household.SOHOKHAU})">Thêm thành viên</button>
+            <button class="btn btn-info" onclick="handleChangeOwner(${household.SOHOKHAU})">Đổi chủ hộ</button>
+            <button class="btn btn-primary" onclick="handleSplitRequest(${household.SOHOKHAU})">Tách hộ</button>
             <button class="btn btn-secondary close-btn" data-modal="detail-modal"></button>
         </div>
     `;
@@ -855,6 +858,121 @@ function renderPagination() { /* Logic phân trang giữ nguyên */
 }
 
 
+
+// ============================================
+// XEM LỊCH SỬ HỘ KHẨU
+// ============================================
+async function handleViewHistory(sohokhau) {
+    try {
+        // Mở modal
+        openModal('history-modal');
+
+        // Hiển thị loading
+        document.getElementById('history-table-body').innerHTML = `
+            <tr>
+                <td colspan="5" style="text-align: center; padding: 40px;">
+                    <i class="fas fa-spinner fa-spin" style="font-size: 24px; color: var(--primary-color);"></i>
+                    <p style="margin-top: 10px; color: var(--text-color-faint);">Đang tải lịch sử...</p>
+                </td>
+            </tr>
+        `;
+
+        // Lấy lịch sử
+        const historyRes = await fetch(`${API_BASE_URL}/${sohokhau}/history`, {
+            credentials: 'include'
+        });
+        const historyData = await historyRes.json();
+
+        if (!historyData.success) {
+            throw new Error(historyData.error || 'Không thể tải lịch sử');
+        }
+
+
+        renderHistoryTable(historyData.data);
+
+    } catch (error) {
+        console.error('View history error:', error);
+        showAlert('Lỗi: ' + error.message, 'error');
+        document.getElementById('history-table-body').innerHTML = `
+            <tr>
+                <td colspan="5" style="text-align: center; padding: 40px; color: #dc3545;">
+                    <i class="fas fa-exclamation-triangle"></i> ${error.message}
+                </td>
+            </tr>
+        `;
+    }
+}
+
+// Render bảng lịch sử
+function renderHistoryTable(history) {
+    const tbody = document.getElementById('history-table-body');
+
+    if (!history || history.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="5" style="text-align: center; padding: 40px; color: var(--text-color-faint);">
+                    <i class="fas fa-inbox" style="font-size: 32px; display: block; margin-bottom: 10px; opacity: 0.5;"></i>
+                    Chưa có lịch sử biến động nào
+                </td>
+            </tr>
+        `;
+        return;
+    }
+
+    tbody.innerHTML = history.map((item, index) => {
+        const date = formatDate(item.NGAY_BIEN_DONG);
+        const type = getHistoryTypeLabel(item.LOAI_BIEN_DONG);
+        const badge = getHistoryTypeBadge(item.LOAI_BIEN_DONG);
+
+        return `
+            <tr>
+                <td style="text-align: center;">${index + 1}</td>
+                <td>${date}</td>
+                <td>
+                    <span class="badge ${badge}" style="display: inline-block; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 600;">
+                        ${type}
+                    </span>
+                </td>
+                <td style="line-height: 1.6;">${item.MO_TA || 'Không có mô tả'}</td>
+                <td>${item.NGUOI_THUC_HIEN || 'Hệ thống'}</td>
+            </tr>
+        `;
+    }).join('');
+}
+
+// Lấy nhãn loại biến động
+function getHistoryTypeLabel(type) {
+    const labels = {
+        'TaoMoi': 'Tạo mới',
+        'CapNhatThongTin': 'Cập nhật thông tin',
+        'ThemThanhVien': 'Thêm thành viên',
+        'XoaThanhVien': 'Xóa thành viên',
+        'DoiChuHo': 'Đổi chủ hộ',
+        'TachHo': 'Tách hộ',
+        'NhapHo': 'Nhập hộ',
+        'GiaiHo': 'Giải tán hộ'
+    };
+    return labels[type] || type;
+}
+
+// Lấy class badge theo loại
+function getHistoryTypeBadge(type) {
+    const badges = {
+        'TaoMoi': 'badge-success',
+        'CapNhatThongTin': 'badge-info',
+        'ThemThanhVien': 'badge-success',
+        'XoaThanhVien': 'badge-warning',
+        'DoiChuHo': 'badge-info',
+        'TachHo': 'badge-warning',
+        'NhapHo': 'badge-info',
+        'GiaiHo': 'badge-danger'
+    };
+    return badges[type] || 'badge-secondary';
+}
+
+
+
+
 // Expose globally
 window.handleChangeOwner = handleChangeOwner;
 window.showRelationUpdateSection = showRelationUpdateSection;
@@ -864,3 +982,4 @@ window.handleSplitRequest = handleSplitRequest;
 window.openAddMemberModal = openAddMemberModal;
 window.confirmAddMember = confirmAddMember;
 window.closeModal = closeModal;
+window.handleViewHistory = handleViewHistory;

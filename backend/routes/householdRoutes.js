@@ -36,6 +36,9 @@ router.put('/:id/change-owner', auth, checkRole('TO_TRUONG', 'TO_PHO'), househol
 // Cập nhật quan hệ thành viên (MỚI)
 router.put('/:id/update-relation', auth, checkRole('TO_TRUONG', 'TO_PHO'), householdController.updateMemberRelation);
 
+// Xem lịch sử biến động hộ khẩu 
+router.get('/:id/history', auth, checkRole('TO_TRUONG', 'TO_PHO'), householdController.getHouseholdHistory);
+
 // Cập nhật thông tin hộ khẩu
 router.put('/:id', auth, checkRole('TO_TRUONG', 'TO_PHO'), householdController.updateHousehold);
 
