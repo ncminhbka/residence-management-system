@@ -7,13 +7,6 @@ const rowsPerPage = 10;
 let splitHouseholdMembers = [];
 let memberRelations = {};
 
-// ============================================
-// KHỞI TẠO
-// ============================================
-document.addEventListener('DOMContentLoaded', () => {
-    setupEventListeners();
-    fetchHouseholds();
-});
 
 // ============================================
 // SETUP EVENT LISTENERS
@@ -64,6 +57,54 @@ function setupEventListeners() {
         }
     });
 }
+
+
+document.addEventListener('DOMContentLoaded', () => {
+    setupEventListeners();
+    fetchHouseholds();
+    
+    // Kiểm tra xem có yêu cầu đổi chủ hộ từ trang residents không
+    const urlParams = new URLSearchParams(window.location.search);
+    const action = urlParams.get('action');
+    const householdId = urlParams.get('household');
+    
+    if (action === 'changeowner' && householdId) {
+        // Tự động mở modal chi tiết hộ khẩu
+        setTimeout(() => {
+            handleViewDetails(householdId);
+            
+            // Hiển thị thông báo
+            setTimeout(() => {
+                const notification = document.createElement('div');
+                notification.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    background: #ffc107;
+                    color: #856404;
+                    padding: 15px 20px;
+                    border-radius: 8px;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                    z-index: 10001;
+                    max-width: 400px;
+                    animation: slideIn 0.3s ease;
+                `;
+                notification.innerHTML = `
+                    <strong>Vui lòng đổi chủ hộ</strong><br>
+                    <small>Sau khi đổi chủ hộ xong, bạn có thể quay lại cập nhật trạng thái nhân khẩu.</small>
+                `;
+                document.body.appendChild(notification);
+                
+                setTimeout(() => {
+                    notification.remove();
+                }, 5000);
+            }, 500);
+        }, 500);
+        
+        // Xóa params khỏi URL
+        window.history.replaceState({}, document.title, 'households.html');
+    }
+});
 
 
 function openAddModal() {

@@ -502,13 +502,95 @@ async function saveResident() {
             closeModal();
             await loadResidents();
         } else {
-            showNotification(data.error || data.message || 'Có lỗi xảy ra', 'error');
+            if (data.errorCode === 'CHUHO_ACTIVE') {
+                showChangeOwnerWarning(residentId, data.householdInfo, formData);
+            } else {
+                showNotification(data.error || data.message || 'Có lỗi xảy ra', 'error');
+            }
         }
     } catch (error) {
         console.error('Save error:', error);
         showNotification('Lỗi: ' + error.message, 'error');
     }
 }
+
+function showChangeOwnerWarning(residentId, householdInfo, pendingData) {
+    // Xóa modal cũ nếu có
+    const oldModal = document.getElementById('change-owner-warning-modal');
+    if (oldModal) oldModal.remove();
+
+    const html = `
+        <div class="modal-overlay" id="change-owner-warning-modal" style="display: flex; z-index: 10000;">
+            <div class="modal-content" style="max-width: 600px;">
+                <div class="modal-header" style="background: #dc3545;">
+                    <h3 style="color: white;">Yêu cầu đổi chủ hộ</h3>
+                </div>
+                <div class="modal-body" style="background: var(--panel-bg); padding: 25px;">
+                    <div style="background: #fff3cd; padding: 15px; border-radius: 8px; border-left: 4px solid #ffc107; margin-bottom: 20px;">
+                        <p style="margin: 0; color: #856404; line-height: 1.6;">
+                            <strong> Không thể cập nhật trạng thái!</strong><br>
+                            Người này đang là <strong>chủ hộ</strong> của hộ khẩu có thành viên khác.
+                        </p>
+                    </div>
+                    
+                    <div style="background: var(--muted-bg); padding: 15px; border-radius: 6px; margin-bottom: 20px;">
+                        <p style="margin: 0 0 10px 0;"><strong>Thông tin hộ khẩu:</strong></p>
+                        <p style="margin: 5px 0;"> <strong>Số hộ khẩu:</strong> ${householdInfo.sohokhau}</p>
+                        <p style="margin: 5px 0;"> <strong>Địa chỉ:</strong> ${householdInfo.diachi}</p>
+                    </div>
+                    
+                    <div style="background: #e3f2fd; padding: 15px; border-radius: 6px; border-left: 4px solid #2196f3;">
+                        <p style="margin: 0; color: #1565c0; line-height: 1.6;">
+                            <strong> Hướng dẫn:</strong><br>
+                            Vui lòng thực hiện theo thứ tự:
+                        </p>
+                        <ol style="margin: 10px 0 0 20px; color: #1565c0;">
+                            <li>Chọn "Đổi chủ hộ" để chuyển vai trò chủ hộ sang người khác</li>
+                            <li>Sau đó quay lại cập nhật trạng thái của người này</li>
+                        </ol>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" onclick="closeChangeOwnerWarning()">
+                         Đóng
+                    </button>
+                    <button class="btn btn-primary" onclick="redirectToChangeOwner(${householdInfo.sohokhau}, ${residentId})">
+                         Đổi chủ hộ ngay
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', html);
+    
+    // Lưu dữ liệu pending để sau khi đổi chủ hộ có thể tự động cập nhật
+    window.pendingResidentUpdate = {
+        residentId: residentId,
+        data: pendingData
+    };
+}
+
+function closeChangeOwnerWarning() {
+    const modal = document.getElementById('change-owner-warning-modal');
+    if (modal) modal.remove();
+    window.pendingResidentUpdate = null;
+}
+
+function redirectToChangeOwner(sohokhau, residentId) {
+    // Lưu thông tin vào localStorage để sau khi đổi xong có thể quay lại
+    localStorage.setItem('pendingResidentUpdate', JSON.stringify({
+        residentId: residentId,
+        returnToResidents: true
+    }));
+    
+    // Chuyển sang trang households và tự động mở modal chi tiết hộ khẩu
+    window.location.href = `households.html?action=changeowner&household=${sohokhau}`;
+}
+
+
+window.closeChangeOwnerWarning = closeChangeOwnerWarning;
+window.redirectToChangeOwner = redirectToChangeOwner;
 
 let deleteId = null;
 function executeDelete() { /* code xóa */ }

@@ -1137,3 +1137,34 @@ h2.page-title i { margin-right: 10px; }
     background-color: #e2e3e5;
     color: #383d41;
 }
+
+/* Animation cho notification */
+@keyframes slideIn {
+    from {
+        transform: translateX(400px);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* Style cho modal cảnh báo đặc biệt */
+#change-owner-warning-modal .modal-content {
+    animation: modalBounce 0.4s ease;
+}
+
+@keyframes modalBounce {
+    0% {
+        transform: scale(0.7);
+        opacity: 0;
+    }
+    50% {
+        transform: scale(1.05);
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
