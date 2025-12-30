@@ -177,9 +177,9 @@ exports.updateResident = async (req, res) => {
             return res.status(400).json({ success: false, error: 'Không có dữ liệu hợp lệ để cập nhật' });
         }
 
-        
+
         if (updatedData.TRANGTHAI === 'DaQuaDoi') {
-         
+
             const birthStr = updatedData.NGAYSINH;
             const deathStr = updatedData.NGAYCHUYENDI;
 
@@ -212,6 +212,16 @@ exports.updateResident = async (req, res) => {
 
     } catch (error) {
         console.error("Update resident error:", error);
+
+        if (error.code === 'CHUHO_ACTIVE') {
+            return res.status(400).json({
+                success: false,
+                error: error.message,
+                errorCode: 'CHUHO_ACTIVE',
+                householdInfo: error.householdInfo
+            });
+        }
+
         if (error.code === 'ER_DUP_ENTRY') {
             return res.status(400).json({ success: false, error: 'Số CCCD/CMND bị trùng lặp' });
         }

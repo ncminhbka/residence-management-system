@@ -224,6 +224,74 @@ const updateResident = async (id, updatedData, updatedBy = null) => {
 
     const old = oldData[0];
 
+    if (updatedData.TRANGTHAI && (updatedData.TRANGTHAI === 'ChuyenDi' || updatedData.TRANGTHAI === 'DaQuaDoi')) {
+      // Kiểm tra xem người này có đang là chủ hộ không
+      const [isChuHo] = await connection.query(`
+        SELECT hknk.SOHOKHAU, hk.DIACHI
+        FROM HO_KHAU_NHAN_KHAU hknk
+        JOIN HO_KHAU hk ON hknk.SOHOKHAU = hk.SOHOKHAU
+        WHERE hknk.MANHANKHAU = ? 
+        AND hknk.LA_CHU_HO = TRUE 
+        AND hknk.TRANGTHAI = 'DangO'
+        AND hk.TRANGTHAI = 'HoatDong'
+      `, [id]);
+
+      if (isChuHo.length > 0) {
+        // Nếu là chủ hộ, kiểm tra xem hộ có thành viên khác không
+        const [memberCount] = await connection.query(`
+          SELECT COUNT(*) as count
+          FROM HO_KHAU_NHAN_KHAU
+          WHERE SOHOKHAU = ? 
+          AND MANHANKHAU != ?
+          AND TRANGTHAI = 'DangO'
+        `, [isChuHo[0].SOHOKHAU, id]);
+
+        if (memberCount[0].count > 0) {
+          // Có thành viên khác, yêu cầu đổi chủ hộ trước
+          await connection.rollback();
+          const error = new Error('Người này đang là chủ hộ. Vui lòng đổi chủ hộ trước khi thay đổi trạng thái.');
+          error.code = 'CHUHO_ACTIVE';
+          error.householdInfo = {
+            sohokhau: isChuHo[0].SOHOKHAU,
+            diachi: isChuHo[0].DIACHI
+          };
+          throw error;
+        } else {
+          // Không có thành viên khác, tự động giải tán hộ
+          await connection.query(`
+            UPDATE HO_KHAU
+            SET TRANGTHAI = 'DaGiai',
+                UPDATED_BY = ?,
+                UPDATED_AT = NOW()
+            WHERE SOHOKHAU = ?
+          `, [updatedBy, isChuHo[0].SOHOKHAU]);
+
+          await connection.query(`
+            UPDATE HO_KHAU_NHAN_KHAU
+            SET TRANGTHAI = 'DaRoi',
+                NGAY_ROI_HO = CURDATE(),
+                LYDO_ROI_HO = ?
+            WHERE SOHOKHAU = ? AND MANHANKHAU = ?
+          `, [
+            updatedData.TRANGTHAI === 'DaQuaDoi' ? 'Chủ hộ đã qua đời' : 'Chủ hộ đã chuyển đi',
+            isChuHo[0].SOHOKHAU,
+            id
+          ]);
+
+          await connection.query(`
+            INSERT INTO LICH_SU_HO_KHAU (
+              SOHOKHAU, LOAI_BIEN_DONG, NGAY_BIEN_DONG,
+              MO_TA, NGUOI_THUC_HIEN
+            ) VALUES (?, 'GiaiHo', CURDATE(), ?, ?)
+          `, [
+            isChuHo[0].SOHOKHAU,
+            `Tự động giải tán hộ do chủ hộ ${updatedData.TRANGTHAI === 'DaQuaDoi' ? 'qua đời' : 'chuyển đi'}`,
+            updatedBy
+          ]);
+        }
+      }
+    }
+
     // Cập nhật bảng NHAN_KHAU
     const [result] = await connection.query(`
       UPDATE NHAN_KHAU

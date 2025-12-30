@@ -35,12 +35,14 @@
                         <div class="search-bar">
                             <input id="search-input" type="text" placeholder="Tìm theo tên chủ hộ hoặc số hộ khẩu..."
                                 aria-label="Tìm kiếm hộ khẩu" />
-                            <button id="search-btn" class="btn btn-primary"><i class="fas fa-search" aria-hidden="true"></i>
+                            <button id="search-btn" class="btn btn-primary"><i class="fas fa-search"
+                                    aria-hidden="true"></i>
                                 Tìm kiếm</button>
                             <button id="clear-search-btn" class="btn btn-secondary"><i class="fas fa-times"
                                     aria-hidden="true"></i> Xóa tìm kiếm</button>
                         </div>
-                        <button id="add-household-btn" class="btn btn-primary"><i class="fas fa-plus" aria-hidden="true"></i>
+                        <button id="add-household-btn" class="btn btn-primary"><i class="fas fa-plus"
+                                aria-hidden="true"></i>
                             Thêm hộ khẩu</button>
                     </div>
                 </div>
@@ -135,6 +137,43 @@
                     Xóa</button>
                 <button type="button" class="btn btn-secondary close-btn" data-modal="delete-modal"><i
                         class="fas fa-times" aria-hidden="true"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Lịch sử Hộ khẩu -->
+    <div id="history-modal" class="modal-overlay hidden">
+        <div class="modal-content large" style="max-width: 900px;">
+            <div class="modal-header">
+                <h3><i class="fas fa-history" aria-hidden="true"></i> Lịch sử Hộ khẩu</h3>
+                <button class="close-btn" data-modal="history-modal" aria-label="Đóng">&times;</button>
+            </div>
+            <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
+
+                <div class="table-responsive">
+                    <table class="data-table small">
+                        <thead>
+                            <tr>
+                                <th style="width: 50px;">STT</th>
+                                <th style="width: 130px;">Ngày biến động</th>
+                                <th style="width: 140px;">Loại biến động</th>
+                                <th>Nội dung</th>
+                                <th style="width: 120px;">Người thực hiện</th>
+                            </tr>
+                        </thead>
+                        <tbody id="history-table-body">
+                            <tr>
+                                <td colspan="5" style="text-align: center; padding: 40px; color: #6c757d;">
+                                    Đang tải dữ liệu...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="close-btn" data-modal="history-modal">
+                </button>
             </div>
         </div>
     </div>

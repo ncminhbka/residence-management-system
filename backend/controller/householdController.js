@@ -269,7 +269,7 @@ exports.updateMemberRelation = async (req, res) => {
 };
 
 // ============================================
-// 9. TÁCH HỘ KHẨU (CẢI TIẾN)
+// 9. TÁCH HỘ KHẨU 
 // ============================================
 exports.splitHousehold = async (req, res) => {
     try {
@@ -344,7 +344,7 @@ exports.splitHousehold = async (req, res) => {
 };
 
 // ============================================
-// 10. THÊM THÀNH VIÊN VÀO HỘ KHẨU (MỚI)
+// 10. THÊM THÀNH VIÊN VÀO HỘ KHẨU 
 // ============================================
 exports.addMemberToHousehold = async (req, res) => {
     try {
@@ -375,7 +375,7 @@ exports.addMemberToHousehold = async (req, res) => {
 };
 
 // ============================================
-// 11. XÓA THÀNH VIÊN KHỎI HỘ KHẨU (MỚI)
+// 11. XÓA THÀNH VIÊN KHỎI HỘ KHẨU 
 // ============================================
 exports.removeMemberFromHousehold = async (req, res) => {
     try {
@@ -407,5 +407,20 @@ exports.removeMemberFromHousehold = async (req, res) => {
             success: false,
             error: error.message || 'Lỗi máy chủ'
         });
+    }
+};
+
+
+// ============================================
+// 12. XEM LỊCH SỬ BIẾN ĐỘNG HỘ KHẨU
+// ============================================
+exports.getHouseholdHistory = async (req, res) => {
+    try {
+        const sohokhau = req.params.id;
+        const history = await Household.getHouseholdHistory(sohokhau);
+        res.status(200).json({ success: true, data: history });
+    } catch (error) {
+        console.error("Get household history error:", error);
+        res.status(500).json({ success: false, error: error.message || 'Lấy lịch sử hộ khẩu bị lỗi rồi bro!' });
     }
 };
