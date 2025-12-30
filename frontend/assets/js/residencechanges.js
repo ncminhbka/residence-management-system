@@ -114,8 +114,8 @@ function renderTable(type, data) {
     }
 
     const renderActions = (item) => `
-        <button class="btn btn-sm btn-warning" onclick='prepareEdit("${type}", ${JSON.stringify(item)})' style="margin-right:5px">✏️ Sửa</button>
-        <button class="btn btn-sm btn-secondary" onclick='printPaper("${type}", ${JSON.stringify(item)})'>🖨️ In</button>
+        <button class="btn btn-sm btn-warning" onclick='prepareEdit("${type}", ${JSON.stringify(item)})' style="margin-right:5px">Sửa</button>
+        <button class="btn btn-sm btn-secondary" onclick='printPaper("${type}", ${JSON.stringify(item)})'>In</button>
     `;
 
     if (type === 'tamvang') {

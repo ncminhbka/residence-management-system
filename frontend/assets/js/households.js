@@ -217,9 +217,9 @@ function openRemoveMemberModal(sohokhau, manhankhau, memberName) {
                     </p>
                 </div>
                 <div class="modal-footer">
-                    <button class="btn btn-secondary" onclick="document.getElementById('remove-member-modal').remove()">❌ Hủy</button>
+                    <button class="btn btn-secondary" onclick="document.getElementById('remove-member-modal').remove()">Hủy</button>
                     <button class="btn btn-danger" onclick="confirmRemoveMember(${sohokhau}, ${manhankhau})">
-                        🗑️ Xác nhận xóa
+                        Xác nhận xóa
                     </button>
                 </div>
             </div>
@@ -783,7 +783,7 @@ function renderDetailModal(household, members) {
                 <td>${m.QUANHECHUHO || ''}</td>
                 <td>
                     ${!m.LA_CHU_HO
-                ? `<button class="btn btn-sm btn-danger" onclick="openRemoveMemberModal(${household.SOHOKHAU}, ${m.MANHANKHAU}, '${m.HOTEN}')">🗑️ Xóa</button>`
+                ? `<button class="btn btn-sm btn-danger" onclick="openRemoveMemberModal(${household.SOHOKHAU}, ${m.MANHANKHAU}, '${m.HOTEN}')">Xóa</button>`
                 : '<span style="color: #6c757d; font-size: 12px;">Không thể xóa</span>'
             }
                 </td>
@@ -812,9 +812,9 @@ function renderDetailModal(household, members) {
             <tbody>${membersHtml}</tbody>
         </table>
         <div class="form-actions" style="margin-top:20px;">
-            <button class="btn btn-success" onclick="openAddMemberModal(${household.SOHOKHAU})">➕ Thêm thành viên</button>
-            <button class="btn btn-info" onclick="handleChangeOwner(${household.SOHOKHAU})">🔄 Đổi chủ hộ</button>
-            <button class="btn btn-primary" onclick="handleSplitRequest(${household.SOHOKHAU})">✂️ Tách hộ</button>
+            <button class="btn btn-success" onclick="openAddMemberModal(${household.SOHOKHAU})">Thêm thành viên</button>
+            <button class="btn btn-info" onclick="handleChangeOwner(${household.SOHOKHAU})">Đổi chủ hộ</button>
+            <button class="btn btn-primary" onclick="handleSplitRequest(${household.SOHOKHAU})">Tách hộ</button>
             <button class="btn btn-secondary close-btn" data-modal="detail-modal"></button>
         </div>
     `;
