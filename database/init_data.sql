@@ -141,6 +141,9 @@ SET FOREIGN_KEY_CHECKS = 1;
 
 -- 1. Gán ngày tạo mặc định cho những người chưa có (để họ hiện lên biểu đồ)
 -- Giả sử gán là đầu năm 2024 cho dữ liệu cũ
+ALTER TABLE NHAN_KHAU
+ADD INDEX idx_created_at (CREATED_AT);
+
 UPDATE NHAN_KHAU 
 SET CREATED_AT = '2024-01-01 00:00:00' 
 WHERE CREATED_AT IS NULL;

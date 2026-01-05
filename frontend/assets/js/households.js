@@ -682,21 +682,49 @@ async function handleSplitRequest(soHoKhauGoc) {
         const result = await response.json();
         if (result.success) {
             splitHouseholdMembers = result.data2;
-            if (splitHouseholdMembers.length === 0) return showAlert('Không có thành viên để tách', 'warning');
+            
+            // Logic mới: Hộ phải có ít nhất 2 người mới tách được
+            if (splitHouseholdMembers.length < 2) {
+                return showAlert('Hộ gia đình phải có ít nhất 2 thành viên mới có thể tách hộ', 'warning');
+            }
 
             memberRelations = {}; // Reset quan hệ
             document.getElementById('split-form').reset();
             document.getElementById('split-soHoKhauGoc').value = soHoKhauGoc;
 
-            renderSplitMembersListWithRelations(splitHouseholdMembers);
+            // --- CẬP NHẬT MỚI: Đổ dữ liệu vào Select Chủ Hộ Mới ---
+            const newHeadSelect = document.getElementById('split-maChuHoMoi');
+            newHeadSelect.innerHTML = '<option value="">-- Chọn thành viên làm chủ hộ mới --</option>' + 
+                splitHouseholdMembers.map(m => 
+                    `<option value="${m.MANHANKHAU}">${m.HOTEN} (ID: ${m.MANHANKHAU})</option>`
+                ).join('');
+            
+            // Xóa danh sách tick chọn cũ
+            document.getElementById('split-members-list').innerHTML = '<p class="text-muted">Vui lòng chọn chủ hộ mới trước...</p>';
+
             closeModal('detail-modal');
             openModal('split-modal');
         }
     } catch (error) {
         console.error(error);
+        showAlert('Lỗi tải thông tin hộ: ' + error.message, 'error');
     }
 }
+// Hàm mới: Xử lý khi thay đổi chủ hộ mới trong dropdown
+function handleNewHeadChange() {
+    const newHeadId = document.getElementById('split-maChuHoMoi').value;
+    
+    // Nếu chưa chọn chủ hộ thì chưa hiện danh sách
+    if (!newHeadId) {
+        document.getElementById('split-members-list').innerHTML = '<p class="text-muted">Vui lòng chọn chủ hộ mới trước...</p>';
+        return;
+    }
 
+    // Lọc danh sách: Chỉ hiện những người KHÔNG PHẢI là chủ hộ mới
+    const membersAvailableToMove = splitHouseholdMembers.filter(m => m.MANHANKHAU != newHeadId);
+    
+    renderSplitMembersListWithRelations(membersAvailableToMove);
+}
 function renderSplitMembersListWithRelations(members) {
     const container = document.getElementById('split-members-list');
     container.innerHTML = '';
@@ -731,12 +759,19 @@ function handleMemberCheckChange(checkbox, memberId) {
 async function handleSplitSubmit(e) {
     e.preventDefault();
     const sohokhaugoc = parseInt(document.getElementById('split-soHoKhauGoc').value);
-    const checked = document.querySelectorAll('#split-members-list input[type="checkbox"]:checked');
-    const membersToMove = Array.from(checked).map(cb => parseInt(cb.value));
-    const machuhomoi = parseInt(document.getElementById('split-maChuHoMoi').value);
+    
+    // Lấy ID chủ hộ mới từ Dropdown
+    const machuhomoiStr = document.getElementById('split-maChuHoMoi').value;
+    if (!machuhomoiStr) return showAlert('Vui lòng chọn chủ hộ mới', 'warning');
+    const machuhomoi = parseInt(machuhomoiStr);
 
-    if (membersToMove.length === 0) return showAlert('Chọn ít nhất 1 thành viên', 'warning');
-    if (!membersToMove.includes(machuhomoi)) return showAlert('Chủ hộ mới phải nằm trong danh sách chuyển đi', 'warning');
+    // Lấy danh sách các thành viên KHÁC được tick chọn đi cùng
+    const checked = document.querySelectorAll('#split-members-list input[type="checkbox"]:checked');
+    const otherMembersToMove = Array.from(checked).map(cb => parseInt(cb.value));
+
+    // --- LOGIC QUAN TRỌNG: Gộp Chủ hộ mới + Các thành viên đi cùng ---
+    // Không cần bắt người dùng tick chọn chủ hộ nữa
+    const allMembersToMove = [machuhomoi, ...otherMembersToMove];
 
     const requestBody = {
         sohokhaugoc,
@@ -747,7 +782,7 @@ async function handleSplitSubmit(e) {
             sodangkysomoi: parseInt(document.getElementById('split-soDangKySo').value),
             tosomoi: parseInt(document.getElementById('split-toSo').value),
         },
-        thanhviensanghokhaumoi: membersToMove,
+        thanhviensanghokhaumoi: allMembersToMove, // Gửi danh sách đã gộp
         quanheThanhVien: memberRelations
     };
 
@@ -1024,3 +1059,4 @@ window.openAddMemberModal = openAddMemberModal;
 window.confirmAddMember = confirmAddMember;
 window.closeModal = closeModal;
 window.handleViewHistory = handleViewHistory;
+window.handleNewHeadChange = handleNewHeadChange;

@@ -7,7 +7,7 @@ const ReportsModel = {
         const queries = [
             db.execute(`
                 SELECT COUNT(*) as count FROM NHAN_KHAU 
-                WHERE (TRANGTHAI = 'ThuongTru' OR TRANGTHAI = 'MoiThem')
+                WHERE (TRANGTHAI = 'ThuongTru' OR TRANGTHAI = 'MoiSinh')
                 AND CREATED_AT BETWEEN ? AND ?
             `, [startDate + ' 00:00:00', endDate + ' 23:59:59']),
 
@@ -57,7 +57,7 @@ const ReportsModel = {
                 SELECT COUNT(*) as count FROM NHAN_KHAU 
                 WHERE (CREATED_AT IS NULL OR CREATED_AT <= ?) 
                 AND (
-                    TRANGTHAI IN ('ThuongTru', 'TamTru', 'TamVang', 'MoiThem')
+                    TRANGTHAI IN ('ThuongTru', 'TamTru', 'TamVang', 'MoiSinh')
                     OR 
                     (TRANGTHAI IN ('ChuyenDi', 'DaQuaDoi') AND UPDATED_AT > ?)
                 )

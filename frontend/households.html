@@ -130,8 +130,8 @@
             <span class="close-btn" data-modal="detail-modal" aria-label="Đóng">&times;</span>
             <h3><i class="fas fa-exclamation-triangle" aria-hidden="true"></i> Xác nhận xóa</h3>
             <p>Bạn có chắc chắn muốn xóa hộ khẩu này không?</p>
-            <p class="warning-text"><i class="fas fa-warning" aria-hidden="true"></i> Lưu ý: Thao tác này sẽ đặt
-                SOHOKHAU của tất cả nhân khẩu trong hộ về NULL.</p>
+            <p class="warning-text"><i class="fas fa-warning" aria-hidden="true"></i> Lưu ý: Thao tác này sẽ chuyển
+                các thành viên trong hộ thành không có hộ.</p>
             <div class="form-actions">
                 <button id="confirm-delete-btn" class="btn btn-danger"><i class="fas fa-trash" aria-hidden="true"></i>
                     Xóa</button>
@@ -187,8 +187,10 @@
 
                 <h4><i class="fas fa-file-alt" aria-hidden="true"></i> Thông tin hộ khẩu mới</h4>
                 <div class="form-group">
-                    <label for="split-maChuHoMoi">Mã nhân khẩu chủ hộ mới <span class="required">*</span></label>
-                    <input type="number" id="split-maChuHoMoi" required aria-label="Mã nhân khẩu chủ hộ mới" />
+                    <label for="split-maChuHoMoi">Chọn Chủ hộ mới (từ các thành viên hiện tại) <span class="required">*</span></label>
+                    <select id="split-maChuHoMoi" class="form-control" required style="width: 100%; padding: 8px;" onchange="handleNewHeadChange()">
+                        <option value="">-- Chọn thành viên làm chủ hộ mới --</option>
+                    </select>
                 </div>
                 <div class="form-group">
                     <label for="split-diaChi">Địa chỉ mới <span class="required">*</span></label>
